@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+
+# generated proofs
+p-*.png
+crop-*.png

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About &mdash; Tim Booker</title>
+<meta name="description" content="Tim Booker is a complex systems scientist interested in how the internet and social media mediate cultural evolution, and in how that can be made better for humanity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&family=Archivo+Narrow:wght@400..700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#2b2b29; --fg:#f6f6f8; --dim:#a3a39f; --rule:#43433f;
+  --accent:#9a9dff; --fill:#0204a7; --on-fill:#f6f6f8; --plate:#333330;
+  --lat-on:#0204a7; --lat-off:#d8d8dc;
+  --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--fg); min-height:100vh;
+  font-family:Archivo,Helvetica,system-ui,sans-serif;
+  font-weight:400; font-size:1rem; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+/* paper tooth over the whole page */
+body::after{
+  content:""; position:fixed; inset:0; z-index:9; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px, 620px 620px;
+  opacity:var(--grain-page); mix-blend-mode:var(--grain-blend);
+}
+a{color:inherit}
+.link{color:var(--accent); text-decoration:none; border-bottom:1px solid var(--rule)}
+.link:hover{border-bottom-color:var(--accent)}
+.wrap{max-width:72rem; margin:0 auto; padding:2rem 2rem 6rem}
+.hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
+
+/* ---- the label: blue field, white knocked out, hierarchy by weight ---- */
+.label, .band{
+  background:var(--fill); color:var(--on-fill);
+  position:relative; isolation:isolate;
+}
+.label{padding:2.25rem 2.5rem 2rem; display:flex; flex-direction:column}
+.band{padding:1.5rem 2.5rem 1.1rem}
+.label::before, .label::after, .band::before, .band::after{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px, 620px 620px;
+}
+.label::before, .band::before{ mix-blend-mode:screen;   opacity:.16; }
+.label::after,  .band::after{  mix-blend-mode:multiply; opacity:.30; }
+.label > *, .band > *{position:relative; z-index:1}
+.title{font-size:2.25rem; font-weight:700; letter-spacing:-.025em; line-height:1.05}
+.stack{margin-top:1.4rem; font-size:.8125rem; line-height:1.5}
+.stack b{font-weight:700; font-size:.9375rem}
+.stack .sm{font-size:.75rem; opacity:.85}
+.stack .gap{height:.85rem}
+.credits{
+  margin-top:auto; padding-top:1.9rem; font-size:.75rem; line-height:1.6; opacity:.92;
+  max-width:44ch;
+}
+.credits b{font-weight:700}
+/* a personnel list breaks between credits, never inside one */
+.credits i{font-style:normal; white-space:nowrap}
+.label nav, .band nav{
+  display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center;
+  font-size:.6875rem; letter-spacing:.16em; text-transform:uppercase;
+}
+.label nav{margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid rgba(246,246,248,.3)}
+.band nav{margin-top:1.1rem; padding-top:.9rem; border-top:1px solid rgba(246,246,248,.3)}
+.label nav a, .band nav a{text-decoration:none; opacity:.75}
+.label nav a:hover, .band nav a:hover{opacity:1}
+.label nav a[aria-current], .band nav a[aria-current]{opacity:1; box-shadow:inset 0 -2px 0 currentColor}
+
+/* the compressed label: the nav says which page you are on, so nothing repeats it */
+.band .nm{font-size:1.5rem; font-weight:700; letter-spacing:-.022em; line-height:1}
+.band .nm a{text-decoration:none}
+.band .sub{margin-top:.45rem; font-size:.75rem; opacity:.85}
+
+/* ---- the toy ---- */
+.viz{display:flex; flex-direction:column; gap:.6rem}
+.viz canvas{
+  display:block; width:100%; height:auto; image-rendering:pixelated;
+  border:1px solid var(--rule); background:var(--plate);
+}
+.viz .row{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem}
+.viz .row figure{margin:0}
+.viz .row figcaption{
+  margin-top:.3rem; font-size:.5625rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--dim); text-align:center;
+}
+.ctrl{display:flex; align-items:center; gap:.7rem; margin-top:.2rem}
+.ctrl label{font-size:.625rem; letter-spacing:.06em; color:var(--dim); white-space:nowrap}
+.ctrl label sub{font-size:.75em}
+/* a fader off a mixing desk, not an OS widget: hairline track, ticks, square cap */
+.ctrl input[type=range]{
+  -webkit-appearance:none; appearance:none;
+  flex:1; height:1.25rem; margin:0; background:none; cursor:pointer;
+}
+.ctrl input[type=range]:focus{outline:none}
+.ctrl input[type=range]:focus-visible{outline:1px solid var(--accent); outline-offset:4px}
+.ctrl input[type=range]::-webkit-slider-runnable-track{
+  height:1.25rem;
+  background:
+    repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 7.1428%) 0 100%/100% 5px no-repeat,
+    linear-gradient(var(--rule), var(--rule)) 0 50%/100% 1px no-repeat;
+}
+.ctrl input[type=range]::-moz-range-track{
+  height:1.25rem;
+  background:
+    repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 7.1428%) 0 100%/100% 5px no-repeat,
+    linear-gradient(var(--rule), var(--rule)) 0 50%/100% 1px no-repeat;
+}
+.ctrl input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:6px; height:16px; border:0; border-radius:0;
+  background:var(--accent); margin-top:calc(.625rem - 8px);
+  transition:background .2s, height .2s;
+}
+.ctrl input[type=range]::-moz-range-thumb{
+  width:6px; height:16px; border:0; border-radius:0; background:var(--accent);
+  transition:background .2s, height .2s;
+}
+.ctrl input[type=range]:hover::-webkit-slider-thumb{height:20px; margin-top:calc(.625rem - 10px)}
+.ctrl input[type=range]:hover::-moz-range-thumb{height:20px}
+/* at Tc the cap goes white, so the instrument agrees with the caption */
+.crit-on .ctrl input[type=range]::-webkit-slider-thumb{background:var(--fg)}
+.crit-on .ctrl input[type=range]::-moz-range-thumb{background:var(--fg)}
+.ctrl output{
+  font-family:'Archivo Narrow',sans-serif; font-size:.8125rem; letter-spacing:.02em;
+  color:var(--dim); min-width:2.4rem; text-align:right; transition:color .3s ease;
+}
+.crit-on .ctrl output{color:var(--fg)}
+.viz .note{
+  font-size:.8125rem; line-height:1.5; color:var(--dim);
+  min-height:4.4em; transition:color .3s ease;
+}
+.viz .note.crit{color:var(--fg); font-weight:600}
+
+/* ---- page body ---- */
+.body{margin-top:3rem; max-width:54rem}
+.prose{max-width:62ch}
+.prose p{margin-bottom:1.3rem}
+.prose p:last-child{margin-bottom:0}
+
+/* the one-line-each block: catalogue furniture, one row per thing */
+.rows{display:grid; grid-template-columns:9.5rem 1fr; margin-top:2.75rem;
+      border-top:1px solid var(--rule)}
+/* the rule spans the column; the text sits inside it at a readable measure */
+.rows dd > span{display:block; max-width:62ch}
+.rows dt{
+  font-size:.9375rem; font-weight:700; color:var(--fg);
+  padding:.9rem 1.5rem .95rem 0; border-bottom:1px solid var(--rule);
+}
+.rows dt a{color:inherit; text-decoration:none;
+           border-bottom:1px solid var(--rule); padding-bottom:1px}
+.rows dt a:hover{border-bottom-color:var(--fg)}
+.rows dd{
+  font-size:.9375rem; line-height:1.55;
+  padding:.9rem 0 .95rem; border-bottom:1px solid var(--rule);
+}
+
+/* ---- research entries ---- */
+.grp{margin-top:3.25rem}
+.grp.first{margin-top:2.5rem}
+.grp > h2{
+  font-size:.8125rem; font-weight:700; color:var(--dim);
+  padding-bottom:.7rem; border-bottom:1px solid var(--rule);
+}
+.entry{
+  display:grid; grid-template-columns:minmax(0,1fr) 12rem; gap:2.25rem;
+  padding:1.7rem 0; border-bottom:1px solid var(--rule);
+}
+.entry h3{font-size:1.0625rem; font-weight:700; letter-spacing:-.012em; line-height:1.3;
+          max-width:44ch}
+.entry p{margin-top:.65rem; font-size:.9375rem; line-height:1.6; max-width:62ch}
+.entry .meta{
+  font-size:.6875rem; letter-spacing:.06em; line-height:1.6; color:var(--dim);
+  padding-top:.28rem;
+}
+
+/* ---- about / contact sections ---- */
+.sec{margin-top:3.25rem}
+.sec > h2{
+  font-size:.8125rem; font-weight:700; color:var(--dim);
+  padding-bottom:.7rem; margin-bottom:1.6rem;
+  border-bottom:1px solid var(--rule);
+}
+.lede{font-size:1.0625rem; line-height:1.6; max-width:58ch; margin-bottom:1.3rem}
+
+footer{margin-top:4rem; padding-top:1.2rem; border-top:1px solid var(--rule);
+       font-size:.6875rem; color:var(--dim); max-width:54rem; line-height:1.6}
+footer p{max-width:62ch}
+
+@media(max-width:880px){
+  .wrap{padding:1.25rem 1.25rem 4rem}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .label{padding:1.75rem 1.5rem}
+  .band{padding:1.25rem 1.5rem 1rem}
+  .title{font-size:1.875rem}
+  .rows{grid-template-columns:minmax(0,1fr); gap:0}
+  .rows dt{border-bottom:0; padding:1rem 0 .1rem}
+  .entry{grid-template-columns:minmax(0,1fr); gap:.7rem}
+  .entry .meta{padding-top:0; order:-1}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="band">
+  <div class="nm"><a href="home.html">Tim Booker</a></div>
+  <div class="sub">Complex systems scientist &middot; University of Graz</div>
+  <nav><a href="home.html">Home</a><a href="research.html">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html" aria-current="page">About</a><a href="contact.html">Contact</a></nav>
+</header>
+  <div class="body">
+    <div class="prose">
+      <p>Platforms optimise for engagement, and engagement is not a neutral thing to
+      optimise for: it sets which ideas spread and which people rise, and those pressures
+      reach into politics, into how people build a sense of themselves, and into what they
+      end up finding worth doing. The difficulty is that almost everything that matters
+      here gets asserted rather than measured, whether a conversation was any good,
+      whether a culture is actually accumulating anything, what a platform is for, how a
+      population's beliefs hang together. So a good deal of my time goes into building the
+      instruments that would let us settle those questions.</p>
+
+      <p>My motivating belief is that better collective decision-making is possible &mdash;
+      not merely an internet that avoids the harms and power imbalances of the current one,
+      but a future in which the internet, and governance itself, can evolve to help groups
+      think and decide better than they ever have.</p>
+
+      <p>My current home is the Complex Social &amp; Computational Systems group at the
+      University of Graz, where I work with Prof. Jana Lasser on DeSiRe. I also convene a
+      working group on what social media platforms ought to be for, and take on
+      <a class="link" href="freelancing.html">freelance work</a>.</p>
+    </div>
+
+    <section class="sec">
+      <h2>Some lore</h2>
+      <div class="prose">
+        <p>I was born in Perth, Western Australia. I lived there until midway through high
+        school, when I dropped out and fled home to live in Melbourne, Victoria.</p>
+
+        <p>While finishing my high school certificate, I found an interest in mathematical
+        beauty. I was captivated by how mathematical thinking could offer piercing ways to
+        understand the complexities of the world.</p>
+
+        <p>I self-studied mathematics using Khan Academy, and enrolled at whatever
+        university would accept a student with no prerequisites and a low graduating score
+        into a physics program. That happened to be Swinburne University of Technology.</p>
+
+        <p>During university I thrived. It was a place where I could chase my interests with
+        little restriction. I worked across optical fibre physics, hydroacoustics, and
+        social analytics, before realising theoretical studies is where my interests reside.
+        Alongside this, I started to become more critical of the real world outside of
+        physics and mathematics, and I realised there are problems with society that are far
+        too frustrating and unfair to ignore. Complex systems was a natural path forward,
+        where I could satisfy this frustration, contribute my abilities in physics and
+        maths, and of course retain proximity to the mathematical beauty that still
+        captivates me.</p>
+
+        <p>I completed my honours degree at Swinburne University, Melbourne, studying
+        self-avoiding walk models under the supervision of Prof. Nathan Clisby. After that I
+        was a visiting scholar at GSAIS, Kyoto University (a.k.a. &#24605;&#20462;&#39208;),
+        studying the entropy of complex systems under the supervision of Prof. Liang
+        Zhao.</p>
+
+        <p>Then, as a PhD candidate at the Complexity Science Hub Vienna, I experienced and
+        witnessed supervisor abuse. Moving quickly to a genuine academic path without
+        cutting corners is something I'm proud of. This showed me academia's structural
+        flaws &mdash; how short-term junior roles stifle collective advocacy, how
+        institutions hold power over international students, and how incentives push rushed,
+        less rigorous work.</p>
+
+        <p>Outside of work, I'm very into some specific subgenres of techno, philosophy, and
+        activism.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>If you went through something similar</h2>
+      <div class="prose">
+        <p>If you're dealing with something like what I went through in Vienna, my inbox is
+        always open: <a class="link" href="mailto:tim.book.RE@gmail.com">tim.book.RE@gmail.com</a>. I can't
+        promise solutions, but I can offer perspective, solidarity, and a listening ear.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer><p>I respectfully acknowledge the Traditional Owners of the land in which we work and learn, and pay respects to their elders, past, present and future.</p></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tim Booker</title>
+<meta name="description" content="Tim Booker is a complex systems scientist interested in how the internet and social media mediate cultural evolution, and in how that can be made better for humanity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&family=Archivo+Narrow:wght@400..700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#2b2b29; --fg:#f6f6f8; --dim:#a3a39f; --rule:#43433f;
+  --accent:#9a9dff; --fill:#0204a7; --on-fill:#f6f6f8; --plate:#333330;
+  --lat-on:#0204a7; --lat-off:#d8d8dc;
+  --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--fg); min-height:100vh;
+  font-family:Archivo,Helvetica,system-ui,sans-serif;
+  font-weight:400; font-size:1rem; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+/* paper tooth over the whole page */
+body::after{
+  content:""; position:fixed; inset:0; z-index:9; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px, 620px 620px;
+  opacity:var(--grain-page); mix-blend-mode:var(--grain-blend);
+}
+a{color:inherit}
+.link{color:var(--accent); text-decoration:none; border-bottom:1px solid var(--rule)}
+.link:hover{border-bottom-color:var(--accent)}
+.wrap{max-width:72rem; margin:0 auto; padding:2rem 2rem 6rem}
+.hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
+
+/* ---- the label: blue field, white knocked out, hierarchy by weight ---- */
+.label, .band{
+  background:var(--fill); color:var(--on-fill);
+  position:relative; isolation:isolate;
+}
+.label{padding:2.25rem 2.5rem 2rem; display:flex; flex-direction:column}
+.band{padding:1.5rem 2.5rem 1.1rem}
+.label::before, .label::after, .band::before, .band::after{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px, 620px 620px;
+}
+.label::before, .band::before{ mix-blend-mode:screen;   opacity:.16; }
+.label::after,  .band::after{  mix-blend-mode:multiply; opacity:.30; }
+.label > *, .band > *{position:relative; z-index:1}
+.title{font-size:2.25rem; font-weight:700; letter-spacing:-.025em; line-height:1.05}
+.stack{margin-top:1.4rem; font-size:.8125rem; line-height:1.5}
+.stack b{font-weight:700; font-size:.9375rem}
+.stack .sm{font-size:.75rem; opacity:.85}
+.stack .gap{height:.85rem}
+.credits{
+  margin-top:auto; padding-top:1.9rem; font-size:.75rem; line-height:1.6; opacity:.92;
+  max-width:44ch;
+}
+.credits b{font-weight:700}
+/* a personnel list breaks between credits, never inside one */
+.credits i{font-style:normal; white-space:nowrap}
+.label nav, .band nav{
+  display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center;
+  font-size:.6875rem; letter-spacing:.16em; text-transform:uppercase;
+}
+.label nav{margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid rgba(246,246,248,.3)}
+.band nav{margin-top:1.1rem; padding-top:.9rem; border-top:1px solid rgba(246,246,248,.3)}
+.label nav a, .band nav a{text-decoration:none; opacity:.75}
+.label nav a:hover, .band nav a:hover{opacity:1}
+.label nav a[aria-current], .band nav a[aria-current]{opacity:1; box-shadow:inset 0 -2px 0 currentColor}
+
+/* the compressed label: the nav says which page you are on, so nothing repeats it */
+.band .nm{font-size:1.5rem; font-weight:700; letter-spacing:-.022em; line-height:1}
+.band .nm a{text-decoration:none}
+.band .sub{margin-top:.45rem; font-size:.75rem; opacity:.85}
+
+/* ---- the toy ---- */
+.viz{display:flex; flex-direction:column; gap:.6rem}
+.viz canvas{
+  display:block; width:100%; height:auto; image-rendering:pixelated;
+  border:1px solid var(--rule); background:var(--plate);
+}
+.viz .row{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem}
+.viz .row figure{margin:0}
+.viz .row figcaption{
+  margin-top:.3rem; font-size:.5625rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--dim); text-align:center;
+}
+.ctrl{display:flex; align-items:center; gap:.7rem; margin-top:.2rem}
+.ctrl label{font-size:.625rem; letter-spacing:.06em; color:var(--dim); white-space:nowrap}
+.ctrl label sub{font-size:.75em}
+/* a fader off a mixing desk, not an OS widget: hairline track, ticks, square cap */
+.ctrl input[type=range]{
+  -webkit-appearance:none; appearance:none;
+  flex:1; height:1.25rem; margin:0; background:none; cursor:pointer;
+}
+.ctrl input[type=range]:focus{outline:none}
+.ctrl input[type=range]:focus-visible{outline:1px solid var(--accent); outline-offset:4px}
+.ctrl input[type=range]::-webkit-slider-runnable-track{
+  height:1.25rem;
+  background:
+    repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 7.1428%) 0 100%/100% 5px no-repeat,
+    linear-gradient(var(--rule), var(--rule)) 0 50%/100% 1px no-repeat;
+}
+.ctrl input[type=range]::-moz-range-track{
+  height:1.25rem;
+  background:
+    repeating-linear-gradient(90deg, var(--rule) 0 1px, transparent 1px 7.1428%) 0 100%/100% 5px no-repeat,
+    linear-gradient(var(--rule), var(--rule)) 0 50%/100% 1px no-repeat;
+}
+.ctrl input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:6px; height:16px; border:0; border-radius:0;
+  background:var(--accent); margin-top:calc(.625rem - 8px);
+  transition:background .2s, height .2s;
+}
+.ctrl input[type=range]::-moz-range-thumb{
+  width:6px; height:16px; border:0; border-radius:0; background:var(--accent);
+  transition:background .2s, height .2s;
+}
+.ctrl input[type=range]:hover::-webkit-slider-thumb{height:20px; margin-top:calc(.625rem - 10px)}
+.ctrl input[type=range]:hover::-moz-range-thumb{height:20px}
+/* at Tc the cap goes white, so the instrument agrees with the caption */
+.crit-on .ctrl input[type=range]::-webkit-slider-thumb{background:var(--fg)}
+.crit-on .ctrl input[type=range]::-moz-range-thumb{background:var(--fg)}
+.ctrl output{
+  font-family:'Archivo Narrow',sans-serif; font-size:.8125rem; letter-spacing:.02em;
+  color:var(--dim); min-width:2.4rem; text-align:right; transition:color .3s ease;
+}
+.crit-on .ctrl output{color:var(--fg)}
+.viz .note{
+  font-size:.8125rem; line-height:1.5; color:var(--dim);
+  min-height:4.4em; transition:color .3s ease;
+}
+.viz .note.crit{color:var(--fg); font-weight:600}
+
+/* ---- page body ---- */
+.body{margin-top:3rem; max-width:54rem}
+.prose{max-width:62ch}
+.prose p{margin-bottom:1.3rem}
+.prose p:last-child{margin-bottom:0}
+
+/* the one-line-each block: catalogue furniture, one row per thing */
+.rows{display:grid; grid-template-columns:9.5rem 1fr; margin-top:2.75rem;
+      border-top:1px solid var(--rule)}
+/* the rule spans the column; the text sits inside it at a readable measure */
+.rows dd > span{display:block; max-width:62ch}
+.rows dt{
+  font-size:.9375rem; font-weight:700; color:var(--fg);
+  padding:.9rem 1.5rem .95rem 0; border-bottom:1px solid var(--rule);
+}
+.rows dt a{color:inherit; text-decoration:none;
+           border-bottom:1px solid var(--rule); padding-bottom:1px}
+.rows dt a:hover{border-bottom-color:var(--fg)}
+.rows dd{
+  font-size:.9375rem; line-height:1.55;
+  padding:.9rem 0 .95rem; border-bottom:1px solid var(--rule);
+}
+
+/* ---- research entries ---- */
+.grp{margin-top:3.25rem}
+.grp.first{margin-top:2.5rem}
+.grp > h2{
+  font-size:.8125rem; font-weight:700; color:var(--dim);
+  padding-bottom:.7rem; border-bottom:1px solid var(--rule);
+}
+.entry{
+  display:grid; grid-template-columns:minmax(0,1fr) 12rem; gap:2.25rem;
+  padding:1.7rem 0; border-bottom:1px solid var(--rule);
+}
+.entry h3{font-size:1.0625rem; font-weight:700; letter-spacing:-.012em; line-height:1.3;
+          max-width:44ch}
+.entry p{margin-top:.65rem; font-size:.9375rem; line-height:1.6; max-width:62ch}
+.entry .meta{
+  font-size:.6875rem; letter-spacing:.06em; line-height:1.6; color:var(--dim);
+  padding-top:.28rem;
+}
+
+/* ---- about / contact sections ---- */
+.sec{margin-top:3.25rem}
+.sec > h2{
+  font-size:.8125rem; font-weight:700; color:var(--dim);
+  padding-bottom:.7rem; margin-bottom:1.6rem;
+  border-bottom:1px solid var(--rule);
+}
+.lede{font-size:1.0625rem; line-height:1.6; max-width:58ch; margin-bottom:1.3rem}
+
+footer{margin-top:4rem; padding-top:1.2rem; border-top:1px solid var(--rule);
+       font-size:.6875rem; color:var(--dim); max-width:54rem; line-height:1.6}
+footer p{max-width:62ch}
+
+@media(max-width:880px){
+  .wrap{padding:1.25rem 1.25rem 4rem}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .label{padding:1.75rem 1.5rem}
+  .band{padding:1.25rem 1.5rem 1rem}
+  .title{font-size:1.875rem}
+  .rows{grid-template-columns:minmax(0,1fr); gap:0}
+  .rows dt{border-bottom:0; padding:1rem 0 .1rem}
+  .entry{grid-template-columns:minmax(0,1fr); gap:.7rem}
+  .entry .meta{padding-top:0; order:-1}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="label">
+      <h1 class="title">Tim Booker</h1>
+      <div class="stack">
+        Complex systems scientist<br>
+        <b>University of Graz</b><br>
+        <span class="sm">Complex Social &amp; Computational Systems</span>
+        <div class="gap"></div>
+        <span class="sm">Complex systems, computational social science,<br>alternative social media</span><br>
+        <span class="sm">tim.booker@uni-graz.at</span>
+      </div>
+      <div class="credits">
+        <b>Currently.</b> <i>Evolution of online discourse</i> ;
+        <i>population-level belief structure</i> ; <i>ranking as selection pressure</i> ;
+        <i>emergence of reasoning in language models</i>.
+      </div>
+      <nav><a href="home.html" aria-current="page">Home</a><a href="research.html">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>
+    </div>
+
+    <div class="viz">
+      <canvas id="c0" aria-label="An Ising lattice at temperature T"></canvas>
+      <div class="row">
+        <figure><canvas id="c1"></canvas><figcaption>&divide;3</figcaption></figure>
+        <figure><canvas id="c2"></canvas><figcaption>&divide;9</figcaption></figure>
+        <figure><canvas id="c3"></canvas><figcaption>&divide;27</figcaption></figure>
+      </div>
+      <div class="ctrl">
+        <label for="temp">T / T<sub>c</sub></label>
+        <input id="temp" type="range" min="0.2" max="1.6" step="0.005" value="0.2">
+        <output id="tout">0.20</output>
+      </div>
+      <p class="note" id="cap">Beautiful order</p>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="prose">
+<p>Hi, I'm Tim. I'm a complex systems scientist, and I'm interested in how the internet
+and social media are mediating the evolution of our culture. Most of what I do is build
+instruments to measure it, because people assert a lot in this area and measure very
+little. Right now that's the quality of political discourse on Reddit, how news outlets
+frame the victims of conflict, and a simulated platform where you can change the
+recommender and watch what happens.</p>
+</div>
+    <dl class="rows">
+<dt><a href="research.html">Research.</a></dt><dd><span>Ten projects. Most of them are about measuring something people usually just assert. A few are about how language models reason instead.</span></dd>
+<dt><a href="freelancing.html">Freelance.</a></dt><dd><span>I take on a bit of contract work. Usually that's measurement design, LLM labelling at scale with the validation done properly, auditing a recommender, or making a big messy dataset usable.</span></dd>
+<dt>Media.</dt><dd><span>I'm happy to hear from journalists. That might be a hand with something computational, or a comment on a story about platforms, recommendation and online discourse.</span></dd>
+<dt>Students.</dt><dd><span>I take on masters students, and BSc students who are motivated and turn up with a project. Write to me and say what you want to work on.</span></dd>
+<dt>Elsewhere.</dt><dd><span><a class="link" href="https://bsky.app/profile/timzyzz.bsky.social">Bluesky</a>. <a class="link" href="https://github.com/tims-not-real">GitHub</a>, which is empty so far.</span></dd>
+<dt><a href="contact.html">Write to me.</a></dt><dd><span><a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>. Anyone can write to me, about anything.</span></dd>
+</dl>
+  </div>
+
+  <footer><p>I respectfully acknowledge the Traditional Owners of the land in which we work and learn, and pay respects to their elders, past, present and future.</p></footer>
+</div>
+<script>
+// ---- 2D Ising model, Metropolis, with block-spin renormalisation -------------
+// One rule: a site prefers to agree with its neighbours. Temperature fights that.
+// At Tc the coarse-grained lattices look like the original at every scale.
+var N = 216;                       // 216 = 8*27, so /3 three times lands cleanly
+var TC = 2/Math.log(1+Math.SQRT2); // 2.269..., Onsager
+var spin = new Int8Array(N*N);
+for (var i=0;i<spin.length;i++) spin[i] = Math.random()<0.5 ? 1 : -1;
+
+var T = TC;
+var w = new Float64Array(17);      // exp(-dE/T), indexed dE+8, so dE=+8 lands at 16
+function retable(){ for (var d=-8; d<=8; d+=4) w[d+8] = Math.exp(-d/T); }
+retable();
+
+function sweep(n){
+  for (var k=0;k<n;k++){
+    var x = (Math.random()*N)|0, y = (Math.random()*N)|0;
+    var idx = y*N+x;
+    var up    = spin[((y-1+N)%N)*N + x];
+    var down  = spin[((y+1)%N)*N + x];
+    var left  = spin[y*N + ((x-1+N)%N)];
+    var right = spin[y*N + ((x+1)%N)];
+    var dE = 2*spin[idx]*(up+down+left+right);
+    if (dE<=0 || Math.random() < w[dE+8]) spin[idx] = -spin[idx];
+  }
+}
+
+// majority rule on 3x3 blocks; 9 cells so no ties
+function coarse(src, n){
+  var m = n/3|0, out = new Int8Array(m*m);
+  for (var y=0;y<m;y++) for (var x=0;x<m;x++){
+    var s=0;
+    for (var j=0;j<3;j++) for (var k=0;k<3;k++) s += src[(y*3+j)*n + (x*3+k)];
+    out[y*m+x] = s>0 ? 1 : -1;
+  }
+  return out;
+}
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+
+var canvases = [
+  [document.getElementById('c0'), N],
+  [document.getElementById('c1'), N/3],
+  [document.getElementById('c2'), N/9],
+  [document.getElementById('c3'), N/27]
+];
+canvases.forEach(function(p){ p[0].width = p[1]; p[0].height = p[1]; });
+
+function draw(cv, lat, n, on, off){
+  var ctx = cv.getContext('2d');
+  var img = ctx.createImageData(n,n), d = img.data;
+  for (var i=0;i<n*n;i++){
+    var c = lat[i]>0 ? on : off;
+    d[i*4]=c[0]; d[i*4+1]=c[1]; d[i*4+2]=c[2]; d[i*4+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+}
+
+function paint(){
+  var on = hex(css('--lat-on')), off = hex(css('--lat-off'));
+  var l1 = coarse(spin,N), l2 = coarse(l1,N/3), l3 = coarse(l2,N/9);
+  draw(canvases[0][0], spin, N,    on, off);
+  draw(canvases[1][0], l1,   N/3,  on, off);
+  draw(canvases[2][0], l2,   N/9,  on, off);
+  draw(canvases[3][0], l3,   N/27, on, off);
+}
+// the slider is in units of Tc, so the readout and the control agree
+var slider = document.getElementById('temp'), out = document.getElementById('tout');
+// finite size broadens the critical region, so the band is findable but still a band
+var BAND = 0.04, cap = document.getElementById('cap');
+function setT(u){
+  T = u * TC; retable();
+  out.textContent = u.toFixed(2);
+  var at = Math.abs(u - 1) <= BAND;
+  cap.textContent = at ? 'Perhaps the most important idea about the universe ever uncovered. Process becomes substance.'
+                       : (u < 1 ? 'Beautiful order' : 'Beautiful chaos');
+  cap.classList.toggle('crit', at);
+  document.querySelector('.viz').classList.toggle('crit-on', at);
+}
+slider.addEventListener('input', function(){ setT(parseFloat(this.value)); });
+setT(0.2);
+
+// Equilibration is slow: from a random start, ordering at low T needs a few hundred
+// sweeps, not a few dozen. When motion is allowed we simply let the loop do it and you
+// watch the lattice organise itself. When it is not, we pay the cost up front.
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduce){
+  sweep(N*N*350);
+  paint();
+} else {
+  // Equilibrate before the first paint, so the page opens settled rather than on noise.
+  // This happens off-screen; the visible animation runs at one constant slow rate.
+  sweep(N*N*350);
+  paint();
+  (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
+}
+</script></body>
+</html>
