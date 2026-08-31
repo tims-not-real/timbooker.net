@@ -3,9 +3,12 @@
   python build_site.py
 
 Writes index.html, home.html, research.html, freelancing.html, about.html,
-contact.html, 404.html and llms.txt.
+contact.html, 404.html and llms.txt, plus the favicon set (SVG inline in the
+heads, ICO and touch icon drawn by Pillow when it is installed).
 """
 import io
+import os
+from urllib.parse import quote
 from site_style import CSS, FONTS
 
 PAGES = [('home.html', 'Home'), ('research.html', 'Research'),
@@ -27,6 +30,33 @@ FREELANCE_DESC = ('Tim Booker takes on contract work in recommender and ranking 
 
 FOOTER = ('I respectfully acknowledge the Traditional Owners of the land in which we work '
           'and learn, and pay respects to their elders, past, present and future.')
+
+# The label compressed to its smallest instance: the initials knocked out of the
+# blue field. SVG is inline in every page head; the ICO and touch icon are the
+# same mark, drawn by Pillow when it is available.
+FAVICON_SVG = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+               '<rect width="64" height="64" fill="#0204a7"/>'
+               '<text x="32" y="43" fill="#f6f6f8" '
+               'font-family="Archivo,Arial,Helvetica,sans-serif" font-weight="800" '
+               'font-size="30" text-anchor="middle" letter-spacing="-1">TB</text></svg>')
+ICON_URI = 'data:image/svg+xml,' + quote(FAVICON_SVG, safe='')
+
+
+def write_bitmap_icons():
+    """favicon.ico and apple-touch-icon.png. Optional: skipped without Pillow or
+    the system font, since the inline SVG already covers modern browsers."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        font = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 60)
+    except (ImportError, OSError):
+        return []
+    img = Image.new('RGB', (180, 180), (2, 4, 167))
+    ImageDraw.Draw(img).text((90, 90), 'TB', font=font, fill=(246, 246, 248),
+                             anchor='mm')
+    img.save('apple-touch-icon.png')
+    img.save('favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
+    return [(name, os.path.getsize(name))
+            for name in ('favicon.ico', 'apple-touch-icon.png')]
 
 
 def nav(current):
@@ -52,6 +82,9 @@ SHELL = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="__ICON__">
+<link rel="icon" type="image/x-icon" href="favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>__TITLE__</title>
 <meta name="description" content="__DESC__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,7 +109,7 @@ def render(path, title, main, js='', desc=DESC):
     html = (SHELL.replace('__TITLE__', title).replace('__DESC__', desc)
                  .replace('__FONTS__', FONTS).replace('__CSS__', CSS)
                  .replace('__MAIN__', main).replace('__FOOTER__', FOOTER)
-                 .replace('__SCRIPT__', script))
+                 .replace('__ICON__', ICON_URI).replace('__SCRIPT__', script))
     io.open(path, 'w', encoding='utf-8').write(html)
     return len(html)
 
@@ -696,5 +729,6 @@ if __name__ == '__main__':
     ]
     io.open('llms.txt', 'w', encoding='utf-8').write(LLMS)
     written.append(('llms.txt', len(LLMS)))
+    written.extend(write_bitmap_icons())
     for name, n in written:
         print('%-16s %6d bytes' % (name, n))
