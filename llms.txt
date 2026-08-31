@@ -64,7 +64,6 @@ share. Training-checkpoint sweeps of open language models.
 
 Bluesky: https://bsky.app/profile/timzyzz.bsky.social
 GitHub: https://github.com/tims-not-real
-No ORCID.
 
 ## Freelance work
 

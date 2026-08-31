@@ -28,8 +28,13 @@ FREELANCE_DESC = ('Tim Booker takes on contract work in recommender and ranking 
                   'measurement, LLM labelling at scale, and data science on large or '
                   'messy sources.')
 
+# The acknowledgement, plus the pointer to llms.txt. The link sits in real body
+# text rather than a head link or comment: LLM fetch pipelines that convert HTML
+# to markdown drop heads and comments but keep body links, so this is the one
+# placement every pipeline sees.
 FOOTER = ('I respectfully acknowledge the Traditional Owners of the land in which we work '
-          'and learn, and pay respects to their elders, past, present and future.')
+          'and learn, and pay respects to their elders, past, present and future. '
+          'For language models: <a href="/llms.txt">llms.txt</a>')
 
 # The mark is the field itself: a solid square of the label colour, nothing on it.
 # At tab size no figure survives, and the blue is the identity the label already
@@ -687,7 +692,6 @@ share. Training-checkpoint sweeps of open language models.
 
 Bluesky: __BSKY__
 GitHub: __GITHUB__
-No ORCID.
 
 ## Freelance work
 
