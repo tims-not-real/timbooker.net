@@ -1,9 +1,9 @@
 # Tim Booker
 
 > I'm a complex systems scientist at the University of Graz. I'm interested in how the
-> internet and social media mediate cultural evolution, and in the belief that this can
-> be made better for humanity in a constructive way. Everything else I work on fits under
-> that. Available for contract work.
+> internet and social media mediate cultural evolution, and in how that can be made
+> better for humanity. Everything else I work on fits under that. Available for contract
+> work.
 
 ## Hello
 
@@ -19,7 +19,7 @@ hello too.
 - want to measure something about a conversation, a discourse, or a population
 - are building or auditing a recommender or ranking system
 - need LLM labelling or classification at scale, with human validation and reported
-  agreement rather than a sampled eyeball
+  agreement
 - are a journalist working on something computational: media framing, coordinated
   behaviour, very large text corpora
 - work on platform policy or governance, or on the normative question of what a platform
@@ -34,7 +34,7 @@ hello too.
 - want a knowledge graph built out of text against an ontology, and benchmarked
 - need a matching or allocation system built
 
-## What I can actually do
+## What I can do
 
 Measurement design: codebooks, construct definition, human validation, inter-rater
 agreement. LLM annotation and classification at scale. Large-scale data engineering
@@ -63,7 +63,7 @@ share. Training-checkpoint sweeps of open language models.
 ## Elsewhere
 
 Bluesky: https://bsky.app/profile/timzyzz.bsky.social
-GitHub: https://github.com/tims-not-real (nothing public on it yet)
+GitHub: https://github.com/tims-not-real
 No ORCID.
 
 ## Freelance work

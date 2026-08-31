@@ -4,3 +4,8 @@ __pycache__/
 # generated proofs
 p-*.png
 crop-*.png
+
+# private working docs, kept local only
+design-goals.md
+principles.md
+research-japanese-record-type.md
