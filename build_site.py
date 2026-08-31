@@ -198,8 +198,7 @@ anyone runs one on people.</p>
 # One line each, labelled by the thing rather than by who it is for.
 HOME_ROWS = [
     ('Research', 'research.html',
-     'Ten projects. Most of them are about measurement. A few are about how language '
-     'models reason instead.'),
+     'Cultural evolution, online and in populations of language models.'),
     ('Freelance', 'freelancing.html',
      'I take on contract work: measurement design, LLM labelling at scale, recommender '
      'and ranking audits, and data engineering on large or messy sources.'),
