@@ -85,6 +85,7 @@ SHELL = """<!DOCTYPE html>
 <link rel="icon" type="image/svg+xml" href="__ICON__">
 <link rel="icon" type="image/x-icon" href="favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Language-model index: /llms.txt -->
 <title>__TITLE__</title>
 <meta name="description" content="__DESC__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
