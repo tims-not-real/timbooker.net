@@ -207,8 +207,11 @@ a{color:inherit}
 .lede{font-size:1.0625rem; line-height:1.6; max-width:58ch; margin-bottom:1.3rem}
 
 footer{margin-top:4rem; padding-top:1.2rem; border-top:1px solid var(--rule);
-       font-size:.6875rem; color:var(--dim); max-width:54rem; line-height:1.6}
+       font-size:.6875rem; color:var(--dim); max-width:54rem; line-height:1.6;
+       display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; justify-content:space-between;
+       align-items:baseline}
 footer p{max-width:62ch}
+footer p.llms{white-space:nowrap; max-width:none}
 
 @media(max-width:880px){
   .wrap{padding:1.25rem 1.25rem 4rem}
