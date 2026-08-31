@@ -7,9 +7,7 @@ contact.html, 404.html and llms.txt, plus the favicon set (SVG inline in the
 heads, ICO and touch icon drawn by Pillow when it is installed).
 """
 import io
-import math
 import os
-import random
 from urllib.parse import quote
 from site_style import CSS, FONTS
 
@@ -33,64 +31,25 @@ FREELANCE_DESC = ('Tim Booker takes on contract work in recommender and ranking 
 FOOTER = ('I respectfully acknowledge the Traditional Owners of the land in which we work '
           'and learn, and pay respects to their elders, past, present and future.')
 
-# The mark: a real frame of the home plate's Ising model, frozen at Tc. The same
-# Metropolis rule, eight by eight, from a fixed seed so the build is deterministic
-# and every raster size comes out in whole cells. Seed 24 was picked from a
-# candidate sweep: one diagonal band, three clusters, no fine speckle.
-# SVG is inline in every page head; the ICO and touch icon are the same mark,
-# drawn by Pillow when it is available.
-MARK_N = 8
-MARK_SEED = 24
-
-
-def ising_frame():
-    """One equilibrated 8x8 Metropolis frame at Tc, from the fixed seed."""
-    tc = 2 / math.log(1 + math.sqrt(2))
-    rng = random.Random(MARK_SEED)
-    s = [rng.choice((-1, 1)) for _ in range(MARK_N * MARK_N)]
-    w = {d: math.exp(-d / tc) for d in (-8, -4, 0, 4, 8)}
-    for _ in range(4000):
-        for _ in range(MARK_N * MARK_N):
-            i = rng.randrange(MARK_N * MARK_N)
-            x, y = i % MARK_N, i // MARK_N
-            nb = (s[((y - 1) % MARK_N) * MARK_N + x]
-                  + s[((y + 1) % MARK_N) * MARK_N + x]
-                  + s[y * MARK_N + (x - 1) % MARK_N]
-                  + s[y * MARK_N + (x + 1) % MARK_N])
-            d = 2 * s[i] * nb
-            if d <= 0 or rng.random() < w[d]:
-                s[i] = -s[i]
-    return [v > 0 for v in s]
-
-
-CELLS = ising_frame()
-
-FAVICON_SVG = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" '
-               'shape-rendering="crispEdges">'
-               + ''.join('<rect x="%d" y="%d" width="1" height="1" fill="#%s"/>'
-                         % (i % MARK_N, i // MARK_N,
-                            '0204a7' if on else 'f6f6f8')
-                         for i, on in enumerate(CELLS))
-               + '</svg>')
+# The mark is the field itself: a solid square of the label colour, nothing on it.
+# At tab size no figure survives, and the blue is the identity the label already
+# runs on. SVG is inline in every page head; the ICO and touch icon are the same
+# square, drawn by Pillow when it is available.
+FAVICON_SVG = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+               '<rect width="64" height="64" fill="#0204a7"/></svg>')
 ICON_URI = 'data:image/svg+xml,' + quote(FAVICON_SVG, safe='')
 
 
 def write_bitmap_icons():
-    """favicon.ico and apple-touch-icon.png, the same frame as the SVG. Optional:
+    """favicon.ico and apple-touch-icon.png, the same solid blue. Optional:
     skipped without Pillow, since the inline SVG covers modern browsers."""
     try:
-        from PIL import Image, ImageDraw
+        from PIL import Image
     except ImportError:
         return []
-    img = Image.new('RGB', (MARK_N * 24, MARK_N * 24))
-    draw = ImageDraw.Draw(img)
-    for i, on in enumerate(CELLS):
-        x, y = (i % MARK_N) * 24, (i // MARK_N) * 24
-        draw.rectangle([x, y, x + 23, y + 23],
-                       fill=(2, 4, 167) if on else (246, 246, 248))
+    img = Image.new('RGB', (180, 180), (2, 4, 167))
     img.save('apple-touch-icon.png')
-    img.resize((96, 96), Image.NEAREST).save(
-        'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
+    img.save('favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
     return [(name, os.path.getsize(name))
             for name in ('favicon.ico', 'apple-touch-icon.png')]
 
