@@ -228,10 +228,10 @@ footer p.llms{white-space:nowrap; max-width:none}
       for, and what recommender systems do to both. The methods are complex systems and
       computational social science. A good deal of the work is grounded in democratic
       theory.</p>
-      <p>The constructs are discourse quality, media framing, the structure of belief in
+      <p>The constructs I measure are discourse quality, media framing, the structure of belief in
       a population, and the effect of a ranking function on the people under it. The field
       argues about these and rarely operationalises them, so I write the codebooks, run the
-      annotation and report the agreement.</p>
+      annotation, and report the agreement.</p>
       <p>The same instruments point at language models, so part of the work is on models
       directly: when theory of mind appears over training, how they handle generics and
       default reasoning, and what a population of them does under a recommender I
@@ -241,50 +241,47 @@ footer p.llms{white-space:nowrap; max-width:none}
     <section class="grp first">
       <h2>Current</h2>
       <article class="entry">
-        <div><h3>Measuring the quality of political discourse on Reddit</h3><p>I'm building a framework for measuring how good a political conversation is, grounded in three traditions of democratic theory that disagree with each other: Habermas on rational deliberation, Mouffe on productive conflict, Young on inclusion. The theory constrains a 56-variable codebook, and the codebook constrains everything downstream. A stratified sample of about 75,000 comments across 653 subreddits gets annotated by language models, and seven coders are validating that by hand at the moment.</p></div>
+        <div><h3>Measuring the quality of political discourse on Reddit</h3><p>The framework is grounded in three traditions of democratic theory that disagree with each other: Habermas on rational deliberation, Mouffe on productive conflict, Young on inclusion. The theory constrains a 56-variable codebook, and the codebook constrains everything downstream. A stratified sample of about 75,000 comments across 653 subreddits gets annotated by language models and validated by hand.</p></div>
         <div class="meta">2026<br>with seven coders validating</div>
       </article>
       <article class="entry">
-        <div><h3>How news frames the victims of conflict</h3><p>When a conflict kills people, some of them are named and some are counted, and some perpetrators are identified while others are left implicit. We're testing whether those choices track the severity of the event, as you would hope, or the geopolitical alignment of the outlet doing the reporting, which is the less comfortable possibility. The corpus is around 1.36 billion articles across ten years and many languages, matched to events and coded against a framing codebook. It's the largest thing I have worked on, and most of the difficulty turns out to be in the matching.</p></div>
+        <div><h3>How news frames the victims of conflict</h3><p>When a conflict kills people, some of them are named and some are counted, and some perpetrators are identified while others are left implicit. We're testing whether those choices track the severity of the event, as you would hope, or the geopolitical alignment of the outlet doing the reporting. The corpus is around 1.36 billion articles across ten years and many languages, matched to events and coded against a framing codebook. It's the largest thing I've worked on, and most of the difficulty is in matching articles to events.</p></div>
         <div class="meta">2026<br>with collaborators at two institutions</div>
       </article>
       <article class="entry">
         <div><h3>Does false-belief reasoning emerge the way it does in children?</h3><p>Children acquire the ability to reason about what someone else falsely believes along a fairly consistent developmental trajectory. Language models acquire it somewhere during training, but nobody has looked closely at the shape of that curve. We take 41 checkpoints across the training run of an open model and score false-belief tasks by contrasting teacher-forced log probabilities, so that we can watch the capability arrive. The predictions are registered before the runs.</p></div>
-        <div class="meta">2026<br>with collaborators in Graz, Zurich and Genoa</div>
+        <div class="meta">2026<br>with collaborators in Graz, Zurich, and Genoa</div>
       </article>
       <article class="entry">
-        <div><h3>Simulating social media with language model agents</h3><p>If you want to know what a different recommender would do to a conversation, you cannot run that experiment on a real platform, and no platform is going to run it for you. So we build the platform instead: a population of language model agents posting, reading and responding under a recommender we control, and then we change the recommender and watch what happens to the discourse. The interesting question, and the one that worries me most, is how much of any result is an artefact of the agents rather than a property of the ranking.</p></div>
+        <div><h3>Simulating social media with language model agents</h3><p>If you want to know what a different recommender would do to a conversation, you can't run that experiment on a real platform, and no platform is going to run it for you. So we build the platform instead: a population of language model agents posting, reading, and responding under a recommender we control. Then we change the recommender. The interesting question, and the one that worries me most, is how much of any result is an artefact of the agents rather than a property of the ranking.</p></div>
         <div class="meta">2026<br>part of DeSiRe</div>
       </article>
       <article class="entry">
-        <div><h3>Sandboxing cultural evolution with LLMs</h3><p>Culture has no model system: transmission chains with people are too short for anything to accumulate, the historical record happened once, and formal models have control but no cognition. A population of language model agents is the first substrate with ideas and control at the same time, so we are building one on a hidden fitness landscape whose optimum we know. The catch is that a rising fitness curve is not evidence of cumulative culture, because parallel individual learning produces the same curve. So the contribution is the instrument: a detection battery that returns a verdict on whether a run shows cumulative culture, every test against a null fixed in advance, plus freeze-and-branch replay that cuts the peer channel mid-run to ask what it was worth. Lenski's freezer for culture. Theory and battery design are written; the code is landing now.</p></div>
+        <div><h3>Sandboxing cultural evolution with LLMs</h3><p>Culture has no model system: transmission chains with people are too short for anything to accumulate, the historical record happened once, and formal models have control but no cognition. A population of language model agents is the first substrate with ideas and control at the same time, so we're building one on a hidden fitness landscape whose optimum we know. The catch is that a rising fitness curve is not evidence of cumulative culture, because parallel individual learning produces the same curve. So the contribution is the instrument: a detection battery that returns a verdict on whether a run shows cumulative culture, every test against a null fixed in advance, plus freeze-and-branch replay that cuts the peer channel mid-run to ask what it was worth. Lenski's freezer for culture. Theory and battery design are written; the code is landing now.</p></div>
         <div class="meta">2026</div>
       </article>
       <article class="entry">
-        <div><h3>Belief networks, and how a population's attitudes hold together</h3><p>Using decades of General Social Survey data, this treats a population's attitudes as a network: beliefs are nodes, correlations between them are edges, and the shape of the whole thing shifts over time. The claim I most want to make is the conceptual one, that a population's belief correlation structure is a real object worth studying in its own right. Different sub-populations appear to have differently shaped structures, which would mean that liberals and conservatives do not merely hold different beliefs, but relate them differently.</p></div>
+        <div><h3>Belief networks, and how a population's attitudes hold together</h3><p>Using decades of General Social Survey data, this treats a population's attitudes as a network: beliefs are nodes, correlations between them are edges, and the shape of the whole thing shifts over time. The claim I most want to make is the conceptual one, that a population's belief correlation structure is a real object worth studying in its own right. Different sub-populations appear to have differently shaped structures, which would mean that liberals and conservatives differ in how their beliefs connect, as well as in which beliefs they hold.</p></div>
         <div class="meta">2025&ndash;2026<br>with a co-author</div>
       </article>
       <article class="entry">
         <div><h3>Does a model have a now?</h3><p>A collaboration in philosophy of language that began with how models handle generics and default reasoning, and has drifted towards temporal reasoning: whether a language model has any working sense of the present moment, and what it would mean to say that it did. This is at the reading and arguing stage. There is nothing to show yet.</p></div>
         <div class="meta">early<br>with two philosophers</div>
       </article>
+      <article class="entry">
+        <div><h3>Pulling knowledge graphs out of text</h3><p>Given an ontology and a pile of text, can a language model produce a knowledge graph you'd trust? This is a pipeline for finding out: extraction, then coverage checking, then entity normalisation, benchmarked against Text2KGBench and CS-KG-3600.</p></div>
+        <div class="meta">2026</div>
+      </article>
+      <article class="entry">
+        <div><h3>An opt-in alternative to the nation state</h3><p>A shared writing project about whether political membership has to be territorial, and what an opt-in polity, with coordination boundaries drawn around problems rather than borders, would require. It's philosophy, not measurement, which makes it a holiday from the rest of this.</p></div>
+        <div class="meta">2026</div>
+      </article>
     </section>
     <section class="grp">
       <h2>Convening</h2>
       <article class="entry">
-        <div><h3>What platforms are for</h3><p>Arguments about social media almost always skip the prior question of what a platform is for. I'm convening a small working group to take that question seriously: three days in Berlin in December, hosted at the Max Planck Institute for Human Development. Deliberately small and by invitation.</p></div>
-        <div class="meta">first meets December 2026<br>Berlin</div>
-      </article>
-    </section>
-    <section class="grp">
-      <h2>On hold</h2>
-      <article class="entry">
-        <div><h3>Pulling knowledge graphs out of text</h3><p>Given an ontology and a pile of text, can a language model produce a knowledge graph you would trust? This was a pipeline for finding out: extraction, then coverage checking, then entity normalisation, benchmarked against Text2KGBench and CS-KG-3600. The retrieval half was never finished and I put it down in April.</p></div>
-        <div class="meta">2026</div>
-      </article>
-      <article class="entry">
-        <div><h3>An opt-in alternative to the nation state</h3><p>A shared writing project about whether political membership has to be territorial, and what an opt-in polity, with coordination boundaries drawn around problems rather than borders, would require. It's philosophy, not measurement, which makes it a holiday from the rest of this. It has stalled because everyone involved got busy.</p></div>
-        <div class="meta">2026<br>waiting on other people</div>
+        <div><h3>What platforms are for</h3><p>Arguments about social media almost always skip the prior question of what a platform is for. I'm convening a working group to take that question seriously: three days in Berlin in December, hosted at the Max Planck Institute for Human Development. Deliberately small and by invitation.</p></div>
+        <div class="meta">December 2026<br>Berlin</div>
       </article>
     </section>
     <section class="grp">

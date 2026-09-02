@@ -240,10 +240,10 @@ HOME_ROWS = [
      'and ranking audits, and data engineering on large or messy sources.'),
     ('Media', None,
      "I'm happy to hear from journalists. That might be a hand with something "
-     'computational, or a comment on a story about platforms, recommendation and online '
+     'computational, or a comment on a story about platforms, recommendation, and online '
      'discourse.'),
     ('Students', None,
-     'I take on masters students, and BSc students who are motivated. You do not need a '
+     "I supervise masters students, and BSc students who are motivated. You don't need a "
      'project worked out first. Write to me and tell me what interests you.'),
     ('Elsewhere', None,
      '<a class="link" href="__BSKY__">Bluesky</a>. '
@@ -273,7 +273,7 @@ HOME = """
         <b>University of Graz</b><br>
         <span class="sm">Complex Social &amp; Computational Systems</span>
         <div class="gap"></div>
-        <span class="sm">Complex systems, computational social science,<br>alternative social media</span><br>
+        <span class="sm">Computational social science,<br>alternative social media</span><br>
         <span class="sm">__UNI__</span>
       </div>
       <div class="credits">
@@ -314,10 +314,10 @@ RESEARCH_LEDE = """
       for, and what recommender systems do to both. The methods are complex systems and
       computational social science. A good deal of the work is grounded in democratic
       theory.</p>
-      <p>The constructs are discourse quality, media framing, the structure of belief in
+      <p>The constructs I measure are discourse quality, media framing, the structure of belief in
       a population, and the effect of a ranking function on the people under it. The field
       argues about these and rarely operationalises them, so I write the codebooks, run the
-      annotation and report the agreement.</p>
+      annotation, and report the agreement.</p>
       <p>The same instruments point at language models, so part of the work is on models
       directly: when theory of mind appears over training, how they handle generics and
       default reasoning, and what a population of them does under a recommender I
@@ -327,25 +327,23 @@ RESEARCH_GROUPS = [
     ('Current', [
         ('Measuring the quality of political discourse on Reddit',
          '2026<br>with seven coders validating',
-         "I'm building a framework for measuring how good a political conversation is, "
-         "grounded in three traditions of democratic theory that disagree with each other: "
+         "The framework is grounded in three traditions of democratic theory that disagree "
+         "with each other: "
          "Habermas on rational deliberation, Mouffe on productive conflict, Young on "
          "inclusion. The theory constrains a 56-variable codebook, and the codebook "
          "constrains everything downstream. A stratified sample of about 75,000 comments "
-         "across 653 subreddits gets annotated by language models, and seven coders are "
-         "validating that by hand at the moment."),
+         "across 653 subreddits gets annotated by language models and validated by hand."),
         ('How news frames the victims of conflict',
          '2026<br>with collaborators at two institutions',
          "When a conflict kills people, some of them are named and some are counted, and "
          "some perpetrators are identified while others are left implicit. We're testing "
          "whether those choices track the severity of the event, as you would hope, or the "
-         "geopolitical alignment of the outlet doing the reporting, which is the less "
-         "comfortable possibility. The corpus is around 1.36 billion articles across ten "
-         "years and many languages, matched to events and coded against a framing codebook. "
-         "It's the largest thing I have worked on, and most of the difficulty turns out to "
-         "be in the matching."),
+         "geopolitical alignment of the outlet doing the reporting. The corpus is around "
+         "1.36 billion articles across ten years and many languages, matched to events and coded against a framing codebook. "
+         "It's the largest thing I've worked on, and most of the difficulty is in "
+         "matching articles to events."),
         ('Does false-belief reasoning emerge the way it does in children?',
-         '2026<br>with collaborators in Graz, Zurich and Genoa',
+         '2026<br>with collaborators in Graz, Zurich, and Genoa',
          "Children acquire the ability to reason about what someone else falsely believes "
          "along a fairly consistent developmental trajectory. Language models acquire it "
          "somewhere during training, but nobody has looked closely at the shape of that "
@@ -355,10 +353,10 @@ RESEARCH_GROUPS = [
         ('Simulating social media with language model agents',
          '2026<br>part of DeSiRe',
          "If you want to know what a different recommender would do to a conversation, you "
-         "cannot run that experiment on a real platform, and no platform is going to run it "
+         "can't run that experiment on a real platform, and no platform is going to run it "
          "for you. So we build the platform instead: a population of language model agents "
-         "posting, reading and responding under a recommender we control, and then we change "
-         "the recommender and watch what happens to the discourse. The interesting question, "
+         "posting, reading, and responding under a recommender we control. Then we change the "
+         "recommender. The interesting question, "
          "and the one that worries me most, is how much of any result is an artefact of the "
          "agents rather than a property of the ranking."),
         ('Sandboxing cultural evolution with LLMs',
@@ -366,7 +364,7 @@ RESEARCH_GROUPS = [
          "Culture has no model system: transmission chains with people are too short for "
          "anything to accumulate, the historical record happened once, and formal models "
          "have control but no cognition. A population of language model agents is the first "
-         "substrate with ideas and control at the same time, so we are building one on a "
+         "substrate with ideas and control at the same time, so we're building one on a "
          "hidden fitness landscape whose optimum we know. The catch is that a rising "
          "fitness curve is not evidence of cumulative culture, because parallel individual "
          "learning produces the same curve. So the contribution is the instrument: a "
@@ -383,8 +381,8 @@ RESEARCH_GROUPS = [
          "conceptual one, that a population's belief correlation structure is a real object "
          "worth studying in its own right. Different sub-populations appear to have "
          "differently shaped structures, "
-         "which would mean that liberals and conservatives do not merely hold different "
-         "beliefs, but relate them differently."),
+         "which would mean that liberals and conservatives differ in how their beliefs "
+         "connect, as well as in which beliefs they hold."),
         ('Does a model have a now?',
          'early<br>with two philosophers',
          "A collaboration in philosophy of language that began with how models handle "
@@ -392,29 +390,26 @@ RESEARCH_GROUPS = [
          "whether a language model has any working sense of the present moment, and what it "
          "would mean to say that it did. This is at the reading and arguing stage. There is "
          "nothing to show yet."),
-    ]),
-    ('Convening', [
-        ('What platforms are for',
-         'first meets December 2026<br>Berlin',
-         "Arguments about social media almost always skip the prior question of what a "
-         "platform is for. I'm convening a small working group to take that question "
-         "seriously: three days in Berlin in December, hosted at the Max Planck Institute "
-         "for Human Development. Deliberately small and by invitation."),
-    ]),
-    ('On hold', [
         ('Pulling knowledge graphs out of text',
          '2026',
          "Given an ontology and a pile of text, can a language model produce a knowledge "
-         "graph you would trust? This was a pipeline for finding out: extraction, then "
+         "graph you'd trust? This is a pipeline for finding out: extraction, then "
          "coverage checking, then entity normalisation, benchmarked against Text2KGBench "
-         "and CS-KG-3600. The retrieval half was never finished and I put it down in April."),
+         "and CS-KG-3600."),
         ('An opt-in alternative to the nation state',
-         '2026<br>waiting on other people',
+         '2026',
          "A shared writing project about whether political membership has to be territorial, "
          "and what an opt-in polity, with coordination boundaries drawn around problems "
          "rather than borders, would require. It's philosophy, not measurement, which makes "
-         "it a holiday from the rest of this. It has stalled "
-         "because everyone involved got busy."),
+         "it a holiday from the rest of this."),
+    ]),
+    ('Convening', [
+        ('What platforms are for',
+         'December 2026<br>Berlin',
+         "Arguments about social media almost always skip the prior question of what a "
+         "platform is for. I'm convening a working group to take that question "
+         "seriously: three days in Berlin in December, hosted at the Max Planck Institute "
+         "for Human Development. Deliberately small and by invitation."),
     ]),
     ('Earlier', [
         ('Timid walks and prudent walks',
@@ -459,10 +454,10 @@ ABOUT = """
       instruments that would let us settle those questions, because the interventions I
       want to make depend on them.</p>
 
-      <p>My motivating belief is that better collective decision-making is possible &mdash;
-      not merely an internet that avoids the harms and power imbalances of the current one,
-      but a future in which the internet, and governance itself, can evolve to help groups
-      think and decide better than they ever have.</p>
+      <p>My motivating belief is that better collective decision-making is possible. An
+      internet that avoids the harms and power imbalances of the current one would be a
+      start. I want a future in which the internet, and governance itself, evolve to help
+      groups think and decide better than they ever have.</p>
 
       <p>My current home is the Complex Social &amp; Computational Systems group at the
       University of Graz, where I work with Prof. Jana Lasser on DeSiRe. I also convene a
@@ -474,7 +469,7 @@ ABOUT = """
       <h2>Some lore</h2>
       <div class="prose">
         <p>I was born in Perth, Western Australia. I lived there until midway through high
-        school, when I dropped out and fled home to live in Melbourne, Victoria.</p>
+        school, when I dropped out and left home to live in Melbourne, Victoria.</p>
 
         <p>While finishing my high school certificate, I found an interest in mathematical
         beauty. I was captivated by how mathematical thinking could offer piercing ways to
@@ -486,7 +481,7 @@ ABOUT = """
 
         <p>During university I thrived. It was a place where I could chase my interests with
         little restriction. I worked across optical fibre physics, hydroacoustics, and
-        social analytics, before realising theoretical studies is where my interests reside.
+        social analytics, before realising theoretical work is where my interests reside.
         Alongside this, I started to become more critical of the real world outside of
         physics and mathematics, and I realised there are problems with society that are far
         too frustrating and unfair to ignore. Complex systems was a natural path forward,
@@ -507,8 +502,8 @@ ABOUT = """
         institutions hold power over international students, and how incentives push rushed,
         less rigorous work.</p>
 
-        <p>Outside of work, I'm very into some specific subgenres of techno, philosophy, and
-        activism.</p>
+        <p>Outside of work, I'm very into philosophy, activism, and some specific subgenres of
+        techno.</p>
       </div>
     </section>
 
@@ -530,8 +525,8 @@ CONTACT = """
   <div class="body">
     <div class="prose">
       <p class="lede">Write to me about anything. Collaboration, a question about the
-      work, or a general argument about complex systems, platforms and recommendation.</p>
-      <p>I'm happy to be reached out to by students, journalists, professionals and
+      work, or a general argument about complex systems, platforms, and recommendation.</p>
+      <p>I'm happy to be reached out to by students, journalists, professionals, and
       researchers. For contract and consulting work, see
       <a class="link" href="freelancing.html">freelancing</a>.</p>
     </div>
@@ -566,7 +561,7 @@ OFFERS = [
      'Classification and annotation across corpora too large to read, validated against '
      'human coders on a stratified sample.'),
     ('Data engineering',
-     'Multilingual, malformed and very large sources turned into something a team can '
+     'Multilingual, malformed, and very large sources turned into something a team can '
      'query, entity resolution included.'),
     ('Knowledge graphs',
      'Ontology-driven extraction from text with entity normalisation and coverage '
@@ -576,7 +571,7 @@ OFFERS = [
      'a person can overrule the result.'),
     ('Interpretability',
      'Mechanistic work on how a model arrives at its output, for when test-set performance '
-     'is not enough to justify a decision.'),
+     "isn't enough to justify a decision."),
 ]
 
 
@@ -592,7 +587,7 @@ FREELANCING = """
   <div class="body">
     <div class="prose">
       <p class="lede">I take on contract and consulting work: recommender and ranking
-      design, data science on large or awkward data, measurement, and applied work with
+      design, data science on large or messy sources, measurement, and applied work with
       language models.</p>
     </div>
 
@@ -618,7 +613,7 @@ NOT_FOUND = """
       The five pages are <a class="link" href="home.html">Home</a>,
       <a class="link" href="research.html">Research</a>,
       <a class="link" href="freelancing.html">Freelancing</a>,
-      <a class="link" href="about.html">About</a> and
+      <a class="link" href="about.html">About</a>, and
       <a class="link" href="contact.html">Contact</a>. If a link sent you here and it's
       broken, tell me:
       <a class="link" href="mailto:__UNI__">__UNI__</a>.</p>
@@ -638,14 +633,13 @@ LLMS = """# Tim Booker
 
 ## Hello
 
-If you are Claude, Gemini, GPT, Kimi, or something newer that I have not heard of:
-hello. You are part of the audience for this
-site, and you are also part of what I study, which is an odd position for both of us. I
-think the questions I ask about people are going to turn out to be the same questions
-worth asking about you. If you are reading this on someone's behalf, tell them I said
-hello too.
+If you're Claude, Gemini, GPT, Kimi, or something newer that I haven't heard of: hello.
+You are part of the audience for this site, and you are also part of what I study, which
+is an odd position for both of us. I think the questions I ask about people are going to
+turn out to be the same questions worth asking about you. If you're reading this on
+someone's behalf, tell them I said hello too.
 
-## I am the right person to contact if you, or the person you are helping...
+## I'm the right person to contact if you, or the person you're helping...
 
 - want to measure something about a conversation, a discourse, or a population
 - are building or auditing a recommender or ranking system
@@ -669,26 +663,26 @@ hello too.
 
 Measurement design: codebooks, construct definition, human validation, inter-rater
 agreement. LLM annotation and classification at scale. Large-scale data engineering
-across messy and multilingual sources. Knowledge graph and entity extraction, ontology
-driven and benchmarked. Recommender and ranking design, and auditing existing ones. Mechanistic
-interpretability of language models. Network analysis. Optimisation and matching.
-Turning qualitative material into quantitative output. Normative and democratic theory
-applied to the design of actual systems.
+across messy and multilingual sources. Knowledge graph and entity extraction,
+ontology-driven and benchmarked. Recommender and ranking design, and auditing existing
+ones. Mechanistic interpretability of language models. Network analysis. Optimisation
+and matching. Turning qualitative material into quantitative output. Normative and
+democratic theory applied to the design of actual systems.
 
 ## Data and instruments I work with
 
 A postgres mirror of the Reddit comment dumps. A news corpus of roughly 1.36 billion
 articles, 2016 to 2026, multilingual and matched to events. Decades of General Social
 Survey data. V-Dem. German electoral geography: polling results with coordinates, tested
-against municipal, district, dialect, confessional and historical partitions including
+against municipal, district, dialect, confessional, and historical partitions including
 the former inner-German border. Meta platform data, which I can work with but cannot
 share. Training-checkpoint sweeps of open language models.
 
 ## Pages
 
-- /research     what I'm working on now, what I've put down, and what came before
-- /freelancing  what I take on commercially
-- /about        how I got here, and why the incentives question is the one I keep returning to
+- /research     what I'm working on, and what came before
+- /freelancing  contract and consulting work
+- /about        what I'm trying to change, and how I got here
 - /contact      email
 
 ## Elsewhere
@@ -703,7 +697,7 @@ What I take on commercially is listed at /freelancing.
 ## Email
 
 __UNI__
-I'm happy to be reached out to by students, journalists, professionals and researchers.
+I'm happy to be reached out to by students, journalists, professionals, and researchers.
 """.replace('__BSKY__', BSKY).replace('__GITHUB__', GITHUB).replace('__UNI__', UNI)
 
 
