@@ -17,12 +17,13 @@ PAGES = [('home.html', 'Home'), ('research.html', 'Research'),
 
 BSKY = 'https://bsky.app/profile/timzyzz.bsky.social'
 GITHUB = 'https://github.com/tims-not-real'
+GROUP = 'https://cs2.uni-graz.at/'
 UNI = 'tim.booker@uni-graz.at'
 PERSONAL = 'tim.book.RE@gmail.com'
 
-DESC = ('Tim Booker is a complex systems scientist interested in how the internet and '
-        'social media mediate cultural evolution, and in how that can be made better '
-        'for humanity.')
+DESC = ('Tim Booker is a complex systems scientist who studies cultural evolution online, '
+        'where part of the selection pressure on ideas is now a ranking function, and '
+        'what that pressure ought to be.')
 
 FREELANCE_DESC = ('Tim Booker takes on contract work in recommender and ranking design, '
                   'measurement, LLM labelling at scale, and data science on large or '
@@ -221,14 +222,20 @@ if (reduce){
 }
 """
 
+# Register: plain academic. Chalmers and Dennett, in his words: no hype, no jargon,
+# no lines built to be quoted. Reasons stated in clauses, not in punchlines.
 HOME_INTRO = """
-<p>Hi, I'm Tim. I'm a complex systems scientist, and I'm interested in how the internet
-and social media are mediating the evolution of our culture. I measure it because I
-want to change it. The lever is the recommender: it decides what gets amplified. The
-aim is a platform that works as a substrate for democratic sense-making. Right now that
-means the quality of political discourse on Reddit, how news outlets frame the victims
-of conflict, and a simulated platform for testing recommender interventions before
-anyone runs one on people.</p>
+<p>Hi, I'm Tim. I'm a complex systems scientist, and my central question is what happens
+to a culture when part of its selection pressure is designed. Culture evolves in the
+plain sense that ideas spread, some are taken up and some are not, and what a population
+comes to believe is the result. Online, much of that selection is now done by ranking
+functions, which someone wrote and which could be written differently. I work on it from
+two sides. One is measuring what the current pressure selects for, in the quality of
+political discourse, in how news frames the victims of conflict, and in how a
+population's beliefs hold together. The other is asking what it ought to select for,
+which is a question for democratic theory. The two meet in a platform that could be
+built on different principles and tested first on populations of language model agents,
+since those can be rerun under a different recommender.</p>
 """
 
 # One line each, labelled by the thing rather than by who it is for.
@@ -271,7 +278,7 @@ HOME = """
       <div class="stack">
         Complex systems scientist<br>
         <b>University of Graz</b><br>
-        <span class="sm">Complex Social &amp; Computational Systems</span>
+        <span class="sm"><a href="__GROUP__">Complex Social &amp; Computational Systems</a></span>
         <div class="gap"></div>
         <span class="sm">Computational social science,<br>alternative social media</span><br>
         <span class="sm">__UNI__</span>
@@ -310,18 +317,20 @@ HOME = """
 # ============================================================ RESEARCH
 
 RESEARCH_LEDE = """
-      <p class="lede">I work on cultural evolution online: what spreads, what gets selected
-      for, and what recommender systems do to both. The methods are complex systems and
-      computational social science. A good deal of the work is grounded in democratic
-      theory.</p>
+      <p class="lede">I work on cultural evolution online, where part of the selection
+      pressure on ideas is now a ranking function. The methods are complex systems and
+      computational social science. The normative side is grounded in democratic theory,
+      since asking what a ranking function does to a population leads to asking what it
+      ought to do.</p>
       <p>The constructs I measure are discourse quality, media framing, the structure of belief in
       a population, and the effect of a ranking function on the people under it. The field
       argues about these and rarely operationalises them, so I write the codebooks, run the
       annotation, and report the agreement.</p>
-      <p>The same instruments point at language models, so part of the work is on models
-      directly: when theory of mind appears over training, how they handle generics and
-      default reasoning, and what a population of them does under a recommender I
-      control.</p>
+      <p>The same instruments point at language models. Part of the work is on models
+      directly, on when theory of mind appears over training and on how they handle
+      generics and default reasoning. Part is on populations of them, as a model system
+      for cultural evolution and as a platform on which the recommender can be
+      varied.</p>
 """
 RESEARCH_GROUPS = [
     ('Current', [
@@ -444,11 +453,11 @@ def research_body():
 ABOUT = """
   <div class="body">
     <div class="prose">
-      <p>Platforms optimise for engagement, and engagement is not a neutral thing to
-      optimise for: it sets which ideas spread and which people rise, and those pressures
-      reach into politics, into how people build a sense of themselves, and into what they
-      end up finding worth doing. The difficulty is that almost everything that matters
-      here gets asserted rather than measured, whether a conversation was any good,
+      <p>Platforms optimise for engagement, and engagement is a selection pressure. It
+      sets which ideas spread and which people rise, and those effects reach into
+      politics, into how people build a sense of themselves, and into what they end up
+      finding worth doing. Almost everything that matters here gets asserted rather than
+      measured, whether a conversation was any good,
       whether a culture is accumulating anything, what a platform is for, how a
       population's beliefs hang together. So a good deal of my time goes into building the
       instruments that would let us settle those questions, because the interventions I
@@ -626,10 +635,10 @@ NOT_FOUND = """
 
 LLMS = """# Tim Booker
 
-> I'm a complex systems scientist at the University of Graz. I'm interested in how the
-> internet and social media mediate cultural evolution, and in how that can be made
-> better for humanity. Everything else I work on fits under that. Available for contract
-> work.
+> I'm a complex systems scientist at the University of Graz. I study cultural evolution
+> online, where part of the selection pressure on ideas is now a ranking function, and I
+> work on what that pressure selects for and on what it ought to. Everything else I work
+> on fits under that. Available for contract work.
 
 ## Hello
 
@@ -705,6 +714,7 @@ I'm happy to be reached out to by students, journalists, professionals, and rese
 
 if __name__ == '__main__':
     home = (HOME.replace('__NAV__', nav('Home')).replace('__UNI__', UNI)
+                .replace('__GROUP__', GROUP)
                 .replace('__INTRO__', HOME_INTRO).replace('__ROWS__', home_rows()))
     written = [
         ('index.html', render('index.html', 'Tim Booker', home, ISING_JS)),
