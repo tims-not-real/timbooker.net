@@ -345,15 +345,16 @@ RESEARCH_GROUPS = [
          "The framework is grounded in three traditions of democratic theory that disagree "
          "with each other: "
          "Habermas on rational deliberation, Mouffe on productive conflict, Young on "
-         "inclusion. The theory constrains a 56-variable codebook, and the codebook "
-         "constrains everything downstream. A stratified sample of about 75,000 comments "
+         "inclusion. The theory constrains a 56-variable codebook, which in turn "
+         "constrains the annotation and everything built on it. A stratified sample of about 75,000 comments "
          "across 653 subreddits gets annotated by language models and validated by hand."),
         ('How news frames the victims of conflict',
          '2026<br>with collaborators at two institutions',
          "When a conflict kills people, some of them are named and some are counted, and "
-         "some perpetrators are identified while others are left implicit. We're testing "
-         "whether those choices track the severity of the event, as you would hope, or the "
-         "geopolitical alignment of the outlet doing the reporting. The corpus is around "
+         "some perpetrators are identified while others are left implicit. A newsroom is a "
+         "selector with an objective, and we're testing whether those choices track the "
+         "severity of the event or the geopolitical alignment of the outlet doing the "
+         "reporting. The corpus is around "
          "1.36 billion articles across ten years and many languages, matched to events and coded against a framing codebook. "
          "It's the largest thing I've worked on, and most of the difficulty is in "
          "matching articles to events."),
@@ -368,33 +369,36 @@ RESEARCH_GROUPS = [
         ('Simulating social media with language model agents',
          '2026<br>part of DeSiRe',
          "If you want to know what a different recommender would do to a conversation, you "
-         "can't run that experiment on a real platform, and no platform is going to run it "
-         "for you. So we build the platform instead: a population of language model agents "
+         "can't run that experiment on a real platform, and no platform will run it for "
+         "you. So we build the platform instead: a population of language model agents "
          "posting, reading, and responding under a recommender we control. Then we change the "
          "recommender. The interesting question, "
          "and the one that worries me most, is how much of any result is an artefact of the "
          "agents rather than a property of the ranking."),
         ('Sandboxing cultural evolution with LLMs',
          '2026',
-         "Culture has no model system: transmission chains with people are too short for "
-         "anything to accumulate, the historical record happened once, and formal models "
-         "have control but no cognition. A population of language model agents is the first "
-         "substrate with ideas and control at the same time, so we're building one on a "
-         "hidden fitness landscape whose optimum we know. The catch is that a rising "
-         "fitness curve is not evidence of cumulative culture, because parallel individual "
-         "learning produces the same curve. So the contribution is the instrument: a "
-         "detection battery that returns a verdict on whether a run shows cumulative "
-         "culture, every test against a null fixed in advance, plus freeze-and-branch "
-         "replay that cuts the peer channel mid-run to ask what it was worth. Lenski's "
-         "freezer for culture. Theory and battery design are written; the code is landing "
-         "now."),
+         "Cumulative culture is design that no individual worked out, accumulated through "
+         "transmission, and it has no model system: transmission chains with people are "
+         "too short for anything to accumulate, the historical record happened once, and "
+         "formal models have control but no cognition. A population of language model "
+         "agents is the first substrate with ideas and control at the same time, so we're "
+         "building one on a hidden fitness landscape whose optimum we know. A rising "
+         "fitness curve does not say where the design came from, since a population of "
+         "agents each learning alone produces the same curve as one that is accumulating. "
+         "So the contribution is the instrument: a detection battery that returns a verdict "
+         "on whether the design in a run accumulated through transmission or was worked out "
+         "by each agent alone, every test against a null fixed in advance, plus "
+         "freeze-and-branch replay that cuts the peer channel mid-run to ask what it was "
+         "worth, which is what Lenski's freezer does for a bacterial lineage. Theory and "
+         "battery design are written; the code is landing now."),
         ("Belief networks, and how a population's attitudes hold together",
          '2025&ndash;2026<br>with a co-author',
-         "Using decades of General Social Survey data, this treats a population's attitudes "
+         "This uses decades of General Social Survey data to treat a population's attitudes "
          "as a network: beliefs are nodes, correlations between them are edges, and the "
          "shape of the whole thing shifts over time. The claim I most want to make is the "
          "conceptual one, that a population's belief correlation structure is a real object "
-         "worth studying in its own right. Different sub-populations appear to have "
+         "worth studying in its own right, since it is the environment that any new belief "
+         "has to fit. Different sub-populations appear to have "
          "differently shaped structures, "
          "which would mean that liberals and conservatives differ in how their beliefs "
          "connect, as well as in which beliefs they hold."),
@@ -424,7 +428,7 @@ RESEARCH_GROUPS = [
          "Arguments about social media almost always skip the prior question of what a "
          "platform is for. I'm convening a working group to take that question "
          "seriously: three days in Berlin in December, hosted at the Max Planck Institute "
-         "for Human Development. Deliberately small and by invitation."),
+         "for Human Development. It is deliberately small and by invitation."),
     ]),
     ('Earlier', [
         ('Timid walks and prudent walks',
@@ -433,8 +437,8 @@ RESEARCH_GROUPS = [
          "decent model for polymer chains and a notoriously hard object to analyse. Certain "
          "restricted variants, timid walks and prudent walks, give up some generality in "
          "exchange for being tractable, and I spent my honours year on those under the "
-         "supervision of Nathan Clisby. It's the furthest thing from my current work, and "
-         "it's where I learned to do any of it."),
+         "supervision of Nathan Clisby. It is a long way from my current work, and it is "
+         "where I learned to do research."),
     ]),
 ]
 
@@ -459,11 +463,12 @@ def research_body():
 ABOUT = """
   <div class="body">
     <div class="prose">
-      <p>Platforms optimise for engagement, and engagement is a selection pressure. It
-      sets which ideas spread and which people rise, and those effects reach into
-      politics, into how people build a sense of themselves, and into what they end up
-      finding worth doing. Almost everything that matters here gets asserted rather than
-      measured, whether a conversation was any good,
+      <p>Platforms rank for engagement, and a ranking function is a selector with an
+      objective. It sets which ideas spread and which people rise, and because the
+      objective is the platform's, everything else it does is a side effect. Those side
+      effects reach into politics, into how people build a sense of themselves, and into
+      what they end up finding worth doing. Almost everything that matters here gets
+      asserted rather than measured, whether a conversation was any good,
       whether a culture is accumulating anything, what a platform is for, how a
       population's beliefs hang together. So a good deal of my time goes into building the
       instruments that would let us settle those questions, because the interventions I
@@ -471,8 +476,8 @@ ABOUT = """
 
       <p>My motivating belief is that better collective decision-making is possible. An
       internet that avoids the harms and power imbalances of the current one would be a
-      start. I want a future in which the internet, and governance itself, evolve to help
-      groups think and decide better than they ever have.</p>
+      start. I want a future in which the internet, and governance itself, are built to
+      help groups think and decide better than they ever have.</p>
 
       <p>My current home is the Complex Social &amp; Computational Systems group at the
       University of Graz, where I work with Prof. Jana Lasser on DeSiRe. I also convene a
