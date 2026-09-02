@@ -225,23 +225,18 @@ if (reduce){
 # Register: plain academic. Chalmers and Dennett, in his words: no hype, no jargon,
 # no lines built to be quoted. Reasons stated in clauses, not in punchlines.
 HOME_INTRO = """
-<p>Hi, I'm Tim. I'm a complex systems scientist, and I work on cultural evolution, which
-is the process by which a culture accumulates design that nobody designed. Beliefs,
-habits and practices vary, they pass from person to person, some get copied more than
-others, and the ones that get copied more come to fit their environment, which is mostly
-other people and what those people already believe. Nobody has to intend any of it. What
-is new is that a large share of the copying now passes through a ranking function, which
-is a selector somebody wrote down, with an objective that is usually the platform's
-rather than the reader's. That is selection with an object in view, the kind a breeder
-does, and nothing before has done it to a whole population at once, continuously, with
-one objective. My work is to find out what the selectors now in place, ranking functions
-and newsrooms among them, are selecting for, in the quality of political discourse, in
-how news frames the victims of conflict, and in how a population's beliefs hold
-together, and then to ask what they ought to select for, which is a question for
-democratic theory. The two questions meet in a platform built on different principles,
-and the first place to try one is a population of language model agents, since a
-population of agents can be rerun under a different recommender and people cannot. How
-far such a population stands in for people is itself one of the questions.</p>
+<p>Hi, I'm Tim. I'm a complex systems scientist with broad interests, but a thread that
+connects them all is cultural evolution, the process by which a culture accumulates
+design that nobody designed. Beliefs, habits and practices vary, people learn them from
+one another, some are learned more often than others, and over time the distribution in
+a population shifts toward the variants that fit their environment, which is mostly
+other people and what they already believe. Nobody has to intend any of it. Online, a
+large share of what people learn from one another now passes through ranking functions,
+which are selectors somebody wrote down, with an objective. My questions are what those
+selectors, and the newsrooms beside them, are selecting for, and what they ought to
+select for. I measure the first in the quality of political discourse, in how news
+frames the victims of conflict, and in how a population's beliefs hold together. The
+second is a question for democratic theory.</p>
 """
 
 # One line each, labelled by the thing rather than by who it is for.
