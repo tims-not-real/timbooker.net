@@ -1,9 +1,9 @@
 # Tim Booker
 
 > I'm a complex systems scientist at the University of Graz. I study cultural evolution
-> online, where part of the selection pressure on ideas is now a ranking function, and I
-> work on what that pressure selects for and on what it ought to. Everything else I work
-> on fits under that. Available for contract work.
+> online, where much of the selection now runs through ranking functions, and I work on
+> what those select for and on what they ought to. Everything else I work on fits under
+> that. Available for contract work.
 
 ## Hello
 

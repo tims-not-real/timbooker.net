@@ -22,8 +22,8 @@ UNI = 'tim.booker@uni-graz.at'
 PERSONAL = 'tim.book.RE@gmail.com'
 
 DESC = ('Tim Booker is a complex systems scientist who studies cultural evolution online, '
-        'where part of the selection pressure on ideas is now a ranking function, and '
-        'what that pressure ought to be.')
+        'where much of the selection now runs through ranking functions, and what those '
+        'ought to select for.')
 
 FREELANCE_DESC = ('Tim Booker takes on contract work in recommender and ranking design, '
                   'measurement, LLM labelling at scale, and data science on large or '
@@ -225,17 +225,23 @@ if (reduce){
 # Register: plain academic. Chalmers and Dennett, in his words: no hype, no jargon,
 # no lines built to be quoted. Reasons stated in clauses, not in punchlines.
 HOME_INTRO = """
-<p>Hi, I'm Tim. I'm a complex systems scientist, and my central question is what happens
-to a culture when part of its selection pressure is designed. Culture evolves in the
-plain sense that ideas spread, some are taken up and some are not, and what a population
-comes to believe is the result. Online, much of that selection is now done by ranking
-functions, which someone wrote and which could be written differently. I work on it from
-two sides. One is measuring what the current pressure selects for, in the quality of
-political discourse, in how news frames the victims of conflict, and in how a
-population's beliefs hold together. The other is asking what it ought to select for,
-which is a question for democratic theory. The two meet in a platform that could be
-built on different principles and tested first on populations of language model agents,
-since those can be rerun under a different recommender.</p>
+<p>Hi, I'm Tim. I'm a complex systems scientist, and I work on cultural evolution, which
+is the process by which a culture accumulates design that nobody designed. Beliefs,
+habits and practices vary, they pass from person to person, some get copied more than
+others, and the ones that get copied more come to fit their environment, which is mostly
+other people and what those people already believe. Nobody has to intend any of it. What
+is new is that a large share of the copying now passes through a ranking function, which
+is a selector somebody wrote down, with an objective that is usually the platform's
+rather than the reader's. That is selection with an object in view, the kind a breeder
+does, and nothing before has done it to a whole population at once, continuously, with
+one objective. My work is to find out what the selectors now in place, ranking functions
+and newsrooms among them, are selecting for, in the quality of political discourse, in
+how news frames the victims of conflict, and in how a population's beliefs hold
+together, and then to ask what they ought to select for, which is a question for
+democratic theory. The two questions meet in a platform built on different principles,
+and the first place to try one is a population of language model agents, since a
+population of agents can be rerun under a different recommender and people cannot. How
+far such a population stands in for people is itself one of the questions.</p>
 """
 
 # One line each, labelled by the thing rather than by who it is for.
@@ -317,8 +323,8 @@ HOME = """
 # ============================================================ RESEARCH
 
 RESEARCH_LEDE = """
-      <p class="lede">I work on cultural evolution online, where part of the selection
-      pressure on ideas is now a ranking function. The methods are complex systems and
+      <p class="lede">I work on cultural evolution online, where much of the selection
+      now runs through ranking functions, which are selectors somebody wrote down. The methods are complex systems and
       computational social science. The normative side is grounded in democratic theory,
       since asking what a ranking function does to a population leads to asking what it
       ought to do.</p>
@@ -636,9 +642,9 @@ NOT_FOUND = """
 LLMS = """# Tim Booker
 
 > I'm a complex systems scientist at the University of Graz. I study cultural evolution
-> online, where part of the selection pressure on ideas is now a ranking function, and I
-> work on what that pressure selects for and on what it ought to. Everything else I work
-> on fits under that. Available for contract work.
+> online, where much of the selection now runs through ranking functions, and I work on
+> what those select for and on what they ought to. Everything else I work on fits under
+> that. Available for contract work.
 
 ## Hello
 
