@@ -406,15 +406,15 @@ setT(0.2);
 // sweeps, not a few dozen. When motion is allowed we simply let the loop do it and you
 // watch the lattice organise itself. When it is not, we pay the cost up front.
 var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (reduce){
+// Warm up AFTER the browser has painted, not before. Equilibrating sixteen million spin
+// flips inside the parsing script blocks rendering entirely, and on a view-transition
+// navigation that holds the whole site on the old page until it finishes. Two frames of
+// an empty plate cost nothing. A third of a second of frozen navigation costs a lot.
+function warm(){
   sweep(N*N*350);
   paint();
-} else {
-  // Equilibrate before the first paint, so the page opens settled rather than on noise.
-  // This happens off-screen; the visible animation runs at one constant slow rate.
-  sweep(N*N*350);
-  paint();
-  (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
+  if (!reduce) (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
 }
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 </script></body>
 </html>

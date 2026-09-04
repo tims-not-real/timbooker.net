@@ -248,16 +248,16 @@ setT(0.2);
 // sweeps, not a few dozen. When motion is allowed we simply let the loop do it and you
 // watch the lattice organise itself. When it is not, we pay the cost up front.
 var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (reduce){
+// Warm up AFTER the browser has painted, not before. Equilibrating sixteen million spin
+// flips inside the parsing script blocks rendering entirely, and on a view-transition
+// navigation that holds the whole site on the old page until it finishes. Two frames of
+// an empty plate cost nothing. A third of a second of frozen navigation costs a lot.
+function warm(){
   sweep(N*N*350);
   paint();
-} else {
-  // Equilibrate before the first paint, so the page opens settled rather than on noise.
-  // This happens off-screen; the visible animation runs at one constant slow rate.
-  sweep(N*N*350);
-  paint();
-  (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
+  if (!reduce) (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
 }
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 """
 
 # Register: plain academic. Chalmers and Dennett, in his words: no hype, no jargon,
@@ -497,13 +497,18 @@ sl.addEventListener('input',function(){
   kap=parseFloat(this.value); out.textContent=kap.toFixed(2);
   say();
 });
-say(); reset();
+say();
 
 // Reduced motion still gets a curve, and gets it with the growth paid off screen: the
-// same loop, run once before the only paint, and then nothing moves.
+// same loop, run once before the only paint, and then nothing moves. Either way the
+// growth waits for the browser to have painted, so a navigation is never held on it.
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function frame(){ for (var i=0;i<3;i++) extend(); draw(); requestAnimationFrame(frame); }
-if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
+function warm(){
+  reset();
+  if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
+}
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 """
 
 # The 23rem column on Research. Same shape as ISING_PLATE and GS_PLATE: canvas, the one
@@ -954,6 +959,7 @@ out.textContent = F.toFixed(3);
 // Opening on a plate that is still mostly bare would be opening on the seed rather
 // than on the chemistry, so the first 1200 steps are paid before the first paint. The
 // same cost buys the single frame in the reduced-motion case.
+function warm(){
 for (var w=0;w<1200;w++) step();
 paint();
 say();
@@ -970,6 +976,8 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
     requestAnimationFrame(loop);
   })();
 }
+}
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 """
 # The 23rem column on Freelancing. Same shape as ISING_PLATE: canvas, the one fader,
 # the caption that says what the chemistry is doing.

@@ -460,6 +460,7 @@ out.textContent = F.toFixed(3);
 // Opening on a plate that is still mostly bare would be opening on the seed rather
 // than on the chemistry, so the first 1200 steps are paid before the first paint. The
 // same cost buys the single frame in the reduced-motion case.
+function warm(){
 for (var w=0;w<1200;w++) step();
 paint();
 say();
@@ -476,5 +477,7 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
     requestAnimationFrame(loop);
   })();
 }
+}
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 </script></body>
 </html>

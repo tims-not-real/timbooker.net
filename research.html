@@ -500,12 +500,17 @@ sl.addEventListener('input',function(){
   kap=parseFloat(this.value); out.textContent=kap.toFixed(2);
   say();
 });
-say(); reset();
+say();
 
 // Reduced motion still gets a curve, and gets it with the growth paid off screen: the
-// same loop, run once before the only paint, and then nothing moves.
+// same loop, run once before the only paint, and then nothing moves. Either way the
+// growth waits for the browser to have painted, so a navigation is never held on it.
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function frame(){ for (var i=0;i<3;i++) extend(); draw(); requestAnimationFrame(frame); }
-if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
+function warm(){
+  reset();
+  if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
+}
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 </script></body>
 </html>
