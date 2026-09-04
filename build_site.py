@@ -230,14 +230,27 @@ connects them all is cultural evolution, the process by which a culture accumula
 design that nobody designed. Beliefs, habits and practices vary, people learn them from
 one another, some are learned more often than others, and over time the distribution in
 a population shifts toward the variants that fit their environment, which is mostly
-other people and what they already believe. Nobody has to intend any of it. Online, a
-large share of what people learn from one another now passes through ranking functions,
-which are selectors somebody wrote down, with an objective. My questions are what those
-selectors, and the newsrooms beside them, are selecting for, and what they ought to
-select for. I measure the first in the quality of political discourse, in how news
-frames the victims of conflict, and in how a population's beliefs hold together. The
-second is a question for democratic theory.</p>
+other people and what they already believe.</p>
+<p>Online, a large share of what people learn from one another now passes through
+ranking functions, which are selectors somebody wrote down, with an objective.</p>
 """
+
+# The interests, as questions rather than as projects. One-word labels, to the register
+# of the rows below and to the 9.5rem label column. Three are measured; the fourth is
+# the normative one, and stands apart on purpose.
+INTEREST_ROWS = [
+    ('Discourse', None,
+     'What a ranking function selects for in the quality of political discourse.'),
+    ('Conflict', None,
+     'How a newsroom frames the victims of a war, since it is a selector too, with an '
+     'objective of its own.'),
+    ('Belief', None,
+     "How the beliefs in a population hold together, since that structure is what any "
+     'new belief has to fit.'),
+    ('Democracy', None,
+     'What those selectors ought to select for, which is a question for democratic '
+     'theory rather than for measurement.'),
+]
 
 # One line each, labelled by the thing rather than by who it is for.
 HOME_ROWS = [
@@ -262,9 +275,9 @@ HOME_ROWS = [
 ]
 
 
-def home_rows():
+def rows_block(rows):
     out = ['<dl class="rows">']
-    for label, href, text in HOME_ROWS:
+    for label, href, text in rows:
         dt = '<a href="%s">%s.</a>' % (href, label) if href else label + '.'
         out.append('<dt>%s</dt><dd><span>%s</span></dd>' % (dt, text))
     out.append('</dl>')
@@ -310,6 +323,7 @@ HOME = """
 
   <div class="body">
     <div class="prose">__INTRO__</div>
+    __INTERESTS__
     __ROWS__
   </div>
 """
@@ -721,7 +735,9 @@ I'm happy to be reached out to by students, journalists, professionals, and rese
 if __name__ == '__main__':
     home = (HOME.replace('__NAV__', nav('Home')).replace('__UNI__', UNI)
                 .replace('__GROUP__', GROUP)
-                .replace('__INTRO__', HOME_INTRO).replace('__ROWS__', home_rows()))
+                .replace('__INTRO__', HOME_INTRO)
+                .replace('__INTERESTS__', rows_block(INTEREST_ROWS))
+                .replace('__ROWS__', rows_block(HOME_ROWS)))
     written = [
         ('index.html', render('index.html', 'Tim Booker', home, ISING_JS)),
         ('home.html', render('home.html', 'Tim Booker', home, ISING_JS)),
