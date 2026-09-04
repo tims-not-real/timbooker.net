@@ -6,6 +6,7 @@ p-*.png
 crop-*.png
 
 # private working docs, kept local only
+CLAUDE.md
 design-goals.md
 principles.md
 research-japanese-record-type.md
