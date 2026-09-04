@@ -920,10 +920,18 @@ var WAIT = 2000, deadAt = 0, seededAt = -1e9;
 // above 0.055 the structure closes up and the bare medium is what is left over.
 // The state, then where that state turns up — the register the plate on Research uses.
 // Not the mechanism: the plate is the mechanism, and saying it twice helps nobody.
+//
+// Every one of these is a place where reaction and diffusion really are the model, not
+// somewhere that merely comes out looking similar. Gray and Scott were describing a
+// stirred tank to begin with; fingerprint ridges were shown to follow a Turing mechanism
+// in 2023; and vegetation patterning in drylands is modelled as water and biomass with
+// different transport, after Klausmeier and Rietkerk. Coat markings on a fish were the
+// obvious fourth and are out on purpose — those patterns are Turing-like, but the
+// mechanism is interactions between pigment cells, not this chemistry.
 function regime(){
   if (F < 0.028) return 'Starving';
-  if (F < 0.042) return 'Fed thinly · spots on a pufferfish';
-  if (F < 0.055) return 'Well fed · brain coral, a fingerprint';
+  if (F < 0.042) return 'Fed thinly · spots in a chemical reactor';
+  if (F < 0.055) return 'Well fed · ridges on a fingertip';
   return 'Fed hard · vegetation in a dry landscape';
 }
 
