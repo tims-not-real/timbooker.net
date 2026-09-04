@@ -85,7 +85,11 @@ a{color:inherit}
 
 /* ---- the toy ---- */
 .viz{display:flex; flex-direction:column; gap:.6rem}
-.viz canvas{
+/* The plate arrives when its model has warmed up, rather than snapping in. The canvas
+   is visible by default and the script hides it before it starts work, so with no
+   JavaScript there is still an empty plate here rather than a hole. */
+.viz canvas{transition:opacity .35s ease;
+
   display:block; width:100%; height:auto; image-rendering:pixelated;
   border:1px solid var(--rule); background:var(--plate);
 }
@@ -233,6 +237,8 @@ footer p.llms{white-space:nowrap; max-width:none}
     animation-duration:0s !important;
   }
 }
+
+@media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
 @media(max-width:880px){
   .wrap{padding:1.25rem 1.25rem 4rem}
@@ -410,9 +416,11 @@ var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // flips inside the parsing script blocks rendering entirely, and on a view-transition
 // navigation that holds the whole site on the old page until it finishes. Two frames of
 // an empty plate cost nothing. A third of a second of frozen navigation costs a lot.
+canvases.forEach(function(p){ p[0].style.opacity = 0; });
 function warm(){
   sweep(N*N*350);
   paint();
+  canvases.forEach(function(p){ p[0].style.opacity = 1; });
   if (!reduce) (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
 }
 requestAnimationFrame(function(){ requestAnimationFrame(warm); });

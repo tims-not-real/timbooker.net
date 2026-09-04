@@ -98,7 +98,11 @@ a{color:inherit}
 
 /* ---- the toy ---- */
 .viz{display:flex; flex-direction:column; gap:.6rem}
-.viz canvas{
+/* The plate arrives when its model has warmed up, rather than snapping in. The canvas
+   is visible by default and the script hides it before it starts work, so with no
+   JavaScript there is still an empty plate here rather than a hole. */
+.viz canvas{transition:opacity .35s ease;
+
   display:block; width:100%; height:auto; image-rendering:pixelated;
   border:1px solid var(--rule); background:var(--plate);
 }
@@ -246,6 +250,8 @@ footer p.llms{white-space:nowrap; max-width:none}
     animation-duration:0s !important;
   }
 }
+
+@media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
 @media(max-width:880px){
   .wrap{padding:1.25rem 1.25rem 4rem}

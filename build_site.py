@@ -252,9 +252,11 @@ var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // flips inside the parsing script blocks rendering entirely, and on a view-transition
 // navigation that holds the whole site on the old page until it finishes. Two frames of
 // an empty plate cost nothing. A third of a second of frozen navigation costs a lot.
+canvases.forEach(function(p){ p[0].style.opacity = 0; });
 function warm(){
   sweep(N*N*350);
   paint();
+  canvases.forEach(function(p){ p[0].style.opacity = 1; });
   if (!reduce) (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
 }
 requestAnimationFrame(function(){ requestAnimationFrame(warm); });
@@ -504,8 +506,10 @@ say();
 // growth waits for the browser to have painted, so a navigation is never held on it.
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function frame(){ for (var i=0;i<3;i++) extend(); draw(); requestAnimationFrame(frame); }
+cv.style.opacity = 0;
 function warm(){
   reset();
+  cv.style.opacity = 1;
   if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
 }
 requestAnimationFrame(function(){ requestAnimationFrame(warm); });
@@ -959,9 +963,11 @@ out.textContent = F.toFixed(3);
 // Opening on a plate that is still mostly bare would be opening on the seed rather
 // than on the chemistry, so the first 1200 steps are paid before the first paint. The
 // same cost buys the single frame in the reduced-motion case.
+cv.style.opacity = 0;
 function warm(){
 for (var w=0;w<1200;w++) step();
 paint();
+cv.style.opacity = 1;
 say();
 
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
