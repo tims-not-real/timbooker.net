@@ -232,7 +232,9 @@ one another, some are learned more often than others, and over time the distribu
 a population shifts toward the variants that fit their environment, which is mostly
 other people and what they already believe.</p>
 <p>Online, a large share of what people learn from one another now passes through
-ranking functions, which are selectors somebody wrote down, with an objective.</p>
+ranking functions, which are selectors somebody wrote down, with an objective. My
+questions are what those selectors are selecting for, and what they ought to select
+for.</p>
 """
 
 # The interests, as questions rather than as projects. One-word labels, to the register
@@ -248,8 +250,7 @@ INTEREST_ROWS = [
      "How the beliefs in a population hold together, since that structure is what any "
      'new belief has to fit.'),
     ('Democracy', None,
-     'What those selectors ought to select for, which is a question for democratic '
-     'theory rather than for measurement.'),
+     'The normative question, one for democratic theory rather than for measurement.'),
 ]
 
 # One line each, labelled by the thing rather than by who it is for.
