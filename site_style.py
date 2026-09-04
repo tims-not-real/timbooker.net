@@ -217,6 +217,36 @@ footer{margin-top:4rem; padding-top:1.2rem; border-top:1px solid var(--rule);
 footer p{max-width:62ch}
 footer p.llms{white-space:nowrap; max-width:none}
 
+/* ---- moving between pages ----
+   Cross-document view transitions. Every page stays a complete standalone document,
+   so there is no router and no shared shell, and a browser that does not know these
+   rules drops them and navigates exactly as it did before.
+
+   Nothing carries a view-transition-name, which is the opposite of the obvious move
+   and is deliberate. A named element is lifted into the transition's own layer,
+   above the page, where the fixed grain on body::after can no longer reach it: the
+   label loses the paper tooth for the length of the transition and gets it back at
+   the end, a step of about 10/255 on the blue field. It buys nothing to pay that
+   for. The label sits in the same place on every page, so inside one whole-page
+   cross-fade it is already identical frame to frame and simply holds, grain and all.
+   What crosses is what actually differs between the two pages: the plate in the
+   right column, the body beneath, the underline in the nav.
+
+   A cross-fade and nothing else. Displacing the incoming page would take the label
+   with it, and the label holding still is the whole of the effect. */
+@view-transition{navigation:auto}
+::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){
+  animation-duration:.18s; animation-timing-function:ease;
+}
+@media(prefers-reduced-motion:reduce){
+  @view-transition{navigation:none}
+  /* and where that descriptor is not understood, every animation is over on the
+     frame it starts, which comes to the same thing */
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){
+    animation-duration:0s !important;
+  }
+}
+
 @media(max-width:880px){
   .wrap{padding:1.25rem 1.25rem 4rem}
   .hero{grid-template-columns:minmax(0,1fr)}
