@@ -181,6 +181,16 @@ a{color:inherit}
   padding:.9rem 0 .95rem; border-bottom:1px solid var(--rule);
 }
 
+/* ---- the research plate: the instrument left, its note right ---- */
+.plate{
+  display:grid; grid-template-columns:22rem minmax(0,1fr); gap:2.25rem;
+  margin-top:2.75rem; padding-bottom:1.9rem; border-bottom:1px solid var(--rule);
+}
+.plate .cap{font-size:.9375rem; line-height:1.6; color:var(--dim); max-width:52ch}
+.plate .cap b{font-weight:700; color:var(--fg)}
+.plate .cap p + p{margin-top:1.1rem; transition:color .3s ease}
+.plate .cap p.crit{color:var(--fg)}
+
 /* ---- research entries ---- */
 .grp{margin-top:3.25rem}
 .grp.first{margin-top:2.5rem}
@@ -224,6 +234,7 @@ footer p.llms{white-space:nowrap; max-width:none}
   .title{font-size:1.875rem}
   .rows{grid-template-columns:minmax(0,1fr); gap:0}
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}
+  .plate{grid-template-columns:minmax(0,1fr); gap:1.4rem}
   .entry{grid-template-columns:minmax(0,1fr); gap:.7rem}
   .entry .meta{padding-top:0; order:-1}
 }

@@ -348,6 +348,188 @@ RESEARCH_LEDE = """
       for cultural evolution and as a platform on which the recommender can be
       varied.</p>
 """
+# ------------------------------------------------------------ the plate
+
+# Axelrod's dissemination of culture, on the same lattice as the Ising plate on home.
+#
+# The colouring was the hard part and two were built and compared. Colouring by the
+# overlap with one fixed reference culture gives a flat blue field, because a reference
+# is one point in a space of q^5 cultures and by q of twenty about four cultures in five
+# share nothing with it, so the ramp has no range left in the regime the model is
+# interesting in. Drawing the borders instead marks a cell where it shares nothing with
+# a neighbour, which is the model's absorbing condition drawn one cell at a time, and it
+# holds structure across the fader: open ground at low q, large regions with boundaries
+# that hold through the transition, a locked field above it.
+AXELROD_JS = r"""
+// ---- Axelrod's dissemination of culture -------------------------------------
+// Every site holds F cultural features, each one of q traits. A site interacts with a
+// neighbour with probability equal to the fraction of features they already share, and
+// copies one they differ on. Neighbours who share nothing can never interact, so the
+// boundary between them is permanent and the lattice ends frozen.
+var N = 216, F = 5, NB = 2*N*N;   // same lattice as the Ising plate on home
+var cult = new Int32Array(N*N);   // five 6-bit traits packed per site, so overlap is one XOR
+
+function ov(x){                   // how many features two packed cultures agree on
+  var n = 0;
+  if (!(x & 63)) n++;
+  if (!((x>>>6) & 63)) n++;
+  if (!((x>>>12) & 63)) n++;
+  if (!((x>>>18) & 63)) n++;
+  if (!((x>>>24) & 63)) n++;
+  return n;
+}
+
+// Drawing a site at random wastes nearly every draw once the lattice has settled, so we
+// keep the bonds that can still do something and draw from those. Same dynamics, minus
+// the dead draws; it is also how the lattice knows it has frozen.
+var act = new Int32Array(NB), pos = new Int32Array(NB), na = 0;
+function siteA(b){ return b>>1; }
+function siteB(b){
+  var i = b>>1, x = i%N, y = (i/N)|0;
+  return (b&1) ? ((y+1)%N)*N + x : y*N + (x+1)%N;   // odd bonds point down, even right
+}
+function refresh(b){
+  var o = ov(cult[siteA(b)] ^ cult[siteB(b)]), live = o > 0 && o < F, p = pos[b];
+  if (live && p < 0){ act[na] = b; pos[b] = na; na++; }
+  else if (!live && p >= 0){
+    na--; var last = act[na]; act[p] = last; pos[last] = p; pos[b] = -1;
+  }
+}
+function seed(q){
+  for (var i=0;i<N*N;i++){
+    var v = 0;
+    for (var f=0;f<F;f++) v |= ((Math.random()*q)|0) << (6*f);
+    cult[i] = v;
+  }
+  pos.fill(-1); na = 0;
+  for (var b=0;b<NB;b++) refresh(b);
+}
+function step(n){
+  for (var k=0;k<n;k++){
+    if (na === 0) return;
+    var b = act[(Math.random()*na)|0], i = siteA(b), j = siteB(b);
+    if (Math.random() < 0.5){ var t = i; i = j; j = t; }   // either one may be the copier
+    var a = cult[i], c = cult[j], x = a ^ c;
+    if (Math.random()*F < ov(x)){
+      var f;
+      do { f = (Math.random()*F)|0; } while (((x>>>(6*f)) & 63) === 0);
+      cult[i] = (a & ~(63<<(6*f))) | (c & (63<<(6*f)));
+      var px = i%N, py = (i/N)|0;                          // the four bonds at i changed
+      refresh(2*i); refresh(2*i+1);
+      refresh(2*(py*N + (px+N-1)%N)); refresh(2*(((py+N-1)%N)*N + px) + 1);
+    }
+  }
+}
+
+var oR = new Uint8Array(N*N), oD = new Uint8Array(N*N);
+var cv = document.getElementById('ax');
+cv.width = N; cv.height = N;
+var ctx = cv.getContext('2d'), img = ctx.createImageData(N,N);
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// A cell is inked where it shares nothing with one of its four neighbours. Right and
+// down cover every bond once; left and up are read back off the neighbours' own.
+function paint(){
+  var on = hex(css('--lat-on')), off = hex(css('--lat-off')), d = img.data, x, y, i;
+  for (y=0;y<N;y++) for (x=0;x<N;x++){
+    i = y*N + x;
+    oR[i] = ov(cult[i] ^ cult[y*N + (x+1)%N]);
+    oD[i] = ov(cult[i] ^ cult[((y+1)%N)*N + x]);
+  }
+  for (y=0;y<N;y++) for (x=0;x<N;x++){
+    i = y*N + x;
+    var wall = oR[i]===0 || oD[i]===0 ||
+               oR[y*N + (x+N-1)%N]===0 || oD[((y+N-1)%N)*N + x]===0;
+    var c = wall ? on : off;
+    d[i*4] = c[0]; d[i*4+1] = c[1]; d[i*4+2] = c[2]; d[i*4+3] = 255;
+  }
+  ctx.putImageData(img,0,0);
+}
+
+var slider = document.getElementById('axq'), out = document.getElementById('axo'),
+    cap = document.getElementById('axcap'), plate = document.querySelector('.plate');
+var Q = parseInt(slider.value,10), run = 0;
+// The bands say what is on the plate rather than where the transition is; the frozen
+// sentence is added only when the lattice has actually stopped.
+function caption(){
+  var s = Q <= 20
+    ? 'Few enough traits that most neighbours have something in common, so influence keeps spreading and the marked ground recedes. Left long enough the lattice would arrive at a single culture.'
+    : Q <= 28
+    ? 'Large regions have formed and their boundaries hold. A boundary appears wherever two neighbours happen to share nothing, and the rule offers them no way back across it.'
+    : 'More traits than two neighbours are likely to hold in common. Most pairs share nothing from the outset, and the lattice locks at once into regions that cannot reach one another.';
+  if (na === 0)
+    s += ' Every pair of neighbours now shares everything or nothing, and the run has stopped. A frozen lattice is the result of the model rather than a stall in it.';
+  cap.textContent = s;
+  cap.classList.toggle('crit', na === 0);
+  plate.classList.toggle('crit-on', na === 0);
+}
+
+// One frame's worth of interaction, tuned so the step costs a few milliseconds and the
+// frame rate holds while the lattice is still busy.
+var PER_FRAME = 40000;
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function loop(gen){
+  if (gen !== run) return;
+  step(PER_FRAME);
+  paint();
+  if (na === 0){ caption(); return; }   // frozen: nothing left to draw, so stop drawing
+  requestAnimationFrame(function(){ loop(gen); });
+}
+// A freshly seeded lattice is nearly all boundary, and it takes a few hundred rounds per
+// site before the regions are worth looking at. A lattice this size takes long enough to
+// get there that doing it in one blocking call would stall the page, so it advances in
+// slices, then paints. The plate opens on the model rather than on its initial condition,
+// which is also the only paint it gets when motion is suppressed.
+function start(gen){
+  var began = performance.now(), done = 0, TARGET = 300*N*N;
+  (function slice(){
+    if (gen !== run) return;
+    var t = performance.now();
+    while (na > 0 && done < TARGET && performance.now() - t < 30){
+      step(200000); done += 200000;
+    }
+    if (na > 0 && done < TARGET && performance.now() - began < 900){
+      setTimeout(slice, 0); return;
+    }
+    paint(); caption();
+    if (!reduce && na > 0) loop(gen);
+  })();
+}
+function setQ(q){
+  Q = q; out.textContent = q;
+  run++; seed(q); caption(); start(run);
+}
+slider.addEventListener('input', function(){ setQ(parseInt(this.value,10)); });
+setQ(Q);
+"""
+
+# The plate sits under the lede and above the first group, in the two-column measure the
+# entries use, reversed: the instrument in the left column, its note in the right.
+RESEARCH_PLATE = """
+    <div class="plate">
+      <div class="viz">
+        <canvas id="ax" aria-label="A lattice of cultures, marked where a site shares no feature with one of its neighbours"></canvas>
+        <div class="ctrl">
+          <label for="axq">Traits <i>q</i></label>
+          <input id="axq" type="range" min="10" max="40" step="1" value="24">
+          <output id="axo">24</output>
+        </div>
+      </div>
+      <div class="cap">
+        <p><b>Axelrod&rsquo;s dissemination of culture.</b> Every site holds five cultural
+        features, each taking one of <i>q</i> traits. A site interacts with a neighbour in
+        proportion to how much the two already share, and copies one feature they differ
+        on. Two neighbours who share nothing cannot interact at all, and a cell is marked
+        here where that holds of one of its four neighbours. The pool of traits is fixed
+        when the lattice is seeded, so moving the fader starts a new run.</p>
+        <p id="axcap"></p>
+      </div>
+    </div>
+"""
+
 RESEARCH_GROUPS = [
     ('Current', [
         ('Measuring the quality of political discourse on Reddit',
@@ -454,7 +636,8 @@ RESEARCH_GROUPS = [
 
 
 def research_body():
-    out = ['  <div class="body">', '    <div class="prose">', RESEARCH_LEDE, '    </div>']
+    out = ['  <div class="body">', '    <div class="prose">', RESEARCH_LEDE, '    </div>',
+           RESEARCH_PLATE]
     for i, (group, entries) in enumerate(RESEARCH_GROUPS):
         out.append('    <section class="grp%s">' % (' first' if i == 0 else ''))
         out.append('      <h2>%s</h2>' % group)
@@ -743,7 +926,7 @@ if __name__ == '__main__':
         ('index.html', render('index.html', 'Tim Booker', home, ISING_JS)),
         ('home.html', render('home.html', 'Tim Booker', home, ISING_JS)),
         ('research.html', render('research.html', 'Research &mdash; Tim Booker',
-                                 band('Research') + research_body())),
+                                 band('Research') + research_body(), AXELROD_JS)),
         ('freelancing.html', render('freelancing.html', 'Freelancing &mdash; Tim Booker',
                                     band('Freelancing') +
                                     FREELANCING.replace('__OFFERS__', offer_rows())
