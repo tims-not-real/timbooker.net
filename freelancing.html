@@ -421,17 +421,13 @@ var WAIT = 2000, deadAt = 0, seededAt = -1e9;
 // The boundaries are where the behaviour changes, not round numbers: below 0.028 no
 // seeded pattern establishes and a pattern dragged down from above only thins, and
 // above 0.055 the structure closes up and the bare medium is what is left over.
+// The state, then where that state turns up — the register the plate on Research uses.
+// Not the mechanism: the plate is the mechanism, and saying it twice helps nobody.
 function regime(){
-  if (F < 0.028) return 'Starving. Less U arrives than V consumes, so the structure '
-    + 'thins rather than settling into a calmer one, and it will not stop thinning.';
-  if (F < 0.042) return 'Fed thinly. A front advances only where U has had time to '
-    + 'diffuse back in, so the structure breaks into worms and into spots that divide '
-    + 'as they grow.';
-  if (F < 0.055) return 'Well fed. Every front is supplied from behind, so the '
-    + 'structure holds its width and wanders, neither filling the dish nor retreating '
-    + 'from it.';
-  return 'Fed hard. U is replaced almost as fast as V takes it, so the fronts close on '
-    + 'one another and bare medium survives only in the gaps between them.';
+  if (F < 0.028) return 'Starving';
+  if (F < 0.042) return 'Fed thinly · spots on a pufferfish';
+  if (F < 0.055) return 'Well fed · brain coral, a fingerprint';
+  return 'Fed hard · vegetation in a dry landscape';
 }
 
 function say(){
@@ -439,11 +435,9 @@ function say(){
   // the seeding line holds for a moment even if the dish dies again straight away,
   // which at F = 0 it does
   if (t - seededAt < 1200)
-    text = 'Seeded again from outside, after two seconds bare. Nothing inside the dish '
-         + 'could have done it.';
+    text = 'Seeded again from outside';
   else if (dead)
-    text = 'Bare medium. Making V takes V, and there is none left, so this state is '
-         + 'absorbing: no value of F recovers it. Only seeding it from outside will.';
+    text = 'Bare medium · nothing inside the dish can start it again';
   else
     text = regime();
   if (cap.textContent !== text) cap.textContent = text;
