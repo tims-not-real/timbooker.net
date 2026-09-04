@@ -30,7 +30,7 @@ CSS = """
 :root{
   --bg:#2b2b29; --fg:#f6f6f8; --dim:#a3a39f; --rule:#43433f;
   --accent:#9a9dff; --fill:#0204a7; --on-fill:#f6f6f8; --plate:#333330;
-  --lat-on:#0204a7; --lat-off:#d8d8dc;
+  --lat-on:#0204a7; --lat-mid:#6e6e68; --lat-off:#d8d8dc;
   --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
 }
 *{box-sizing:border-box;margin:0;padding:0}

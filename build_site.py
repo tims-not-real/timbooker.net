@@ -351,6 +351,174 @@ HOME_BODY = """
 
 # ============================================================ RESEARCH
 
+SLE_JS = r"""
+// ---- Chordal SLE in the half plane, growing without end ---------------------
+// Loewner's equation turns a Brownian driving function of variance kappa into a curve
+// that starts on the real axis and grows up into the half plane. Kappa is the whole
+// parameter: it is how hard the driver shakes, and so how rough the curve comes out.
+//
+// It can run forever because the object is scale invariant. Magnifying by L and slowing
+// time by L squared gives a curve with exactly the same law, so the picture needs no
+// edge to bounce off. It grows, the frame pulls back, and by that identity you are
+// always looking at the same thing statistically.
+var S = 736;      // square, and 23rem is 368 CSS px, so two canvas pixels to one of those
+var CAP = 1600;   // driving increments held at once; the past is coarsened, never dropped
+
+var cv = document.getElementById('sle');
+cv.width = S; cv.height = S;
+var cx = cv.getContext('2d');
+var kap = 6, dt = 1/1600, n = 0, coarse = 0;
+var dW = new Float64Array(CAP), px = new Float64Array(CAP), py = new Float64Array(CAP);
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// Age is the ink: the oldest surviving stretch is the label blue and the tip is near
+// white, through the grey that belongs to the ground family rather than to a second
+// accent. Two anchors put the whole curve on one periwinkle ramp and it reads as flat.
+var ON = hex(css('--lat-on')), MID = hex(css('--lat-mid')), OFF = hex(css('--lat-off')),
+    PLATE = hex(css('--plate')), RULE = hex(css('--rule'));
+function ramp(t){
+  if (t<0) t=0; if (t>1) t=1;
+  return t<0.5 ? [ON[0]+(MID[0]-ON[0])*t*2, ON[1]+(MID[1]-ON[1])*t*2, ON[2]+(MID[2]-ON[2])*t*2]
+               : [MID[0]+(OFF[0]-MID[0])*(t-0.5)*2, MID[1]+(OFF[1]-MID[1])*(t-0.5)*2,
+                  MID[2]+(OFF[2]-MID[2])*(t-0.5)*2];
+}
+
+// The square root taken on the branch that stays in the upper half plane, because the
+// trace never leaves it.
+function csqrtUp(a,b,out){
+  var r=Math.sqrt(a*a+b*b);
+  var u=Math.sqrt(Math.max(0,(r+a)/2));
+  var v=Math.sqrt(Math.max(0,(r-a)/2));
+  if (b<0) v=-v;
+  if (v<0){ u=-u; v=-v; }
+  out[0]=u; out[1]=v;
+}
+var spare=null;
+function gauss(){
+  if (spare!==null){ var s=spare; spare=null; return s; }
+  var u,v,r;
+  do { u=Math.random()*2-1; v=Math.random()*2-1; r=u*u+v*v; } while (r===0||r>=1);
+  var m=Math.sqrt(-2*Math.log(r)/r);
+  spare=v*m; return u*m;
+}
+
+// Appending one step only needs the new tip. The earlier trace points are unchanged, so
+// this is one pass down the composition rather than a rebuild, and the plate can grow
+// indefinitely at a cost per frame that never grows with it. Kappa is read here, on the
+// new increment alone, which is why moving the fader changes what the curve does next
+// and leaves everything behind the tip exactly as it was.
+var tmp=[0,0];
+function extend(){
+  if (n>=CAP) coarsen();
+  dW[n]=Math.sqrt(kap*dt)*gauss();
+  var four=4*dt, a=0, b=0;
+  for (var i=n;i>=0;i--){
+    csqrtUp(a*a-b*b-four, 2*a*b, tmp);
+    a=tmp[0]+dW[i]; b=tmp[1];
+  }
+  px[n]=a; py[n]=b;
+  n++;
+}
+
+// Halve the resolution of the past by adding consecutive driving increments in pairs.
+// For Brownian motion that is exact and not an approximation: two independent increments
+// of variance kappa*dt sum to one of variance 2*kappa*dt, which is one increment at the
+// doubled step. So the past is coarsened at precisely the rate the frame zooms out.
+// Nothing is discarded and nothing is faked; the early curve is still on screen, drawn
+// at fewer points because at that magnification there is nothing more to see.
+function coarsen(){
+  var m=n>>1, i;
+  for (i=0;i<m;i++){
+    dW[i]=dW[2*i]+dW[2*i+1];
+    px[i]=px[2*i+1]; py[i]=py[2*i+1];
+  }
+  n=m; dt*=2; coarse++;
+}
+
+function reset(){
+  n=0; dt=1/1600; coarse=0;
+  for (var i=0;i<300;i++) extend();      // a little history, so it opens on a curve
+}
+
+var sl=document.getElementById('k'), out=document.getElementById('ko'),
+    cap=document.getElementById('cap');
+
+// One scale for both axes. Fitting x and y to the frame separately would fill it better
+// and would be wrong: conformal invariance is the property that makes this what it is,
+// and a stretched SLE is not an SLE. The rule along the bottom is the real axis the
+// curve grows off, so the trace is anchored to it and any slack goes above.
+function draw(){
+  cx.fillStyle='rgb('+PLATE.join(',')+')'; cx.fillRect(0,0,S,S);
+  cx.fillStyle='rgb('+RULE.join(',')+')'; cx.fillRect(0,S-2,S,2);
+  if (n<2) return;
+  var x0=px[0], x1=px[0], y1=py[0], i;
+  for (i=0;i<n;i++){
+    if (px[i]<x0) x0=px[i];
+    if (px[i]>x1) x1=px[i];
+    if (py[i]>y1) y1=py[i];
+  }
+  var pad=(x1-x0)*0.06+1e-9;
+  x0-=pad; x1+=pad; y1*=1.06;
+  var sc=Math.min((S-8)/(x1-x0), (S-12)/y1);
+  var ox=(S-(x1-x0)*sc)/2;
+  cx.lineWidth=1.9; cx.lineJoin='round'; cx.lineCap='round';
+  for (i=1;i<n;i++){
+    var c=ramp(i/(n-1));
+    cx.strokeStyle='rgb('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+')';
+    cx.beginPath();
+    cx.moveTo(ox+(px[i-1]-x0)*sc, (S-4)-py[i-1]*sc);
+    cx.lineTo(ox+(px[i]-x0)*sc,   (S-4)-py[i]*sc);
+    cx.stroke();
+  }
+}
+
+// Where each one turns up, rather than what it is called. The middle of the range is
+// where nature is; the two ends are where the proofs are.
+function named(k){
+  if (Math.abs(k-2)<0.12)   return ['&kappa; = 2', 'a river through its basin'];
+  if (Math.abs(k-8/3)<0.12) return ['&kappa; = 8/3', 'a polymer in a monolayer'];
+  if (Math.abs(k-3)<0.12)   return ['&kappa; = 3', 'domain walls in a thin magnet'];
+  if (Math.abs(k-4)<0.12)   return ['&kappa; = 4', 'contours of a rough crystal surface'];
+  if (Math.abs(k-6)<0.12)   return ['&kappa; = 6', 'porous rock, epidemics, fire through a canopy'];
+  if (Math.abs(k-8)<0.15)   return ['&kappa; = 8', 'the whole drainage basin'];
+  return null;
+}
+function say(){
+  var nm=named(kap);
+  cap.innerHTML = nm ? '<b>'+nm[0]+'</b> &middot; '+nm[1]
+                     : 'A curve nobody has found outdoors yet.';
+  cap.classList.toggle('crit', !!nm);
+}
+sl.addEventListener('input',function(){
+  kap=parseFloat(this.value); out.textContent=kap.toFixed(2);
+  say();
+});
+say(); reset();
+
+// Reduced motion still gets a curve, and gets it with the growth paid off screen: the
+// same loop, run once before the only paint, and then nothing moves.
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function frame(){ for (var i=0;i<3;i++) extend(); draw(); requestAnimationFrame(frame); }
+if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
+"""
+
+# The 23rem column on Research. Same shape as ISING_PLATE and GS_PLATE: canvas, the one
+# fader, the caption. The caption is the whole label, so the plate carries no figcaption.
+SLE_PLATE = """    <div class="viz">
+      <canvas id="sle" aria-label="An SLE trace growing without end"></canvas>
+      <div class="ctrl">
+        <label for="k">&kappa;</label>
+        <input id="k" type="range" min="0.4" max="8.6" step="0.05" value="6">
+        <output id="ko">6.00</output>
+      </div>
+      <p class="note" id="cap"></p>
+    </div>"""
+
+
 RESEARCH_LEDE = """
       <p class="lede">I work on cultural evolution online, where much of the selection
       now runs through ranking functions, which are selectors somebody wrote down. The methods are complex systems and
@@ -945,7 +1113,8 @@ if __name__ == '__main__':
         ('index.html', render('index.html', 'Tim Booker', home, ISING_JS)),
         ('home.html', render('home.html', 'Tim Booker', home, ISING_JS)),
         ('research.html', render('research.html', 'Research &mdash; Tim Booker',
-                                 hero('Research') + research_body())),
+                                 hero('Research', SLE_PLATE) + research_body(),
+                                 SLE_JS)),
         ('freelancing.html', render('freelancing.html', 'Freelancing &mdash; Tim Booker',
                                     hero('Freelancing', GS_PLATE) +
                                     FREELANCING.replace('__OFFERS__', offer_rows())
