@@ -632,6 +632,190 @@ def offer_rows():
     return '\n'.join(out)
 
 
+GRAY_SCOTT_JS = r"""
+// ---- Gray-Scott reaction-diffusion ------------------------------------------
+// Two chemicals in an open dish. U + 2V -> 3V, so V turns U into more of itself,
+// U is fed in from outside at rate F, and everything is drained at rate k.
+//   a' = a + Da*lap(a) - a*b^2 + F*(1-a)
+//   b' = b + Db*lap(b) + a*b^2 - (F+k)*b
+// Da is twice Db. V cannot spread as fast as the U it needs, so a front cannot
+// smooth itself out, and that difference in the two diffusion rates is the whole
+// reason there is structure here rather than a uniform soup.
+var N = 216, L = N*N;              // the Ising plate's grid, one cell per screen block
+var DA = 1.0, DB = 0.5;
+
+// k is fixed and F is the only control, so k has to be the value that keeps the whole
+// fader worth moving. Swept over the (F, k) plane at this resolution: below about
+// 0.058 the plate saturates to a uniform field of V across the top of the F range and
+// there is nothing left to look at, and above about 0.064 the band that supports any
+// pattern narrows to a sliver. At 0.062 a seed takes anywhere in F = 0.028..0.065, an
+// established pattern survives down to about F = 0.020, and the fader crosses four
+// structures on the way: spots, worms, labyrinth, coarse cells.
+var K = 0.062;
+var F = 0.045;
+
+var ga = new Float32Array(L), gb = new Float32Array(L),
+    ga2 = new Float32Array(L), gb2 = new Float32Array(L);
+
+var cv = document.getElementById('gs');
+cv.width = N; cv.height = N;
+var ctx = cv.getContext('2d'), img = ctx.createImageData(N, N);
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// Bare medium takes the field colour and V is knocked out of it: the same two-colour
+// ramp, the same way round, as the lattice on the front page.
+var ON = hex(css('--lat-on')), OFF = hex(css('--lat-off'));
+
+// The only thing that ever puts V into the dish. 24 patches rather than a handful,
+// because on a grid this size a handful leaves the plate bare for twenty seconds.
+function seed(){
+  for (var j=0;j<24;j++){
+    var cx=(Math.random()*N)|0, cy=(Math.random()*N)|0;
+    for (var y=-3;y<=3;y++) for (var x=-3;x<=3;x++){
+      var i=((cy+y+N)%N)*N + ((cx+x+N)%N);
+      ga[i]=0.5+0.02*(Math.random()-0.5);
+      gb[i]=0.25+0.02*(Math.random()-0.5);
+    }
+  }
+}
+
+// Nine-point Laplacian: 0.2 on the orthogonals, 0.05 on the diagonals, -1 at the
+// centre. The weights sum to zero, so a flat field stays flat. F is read here on every
+// step, which is why moving the fader changes the chemistry under the pattern that is
+// already there instead of starting a new one.
+function step(){
+  for (var y=0;y<N;y++){
+    var yu=((y-1+N)%N)*N, yd=((y+1)%N)*N, y0=y*N;
+    for (var x=0;x<N;x++){
+      var xl=(x-1+N)%N, xr=(x+1)%N, i=y0+x;
+      var la = 0.2*(ga[y0+xl]+ga[y0+xr]+ga[yu+x]+ga[yd+x])
+             + 0.05*(ga[yu+xl]+ga[yu+xr]+ga[yd+xl]+ga[yd+xr]) - ga[i];
+      var lb = 0.2*(gb[y0+xl]+gb[y0+xr]+gb[yu+x]+gb[yd+x])
+             + 0.05*(gb[yu+xl]+gb[yu+xr]+gb[yd+xl]+gb[yd+xr]) - gb[i];
+      var a=ga[i], b=gb[i], abb=a*b*b;
+      var na=a + DA*la - abb + F*(1-a);
+      var nb=b + DB*lb + abb - (F+K)*b;
+      ga2[i]= na<0?0 : na>1?1 : na;
+      gb2[i]= nb<0?0 : nb>1?1 : nb;
+    }
+  }
+  var t;
+  t=ga; ga=ga2; ga2=t;
+  t=gb; gb=gb2; gb2=t;
+}
+
+function paint(){
+  var d = img.data;
+  for (var i=0;i<L;i++){
+    var t = gb[i]*2.6; if (t>1) t=1;
+    d[i*4]   = ON[0]+(OFF[0]-ON[0])*t;
+    d[i*4+1] = ON[1]+(OFF[1]-ON[1])*t;
+    d[i*4+2] = ON[2]+(OFF[2]-ON[2])*t;
+    d[i*4+3] = 255;
+  }
+  ctx.putImageData(img,0,0);
+}
+
+// How much V is left, sampled on every seventh cell. It is only ever compared with a
+// threshold and never shown, because a readout of it is not what the plate is for.
+function live(){
+  var s=0;
+  for (var i=0;i<L;i+=7) s+=gb[i];
+  return s*7/L;
+}
+
+var GONE = 0.0008;
+var slider = document.getElementById('feed'), out = document.getElementById('fout'),
+    cap = document.getElementById('gcap');
+
+// b = 0 everywhere is an exact fixed point of the second equation at every F, so a
+// starved dish cannot restart itself and no fader position will do it either. Seeding
+// is the only way back, and it waits out two continuous seconds of death first, on the
+// clock rather than in frames, so a slow machine waits the same two seconds.
+var WAIT = 2000, deadAt = 0, seededAt = -1e9;
+
+// The boundaries are where the behaviour changes, not round numbers: below 0.028 no
+// seeded pattern establishes and a pattern dragged down from above only thins, and
+// above 0.055 the structure closes up and the bare medium is what is left over.
+function regime(){
+  if (F < 0.028) return 'Starving. Less U arrives than V consumes, so the structure '
+    + 'thins rather than settling into a calmer one, and it will not stop thinning.';
+  if (F < 0.042) return 'Fed thinly. A front advances only where U has had time to '
+    + 'diffuse back in, so the structure breaks into worms and into spots that divide '
+    + 'as they grow.';
+  if (F < 0.055) return 'Well fed. Every front is supplied from behind, so the '
+    + 'structure holds its width and wanders, neither filling the dish nor retreating '
+    + 'from it.';
+  return 'Fed hard. U is replaced almost as fast as V takes it, so the fronts close on '
+    + 'one another and bare medium survives only in the gaps between them.';
+}
+
+function say(){
+  var t = performance.now(), dead = !!deadAt, text;
+  // the seeding line holds for a moment even if the dish dies again straight away,
+  // which at F = 0 it does
+  if (t - seededAt < 1200)
+    text = 'Seeded again from outside, after two seconds bare. Nothing inside the dish '
+         + 'could have done it.';
+  else if (dead)
+    text = 'Bare medium. Making V takes V, and there is none left, so this state is '
+         + 'absorbing: no value of F recovers it. Only seeding it from outside will.';
+  else
+    text = regime();
+  if (cap.textContent !== text) cap.textContent = text;
+  if (cap.classList.contains('crit') !== dead) cap.classList.toggle('crit', dead);
+}
+
+slider.addEventListener('input', function(){
+  F = parseFloat(this.value);
+  out.textContent = F.toFixed(3);
+  say();
+});
+
+// The dish starts full of U and empty of V, which is the state a starved one decays
+// back towards. Reseeding after that only drops the patches in; it does not reset U,
+// because the medium is still there and only V ever went missing.
+ga.fill(1); gb.fill(0);
+seed();
+out.textContent = F.toFixed(3);
+
+// Opening on a plate that is still mostly bare would be opening on the seed rather
+// than on the chemistry, so the first 1200 steps are paid before the first paint. The
+// same cost buys the single frame in the reduced-motion case.
+for (var w=0;w<1200;w++) step();
+paint();
+say();
+
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  (function loop(){
+    for (var s=0;s<6;s++) step();
+    paint();
+    var t = performance.now();
+    if (live() >= GONE) deadAt = 0;
+    else if (!deadAt) deadAt = t;
+    else if (t - deadAt >= WAIT){ seed(); deadAt = 0; seededAt = t; }
+    say();
+    requestAnimationFrame(loop);
+  })();
+}
+"""
+# The 23rem column on Freelancing. Same shape as ISING_PLATE: canvas, the one fader,
+# the caption that says what the chemistry is doing.
+GS_PLATE = """    <div class="viz">
+      <canvas id="gs" aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
+      <div class="ctrl">
+        <label for="feed">Feed F</label>
+        <input id="feed" type="range" min="0" max="0.065" step="0.001" value="0.045">
+        <output id="fout">0.045</output>
+      </div>
+      <p class="note" id="gcap"></p>
+    </div>"""
+
+
 FREELANCING = """
   <div class="body">
     <div class="prose">
@@ -763,10 +947,10 @@ if __name__ == '__main__':
         ('research.html', render('research.html', 'Research &mdash; Tim Booker',
                                  hero('Research') + research_body())),
         ('freelancing.html', render('freelancing.html', 'Freelancing &mdash; Tim Booker',
-                                    hero('Freelancing') +
+                                    hero('Freelancing', GS_PLATE) +
                                     FREELANCING.replace('__OFFERS__', offer_rows())
                                                .replace('__UNI__', UNI),
-                                    desc=FREELANCE_DESC)),
+                                    GRAY_SCOTT_JS, desc=FREELANCE_DESC)),
         ('about.html', render('about.html', 'About &mdash; Tim Booker',
                               hero('About') + ABOUT)),
         ('contact.html', render('contact.html', 'Contact &mdash; Tim Booker',
