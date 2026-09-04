@@ -2,9 +2,10 @@
 
 Supersedes home.py, which built the home page alone. Edit this file, not the .html.
 
-The label is the identity. On home it is the full Blue Note label: name, data stack,
-personnel credits, nav. On every other page it compresses to a band across the top
-carrying the same furniture at a smaller size. Same ink, same grain, less of it.
+The label is the identity, and every page opens on it: the full Blue Note label, name,
+data stack, personnel credits, nav. Beside it sits a 23rem column for a live model.
+Where a page has no model yet, the hero goes to one column and the label runs the full
+width, so there is no empty field waiting to be filled.
 """
 import io
 
@@ -52,22 +53,26 @@ a{color:inherit}
 .link:hover{border-bottom-color:var(--accent)}
 .wrap{max-width:72rem; margin:0 auto; padding:2rem 2rem 6rem}
 .hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
+/* no model on this page yet: one column, label full width. Holding the 23rem open and
+   empty reads as a missing thing, and a big empty field is a failure, not a minimum. */
+.hero.solo{grid-template-columns:minmax(0,1fr)}
 
 /* ---- the label: blue field, white knocked out, hierarchy by weight ---- */
-.label, .band{
+/* the same object on every page; the nav says which page you are on, so nothing
+   on the label repeats it */
+.label{
   background:var(--fill); color:var(--on-fill);
   position:relative; isolation:isolate;
+  padding:2.25rem 2.5rem 2rem; display:flex; flex-direction:column;
 }
-.label{padding:2.25rem 2.5rem 2rem; display:flex; flex-direction:column}
-.band{padding:1.5rem 2.5rem 1.1rem}
-.label::before, .label::after, .band::before, .band::after{
+.label::before, .label::after{
   content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
   background-image:url("__FINE__"), url("__MOTTLE__");
   background-size:200px 200px, 620px 620px;
 }
-.label::before, .band::before{ mix-blend-mode:screen;   opacity:.16; }
-.label::after,  .band::after{  mix-blend-mode:multiply; opacity:.30; }
-.label > *, .band > *{position:relative; z-index:1}
+.label::before{ mix-blend-mode:screen;   opacity:.16; }
+.label::after{  mix-blend-mode:multiply; opacity:.30; }
+.label > *{position:relative; z-index:1}
 .title{font-size:2.25rem; font-weight:700; letter-spacing:-.025em; line-height:1.05}
 .stack{margin-top:1.4rem; font-size:.8125rem; line-height:1.5}
 .stack b{font-weight:700; font-size:.9375rem}
@@ -80,20 +85,14 @@ a{color:inherit}
 .credits b{font-weight:700}
 /* a personnel list breaks between credits, never inside one */
 .credits i{font-style:normal; white-space:nowrap}
-.label nav, .band nav{
+.label nav{
   display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center;
   font-size:.6875rem; letter-spacing:.16em; text-transform:uppercase;
+  margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid rgba(246,246,248,.3);
 }
-.label nav{margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid rgba(246,246,248,.3)}
-.band nav{margin-top:1.1rem; padding-top:.9rem; border-top:1px solid rgba(246,246,248,.3)}
-.label nav a, .band nav a{text-decoration:none; opacity:.75}
-.label nav a:hover, .band nav a:hover{opacity:1}
-.label nav a[aria-current], .band nav a[aria-current]{opacity:1; box-shadow:inset 0 -2px 0 currentColor}
-
-/* the compressed label: the nav says which page you are on, so nothing repeats it */
-.band .nm{font-size:1.5rem; font-weight:700; letter-spacing:-.022em; line-height:1}
-.band .nm a{text-decoration:none}
-.band .sub{margin-top:.45rem; font-size:.75rem; opacity:.85}
+.label nav a{text-decoration:none; opacity:.75}
+.label nav a:hover{opacity:1}
+.label nav a[aria-current]{opacity:1; box-shadow:inset 0 -2px 0 currentColor}
 
 /* ---- the toy ---- */
 .viz{display:flex; flex-direction:column; gap:.6rem}
@@ -220,7 +219,6 @@ footer p.llms{white-space:nowrap; max-width:none}
   .wrap{padding:1.25rem 1.25rem 4rem}
   .hero{grid-template-columns:minmax(0,1fr)}
   .label{padding:1.75rem 1.5rem}
-  .band{padding:1.25rem 1.5rem 1rem}
   .title{font-size:1.875rem}
   .rows{grid-template-columns:minmax(0,1fr); gap:0}
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}

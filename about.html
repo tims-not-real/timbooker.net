@@ -40,22 +40,26 @@ a{color:inherit}
 .link:hover{border-bottom-color:var(--accent)}
 .wrap{max-width:72rem; margin:0 auto; padding:2rem 2rem 6rem}
 .hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
+/* no model on this page yet: one column, label full width. Holding the 23rem open and
+   empty reads as a missing thing, and a big empty field is a failure, not a minimum. */
+.hero.solo{grid-template-columns:minmax(0,1fr)}
 
 /* ---- the label: blue field, white knocked out, hierarchy by weight ---- */
-.label, .band{
+/* the same object on every page; the nav says which page you are on, so nothing
+   on the label repeats it */
+.label{
   background:var(--fill); color:var(--on-fill);
   position:relative; isolation:isolate;
+  padding:2.25rem 2.5rem 2rem; display:flex; flex-direction:column;
 }
-.label{padding:2.25rem 2.5rem 2rem; display:flex; flex-direction:column}
-.band{padding:1.5rem 2.5rem 1.1rem}
-.label::before, .label::after, .band::before, .band::after{
+.label::before, .label::after{
   content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:200px 200px, 620px 620px;
 }
-.label::before, .band::before{ mix-blend-mode:screen;   opacity:.16; }
-.label::after,  .band::after{  mix-blend-mode:multiply; opacity:.30; }
-.label > *, .band > *{position:relative; z-index:1}
+.label::before{ mix-blend-mode:screen;   opacity:.16; }
+.label::after{  mix-blend-mode:multiply; opacity:.30; }
+.label > *{position:relative; z-index:1}
 .title{font-size:2.25rem; font-weight:700; letter-spacing:-.025em; line-height:1.05}
 .stack{margin-top:1.4rem; font-size:.8125rem; line-height:1.5}
 .stack b{font-weight:700; font-size:.9375rem}
@@ -68,20 +72,14 @@ a{color:inherit}
 .credits b{font-weight:700}
 /* a personnel list breaks between credits, never inside one */
 .credits i{font-style:normal; white-space:nowrap}
-.label nav, .band nav{
+.label nav{
   display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center;
   font-size:.6875rem; letter-spacing:.16em; text-transform:uppercase;
+  margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid rgba(246,246,248,.3);
 }
-.label nav{margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid rgba(246,246,248,.3)}
-.band nav{margin-top:1.1rem; padding-top:.9rem; border-top:1px solid rgba(246,246,248,.3)}
-.label nav a, .band nav a{text-decoration:none; opacity:.75}
-.label nav a:hover, .band nav a:hover{opacity:1}
-.label nav a[aria-current], .band nav a[aria-current]{opacity:1; box-shadow:inset 0 -2px 0 currentColor}
-
-/* the compressed label: the nav says which page you are on, so nothing repeats it */
-.band .nm{font-size:1.5rem; font-weight:700; letter-spacing:-.022em; line-height:1}
-.band .nm a{text-decoration:none}
-.band .sub{margin-top:.45rem; font-size:.75rem; opacity:.85}
+.label nav a{text-decoration:none; opacity:.75}
+.label nav a:hover{opacity:1}
+.label nav a[aria-current]{opacity:1; box-shadow:inset 0 -2px 0 currentColor}
 
 /* ---- the toy ---- */
 .viz{display:flex; flex-direction:column; gap:.6rem}
@@ -208,7 +206,6 @@ footer p.llms{white-space:nowrap; max-width:none}
   .wrap{padding:1.25rem 1.25rem 4rem}
   .hero{grid-template-columns:minmax(0,1fr)}
   .label{padding:1.75rem 1.5rem}
-  .band{padding:1.25rem 1.5rem 1rem}
   .title{font-size:1.875rem}
   .rows{grid-template-columns:minmax(0,1fr); gap:0}
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}
@@ -220,11 +217,27 @@ footer p.llms{white-space:nowrap; max-width:none}
 </head>
 <body>
 <div class="wrap">
-<header class="band">
-  <div class="nm"><a href="home.html">Tim Booker</a></div>
-  <div class="sub">Complex systems scientist &middot; University of Graz</div>
-  <nav><a href="home.html">Home</a><a href="research.html">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html" aria-current="page">About</a><a href="contact.html">Contact</a></nav>
-</header>
+
+  <div class="hero solo">
+    <div class="label">
+      <h1 class="title">Tim Booker</h1>
+      <div class="stack">
+        Complex systems scientist<br>
+        <b>University of Graz</b><br>
+        <span class="sm"><a href="https://cs2.uni-graz.at/">Complex Social &amp; Computational Systems</a></span>
+        <div class="gap"></div>
+        <span class="sm">Computational social science,<br>alternative social media</span><br>
+        <span class="sm">tim.booker@uni-graz.at</span>
+      </div>
+      <div class="credits">
+        <b>Currently.</b> <i>Evolution of online discourse</i> ;
+        <i>population-level belief structure</i> ; <i>ranking as selection pressure</i> ;
+        <i>emergence of reasoning in language models</i>.
+      </div>
+      <nav><a href="home.html">Home</a><a href="research.html">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html" aria-current="page">About</a><a href="contact.html">Contact</a></nav>
+    </div>
+  </div>
+
   <div class="body">
     <div class="prose">
       <p>Platforms rank for engagement, and a ranking function is a selector with an
