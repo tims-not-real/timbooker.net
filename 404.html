@@ -152,6 +152,9 @@ a{color:inherit}
 /* the one-line-each block: catalogue furniture, one row per thing */
 .rows{display:grid; grid-template-columns:9.5rem 1fr; margin-top:2.75rem;
       border-top:1px solid var(--rule)}
+/* stacked blocks: without this the closing rule and the next block's top rule sit
+   2.75rem apart and read as one table with a blank row, worst on mobile */
+.rows + .rows{border-top:0}
 /* the rule spans the column; the text sits inside it at a readable measure */
 .rows dd > span{display:block; max-width:62ch}
 .rows dt{
