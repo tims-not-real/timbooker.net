@@ -351,6 +351,186 @@ HOME_BODY = """
 
 # ============================================================ RESEARCH
 
+AXELROD_JS = r"""
+// ---- Axelrod's culture model, on a 72x72 torus ------------------------------
+// One rule, in two halves that feed each other: a site interacts with a neighbour in
+// proportion to what the two already share, and when they interact it takes one trait
+// it does not have. Similarity breeds interaction and interaction breeds similarity,
+// so the dish sorts itself into regions. Where a pair shares nothing there is no
+// channel at all, and that border can never be crossed.
+//
+// 72, not the Ising's 216. Measured at 216: the lattice carries twelve to thirty-three
+// thousand distinct cultures with the largest region under half a percent of the dish,
+// so there is nothing to draw. At 72 it holds a few dozen, the largest a fifth.
+var N = 72, F = 5, NL = N*N;    // F features, q traits each, packed 6 bits apiece
+var cult = new Int32Array(NL);
+
+// how many of the five features two packed cultures agree on, given their XOR
+function ov(x){
+  var c = 0;
+  for (var f=0; f<F; f++) if (((x >> (6*f)) & 63) === 0) c++;
+  return c;
+}
+function build(q){
+  for (var i=0;i<NL;i++){
+    var v = 0;
+    for (var f=0;f<F;f++) v |= ((Math.random()*q)|0) << (6*f);
+    cult[i] = v;
+  }
+}
+function rounds(n){
+  for (var k=0;k<n;k++){
+    var i = (Math.random()*NL)|0, x = i%N, y = (i/N)|0, d = (Math.random()*4)|0;
+    var j = d===0 ? y*N + ((x+1)%N)
+          : d===1 ? y*N + ((x-1+N)%N)
+          : d===2 ? ((y+1)%N)*N + x
+          :         ((y-1+N)%N)*N + x;
+    var same = ov(cult[i]^cult[j]);
+    if (same===F || same===0) continue;      // identical already, or nothing in common
+    if (Math.random()*F < same){             // interact in proportion to the overlap
+      var pick, a, b;
+      do { pick = (Math.random()*F)|0;
+           a = (cult[i]>>(6*pick))&63; b = (cult[j]>>(6*pick))&63; } while (a===b);
+      cult[i] = (cult[i] & ~(63<<(6*pick))) | (b<<(6*pick));
+    }
+  }
+}
+// A bond is live if the pair shares something but not everything. With none left the
+// lattice is absorbing and nothing in it can change again. The scan leaves on the first
+// live bond it meets, so it costs almost nothing until the answer is yes.
+function absorbed(){
+  for (var y=0;y<N;y++) for (var x=0;x<N;x++){
+    var i = y*N+x;
+    var r = ov(cult[i] ^ cult[y*N + ((x+1)%N)]);
+    if (r>0 && r<F) return false;
+    var dn = ov(cult[i] ^ cult[((y+1)%N)*N + x]);
+    if (dn>0 && dn<F) return false;
+  }
+  return true;
+}
+// Does one culture hold more than half the dish? Boyer-Moore: one pass for the
+// candidate, one to count it, no allocation. Below the fragmentation threshold a
+// majority always goes on to take everything, so this is where the run is decided
+// and the remaining tens of thousands of rounds only tidy up.
+function taken(){
+  var c = 0, k = 0, i;
+  for (i=0;i<NL;i++){ if (c===0){ k = cult[i]; c = 1; } else c += cult[i]===k ? 1 : -1; }
+  for (i=0, c=0; i<NL; i++) if (cult[i]===k) c++;
+  return c*2 > NL;
+}
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// Three anchors, blue through grey to white. Two put every culture on one periwinkle
+// ramp and the territories washed together; the grey between them is what tells one
+// region from the next, and it is the ground family rather than a second accent.
+// Sampled once into 256 steps: there is one colour scheme, so the tokens never move.
+var RAMP = new Uint8Array(768);
+(function(){
+  var lo = hex(css('--lat-on')), mid = hex(css('--lat-mid')), hi = hex(css('--lat-off'));
+  for (var s=0;s<256;s++){
+    var t = s/255, a = t<0.5 ? lo : mid, b = t<0.5 ? mid : hi, u = t<0.5 ? t*2 : t*2-1;
+    for (var c=0;c<3;c++) RAMP[s*3+c] = a[c] + (b[c]-a[c])*u;
+  }
+})();
+// The ink hashes the whole culture vector, so two cultures alike in four features out
+// of five still land on unrelated inks and a border reads as a change of colour rather
+// than a change of shade.
+function ink(v){
+  var h = 0;
+  for (var f=0;f<F;f++) h = (h*31 + ((v>>(6*f))&63))|0;
+  return (((h % 997) + 997) % 997) * 256 / 997 | 0;
+}
+
+var cv = document.getElementById('ax');
+cv.width = N; cv.height = N;
+var ctx = cv.getContext('2d'), img = ctx.createImageData(N,N), px = img.data;
+function paint(){
+  for (var i=0;i<NL;i++){
+    var s = ink(cult[i])*3;
+    px[i*4] = RAMP[s]; px[i*4+1] = RAMP[s+1]; px[i*4+2] = RAMP[s+2]; px[i*4+3] = 255;
+  }
+  ctx.putImageData(img,0,0);
+}
+
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var slider = document.getElementById('traits'), out = document.getElementById('qout');
+var cap = document.getElementById('axcap'), viz = document.querySelector('.viz');
+var Q = 0, over = false, frozen = false, held = 0;
+// q is the size of the trait pool the cultures are drawn from, so it only means
+// anything at the draw. Raising it under a running dish would add traits nobody holds
+// and nobody could ever reach, so the fader draws a new dish, and says so.
+var MIXES = ' The fader mixes a new dish: the pool is fixed at the start.';
+var AGAIN = reduce ? '' : ' Another dish follows.';
+// Every caption has to fit the three lines the note reserves. A fourth line makes the
+// plate taller than the label and the page under it moves.
+function say(){
+  cap.textContent = over
+    ? (frozen
+        ? 'Frozen. Every neighbouring pair now shares all of its culture or none of it, so the borders that are left can never be crossed again.'
+        : 'One culture now holds half the dish and the rest will follow it, though every interaction that brought it there was between neighbours.'
+      ) + AGAIN
+    : (Q <= 8
+        ? 'Few traits, so neighbours almost always have something in common and the dish converges.'
+        : Q <= 25
+          ? 'Regions grow by absorbing what resembles them. Where a pair shares nothing, nothing crosses.'
+          : 'Most neighbours share nothing from the first round, so the dish freezes much as it began.'
+      ) + MIXES;
+  cap.classList.toggle('crit', over);
+  viz.classList.toggle('crit-on', over);
+}
+// Both endings are real ends: absorbing, or decided. Say which, then hold it.
+function check(){
+  if (over) return;
+  if (absorbed()) { over = true; frozen = true; }
+  else if (taken()) { over = true; frozen = false; }
+  if (over) { held = 0; say(); }
+}
+function setQ(q){
+  Q = q; out.textContent = q; over = false;
+  build(q); say(); paint();
+}
+slider.addEventListener('input', function(){ setQ(parseInt(this.value,10)); });
+// Dragging only redraws, which is cheap. On release the new dish gets a burst, so
+// letting go lands on something with structure in it rather than on noise: a short one
+// where the loop is there to carry on, the whole warm-up where it is not.
+slider.addEventListener('change', function(){
+  rounds(reduce ? WARM : NUDGE); check(); paint();
+});
+
+// Absorption is slow, and that is the honest part. Unlike the 216 lattice this one is
+// going somewhere the whole way and looks like something on the journey: fine mottle
+// first, then regions, then coastlines. WARM buys the first paint a head start
+// off-screen, the way the Ising equilibrates before it opens, and the loop runs at one
+// constant slow rate from there. A model with an absorbing state has nothing to show
+// once it arrives, so when this dish is done it says so, holds, and another is drawn.
+var WARM = NL*3000, NUDGE = NL*1000, PER_FRAME = NL*10, HOLD = 240;
+setQ(20);
+rounds(WARM); check(); paint();
+if (!reduce) (function loop(){
+  if (over){
+    if (++held >= HOLD) setQ(Q);
+  } else {
+    rounds(PER_FRAME); paint(); check();
+  }
+  requestAnimationFrame(loop);
+})();
+"""
+
+AXELROD_PLATE = """    <div class="viz">
+      <canvas id="ax" aria-label="An Axelrod culture lattice, q traits to a feature"></canvas>
+      <div class="ctrl">
+        <label for="traits">Traits, q</label>
+        <input id="traits" type="range" min="2" max="32" step="1" value="20">
+        <output id="qout">20</output>
+      </div>
+      <p class="note" id="axcap"></p>
+    </div>"""
+
+
 RESEARCH_LEDE = """
       <p class="lede">I work on cultural evolution online, where much of the selection
       now runs through ranking functions, which are selectors somebody wrote down. The methods are complex systems and
@@ -945,7 +1125,8 @@ if __name__ == '__main__':
         ('index.html', render('index.html', 'Tim Booker', home, ISING_JS)),
         ('home.html', render('home.html', 'Tim Booker', home, ISING_JS)),
         ('research.html', render('research.html', 'Research &mdash; Tim Booker',
-                                 hero('Research') + research_body())),
+                                 hero('Research', AXELROD_PLATE) + research_body(),
+                                 AXELROD_JS)),
         ('freelancing.html', render('freelancing.html', 'Freelancing &mdash; Tim Booker',
                                     hero('Freelancing', GS_PLATE) +
                                     FREELANCING.replace('__OFFERS__', offer_rows())
