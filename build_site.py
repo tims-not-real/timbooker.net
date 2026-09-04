@@ -70,13 +70,51 @@ def nav(current):
     return '<nav>' + ''.join(out) + '</nav>'
 
 
-def band(page):
-    """The label, compressed: name at the left, page name knocked out at the right."""
-    return """<header class="band">
-  <div class="nm"><a href="home.html">Tim Booker</a></div>
-  <div class="sub">Complex systems scientist &middot; University of Graz</div>
-  %s
-</header>""" % nav(page)
+LABEL = """
+  <div class="hero%s">
+    <div class="label">
+      <h1 class="title">__NAME__</h1>
+      <div class="stack">
+        Complex systems scientist<br>
+        <b>University of Graz</b><br>
+        <span class="sm"><a href="__GROUP__">Complex Social &amp; Computational Systems</a></span>
+        <div class="gap"></div>
+        <span class="sm">Computational social science,<br>alternative social media</span><br>
+        <span class="sm">__UNI__</span>
+      </div>
+      <div class="credits">
+        <b>Currently.</b> <i>Evolution of online discourse</i> ;
+        <i>population-level belief structure</i> ; <i>ranking as selection pressure</i> ;
+        <i>emergence of reasoning in language models</i>.
+      </div>
+      %s
+    </div>
+"""
+
+
+def hero(page, plate=''):
+    """The full Blue Note label, the same object on every page.
+
+    The label says who this is, not where you are: it is the sleeve, and the sleeve
+    does not change between tracks. The nav marks the current page with aria-current,
+    which is the same logic the old band ran on, so nothing on the label repeats the
+    page name.
+
+    The wordmark takes you home from anywhere, which the band's did and which is a
+    reflex worth keeping. On home itself it stays plain text: a self-link is noise.
+    Either way it looks the same, so the name never reads as a piece of navigation.
+
+    `plate` is the 23rem right column: pass the markup for a live model and the hero
+    is two columns; pass nothing and the hero is one, with the label full width. A
+    page fills the column by handing this one argument a `<div class="viz">` block.
+    """
+    name = ('Tim Booker' if page == 'Home'
+            else '<a href="home.html">Tim Booker</a>')
+    return ((LABEL % ('' if plate else ' solo', nav(page)))
+            .replace('__NAME__', name)
+            .replace('__GROUP__', GROUP).replace('__UNI__', UNI)
+            + ('\n' + plate + '\n' if plate else '')
+            + '  </div>\n')
 
 
 SHELL = """<!DOCTYPE html>
@@ -286,27 +324,7 @@ def rows_block(rows):
             .replace('__UNI__', UNI))
 
 
-HOME = """
-  <div class="hero">
-    <div class="label">
-      <h1 class="title">Tim Booker</h1>
-      <div class="stack">
-        Complex systems scientist<br>
-        <b>University of Graz</b><br>
-        <span class="sm"><a href="__GROUP__">Complex Social &amp; Computational Systems</a></span>
-        <div class="gap"></div>
-        <span class="sm">Computational social science,<br>alternative social media</span><br>
-        <span class="sm">__UNI__</span>
-      </div>
-      <div class="credits">
-        <b>Currently.</b> <i>Evolution of online discourse</i> ;
-        <i>population-level belief structure</i> ; <i>ranking as selection pressure</i> ;
-        <i>emergence of reasoning in language models</i>.
-      </div>
-      __NAV__
-    </div>
-
-    <div class="viz">
+ISING_PLATE = """    <div class="viz">
       <canvas id="c0" aria-label="An Ising lattice at temperature T"></canvas>
       <div class="row">
         <figure><canvas id="c1"></canvas><figcaption>&divide;3</figcaption></figure>
@@ -319,9 +337,10 @@ HOME = """
         <output id="tout">0.20</output>
       </div>
       <p class="note" id="cap">Beautiful order</p>
-    </div>
-  </div>
+    </div>"""
 
+
+HOME_BODY = """
   <div class="body">
     <div class="prose">__INTRO__</div>
     __INTERESTS__
@@ -734,27 +753,26 @@ I'm happy to be reached out to by students, journalists, professionals, and rese
 # ============================================================ build
 
 if __name__ == '__main__':
-    home = (HOME.replace('__NAV__', nav('Home')).replace('__UNI__', UNI)
-                .replace('__GROUP__', GROUP)
-                .replace('__INTRO__', HOME_INTRO)
-                .replace('__INTERESTS__', rows_block(INTEREST_ROWS))
-                .replace('__ROWS__', rows_block(HOME_ROWS)))
+    home = (hero('Home', ISING_PLATE)
+            + HOME_BODY.replace('__INTRO__', HOME_INTRO)
+                       .replace('__INTERESTS__', rows_block(INTEREST_ROWS))
+                       .replace('__ROWS__', rows_block(HOME_ROWS)))
     written = [
         ('index.html', render('index.html', 'Tim Booker', home, ISING_JS)),
         ('home.html', render('home.html', 'Tim Booker', home, ISING_JS)),
         ('research.html', render('research.html', 'Research &mdash; Tim Booker',
-                                 band('Research') + research_body())),
+                                 hero('Research') + research_body())),
         ('freelancing.html', render('freelancing.html', 'Freelancing &mdash; Tim Booker',
-                                    band('Freelancing') +
+                                    hero('Freelancing') +
                                     FREELANCING.replace('__OFFERS__', offer_rows())
                                                .replace('__UNI__', UNI),
                                     desc=FREELANCE_DESC)),
         ('about.html', render('about.html', 'About &mdash; Tim Booker',
-                              band('About') + ABOUT)),
+                              hero('About') + ABOUT)),
         ('contact.html', render('contact.html', 'Contact &mdash; Tim Booker',
-                                band('Contact') + CONTACT)),
+                                hero('Contact') + CONTACT)),
         ('404.html', render('404.html', 'Not found &mdash; Tim Booker',
-                            band('404') + NOT_FOUND)),
+                            hero('404') + NOT_FOUND)),
     ]
     io.open('llms.txt', 'w', encoding='utf-8').write(LLMS)
     written.append(('llms.txt', len(LLMS)))
