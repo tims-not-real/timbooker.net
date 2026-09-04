@@ -73,7 +73,7 @@ def nav(current):
 LABEL = """
   <div class="hero%s">
     <div class="label">
-      <h1 class="title">Tim Booker</h1>
+      <h1 class="title">__NAME__</h1>
       <div class="stack">
         Complex systems scientist<br>
         <b>University of Graz</b><br>
@@ -100,11 +100,18 @@ def hero(page, plate=''):
     which is the same logic the old band ran on, so nothing on the label repeats the
     page name.
 
+    The wordmark takes you home from anywhere, which the band's did and which is a
+    reflex worth keeping. On home itself it stays plain text: a self-link is noise.
+    Either way it looks the same, so the name never reads as a piece of navigation.
+
     `plate` is the 23rem right column: pass the markup for a live model and the hero
     is two columns; pass nothing and the hero is one, with the label full width. A
     page fills the column by handing this one argument a `<div class="viz">` block.
     """
+    name = ('Tim Booker' if page == 'Home'
+            else '<a href="home.html">Tim Booker</a>')
     return ((LABEL % ('' if plate else ' solo', nav(page)))
+            .replace('__NAME__', name)
             .replace('__GROUP__', GROUP).replace('__UNI__', UNI)
             + ('\n' + plate + '\n' if plate else '')
             + '  </div>\n')
