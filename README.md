@@ -26,6 +26,11 @@ The site. Built by hand, no framework yet.
 
 home, research, freelancing, about, contact, 404, plus llms.txt.
 
+`index.html` and `home.html` are the same file and carry all five pages as states of one
+document, with a router that swaps between them and pushes the real path. The other files
+are one complete page each and are what everything without JavaScript sees. Both are
+written from the same copy, so there is nothing to keep in sync.
+
 ## Next
 
 Jekyll on GitHub Pages, so adding an entry is one markdown file. Not started.

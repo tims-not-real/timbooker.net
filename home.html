@@ -31,6 +31,9 @@
   --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+/* The page states are held in the document and shown one at a time, and .viz sets
+   its own display, which would otherwise win against the UA's [hidden] rule. */
+[hidden]{display:none !important}
 html{-webkit-text-size-adjust:100%}
 body{
   background:var(--bg); color:var(--fg); min-height:100vh;
@@ -271,6 +274,50 @@ footer p.llms{white-space:nowrap; max-width:none}
   }
 }
 
+/* ---- and moving between them inside one document ----
+   The rules above stay, because every page is still written as a complete standalone
+   document and a reader who arrives on one navigates out of it the cross-document way.
+   These take over only where the router is running, which is where `app` is set on the
+   root element by script. With no JavaScript the class is never set and nothing below
+   applies.
+
+   The root loses its name, so the document is not captured at all. Nothing is
+   snapshotted unless it is named, and the label is not named: it is not lifted out of
+   the page, not composited against a copy of itself and not re-laid-out. It is simply
+   still there, being the same element it was before the click. That is the whole of the
+   fix, and it is one declaration.
+
+   What is named is what actually differs between two pages: the plate in the right
+   column and the page body. Those two names are not here, because a name is not a free
+   declaration. Naming an element promotes it to a compositing layer of its own for as
+   long as the name is set, which takes its text off subpixel antialiasing — 78,785
+   pixels of the home page changed against the build before this one, every glyph in the
+   body outlined, and the same on every page read inside the app. So the router sets
+   those two names in script immediately before a swap and clears them at the end of it,
+   and at rest nothing on the page is named and nothing is promoted. */
+html.app{view-transition-name:none}
+html.app .label{view-transition-name:none}
+/* And the grain gives its name back, because the reason it was given one has gone. It
+   was named so that it would be lifted into the transition layer along with the label
+   and could still reach it. Here the label is not lifted at all, so the grain reaches it
+   by simply staying where it is. Named, with no root snapshot beneath it in that layer
+   to blend with, its overlay has nothing to work against and it lands as a flat grey
+   veil over the whole page: 29 of 255, measured, for the length of every swap. */
+html.app body::after{view-transition-name:none}
+/* The groups do not animate, and that is deliberate. A browser re-targets a group at
+   the live element on every frame, so an animating group interpolates from where the
+   element was towards wherever it is right now — and while the label's row is being
+   animated, "right now" is itself moving, so the body only ever reaches the product of
+   the two progressions and trails the label by up to 36px mid-swap. Measured, and the
+   reason the label's move looked wrong however it was eased.
+
+   Pinned, a group sits exactly on the live element, so the outgoing page and the
+   incoming one both travel with the layout and the label's bottom edge and the text
+   under it move as one thing. It also means a swap that changes the scroll position
+   does not slide: only the cross-fade is animated, which is all a cross-fade needs. */
+html.app::view-transition-group(page),
+html.app::view-transition-group(plate){animation:none}
+
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
 @media(max-width:880px){
@@ -307,24 +354,42 @@ footer p.llms{white-space:nowrap; max-width:none}
       </div>
       <nav><a href="home.html" aria-current="page">Home</a><a href="research.html">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>
     </div>
-
-    <div class="viz">
-      <canvas id="c0" aria-label="An Ising lattice at temperature T"></canvas>
-      <div class="row">
-        <figure><canvas id="c1"></canvas><figcaption>&divide;3</figcaption></figure>
-        <figure><canvas id="c2"></canvas><figcaption>&divide;9</figcaption></figure>
-        <figure><canvas id="c3"></canvas><figcaption>&divide;27</figcaption></figure>
+    <div class="plate">
+      <div class="viz" data-plate="home">
+        <canvas aria-label="An Ising lattice at temperature T"></canvas>
+        <div class="row">
+          <figure><canvas></canvas><figcaption>&divide;3</figcaption></figure>
+          <figure><canvas></canvas><figcaption>&divide;9</figcaption></figure>
+          <figure><canvas></canvas><figcaption>&divide;27</figcaption></figure>
+        </div>
+        <div class="ctrl">
+          <label for="temp">T / T<sub>c</sub></label>
+          <input id="temp" type="range" min="0.2" max="1.6" step="0.005" value="0.2">
+          <output>0.20</output>
+        </div>
+        <p class="note">Beautiful order</p>
       </div>
-      <div class="ctrl">
-        <label for="temp">T / T<sub>c</sub></label>
-        <input id="temp" type="range" min="0.2" max="1.6" step="0.005" value="0.2">
-        <output id="tout">0.20</output>
+      <div class="viz" data-plate="research" hidden>
+        <canvas aria-label="An SLE trace growing without end"></canvas>
+        <div class="ctrl">
+          <label for="k">&kappa;</label>
+          <input id="k" type="range" min="0.4" max="8.6" step="0.05" value="6">
+          <output>6.00</output>
+        </div>
+        <p class="note"></p>
       </div>
-      <p class="note" id="cap">Beautiful order</p>
+      <div class="viz" data-plate="freelancing" hidden>
+        <canvas aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
+        <div class="ctrl">
+          <label for="feed">Drive</label>
+          <input id="feed" type="range" min="0" max="1" step="0.002" value="0.62">
+          <output>0.62</output>
+        </div>
+        <p class="note"></p>
+      </div>
     </div>
   </div>
-
-  <div class="body">
+  <section class="body" data-page="home">
     <div class="prose">
 <p>Hi, I'm Tim. I'm a complex systems scientist with broad interests, but a thread that
 connects them all is cultural evolution, the process by which a culture accumulates
@@ -351,7 +416,199 @@ for.</p>
 <dt>Elsewhere.</dt><dd><span><a class="link" href="https://bsky.app/profile/timzyzz.bsky.social">Bluesky</a>. <a class="link" href="https://github.com/tims-not-real">GitHub</a>.</span></dd>
 <dt><a href="contact.html">Write to me.</a></dt><dd><span><a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>. Anyone can write to me, about anything.</span></dd>
 </dl>
-  </div>
+  </section>
+  <section class="body" data-page="research" hidden>
+    <div class="prose">
+
+      <p class="lede">I work on cultural evolution online, where much of the selection
+      now runs through ranking functions, which are selectors somebody wrote down. The methods are complex systems and
+      computational social science. The normative side is grounded in democratic theory,
+      since asking what a ranking function does to a population leads to asking what it
+      ought to do.</p>
+      <p>The constructs I measure are discourse quality, media framing, the structure of belief in
+      a population, and the effect of a ranking function on the people under it. The field
+      argues about these and rarely operationalises them, so I write the codebooks, run the
+      annotation, and report the agreement.</p>
+      <p>The same instruments point at language models. Part of the work is on models
+      directly, on when theory of mind appears over training and on how they handle
+      generics and default reasoning. Part is on populations of them, as a model system
+      for cultural evolution and as a platform on which the recommender can be
+      varied.</p>
+
+    </div>
+    <section class="grp first">
+      <h2>Current</h2>
+      <article class="entry">
+        <div><h3>Measuring the quality of political discourse on Reddit</h3><p>The framework is grounded in three traditions of democratic theory that disagree with each other: Habermas on rational deliberation, Mouffe on productive conflict, Young on inclusion. The theory constrains a 56-variable codebook, which in turn constrains the annotation and everything built on it. A stratified sample of about 75,000 comments across 653 subreddits gets annotated by language models and validated by hand.</p></div>
+        <div class="meta">2026<br>with seven coders validating</div>
+      </article>
+      <article class="entry">
+        <div><h3>How news frames the victims of conflict</h3><p>When a conflict kills people, some of them are named and some are counted, and some perpetrators are identified while others are left implicit. A newsroom is a selector with an objective, and we're testing whether those choices track the severity of the event or the geopolitical alignment of the outlet doing the reporting. The corpus is around 1.36 billion articles across ten years and many languages, matched to events and coded against a framing codebook. It's the largest thing I've worked on, and most of the difficulty is in matching articles to events.</p></div>
+        <div class="meta">2026<br>with collaborators at two institutions</div>
+      </article>
+      <article class="entry">
+        <div><h3>Does false-belief reasoning emerge the way it does in children?</h3><p>Children acquire the ability to reason about what someone else falsely believes along a fairly consistent developmental trajectory. Language models acquire it somewhere during training, but nobody has looked closely at the shape of that curve. We take 41 checkpoints across the training run of an open model and score false-belief tasks by contrasting teacher-forced log probabilities, so that we can watch the capability arrive. The predictions are registered before the runs.</p></div>
+        <div class="meta">2026<br>with collaborators in Graz, Zurich, and Genoa</div>
+      </article>
+      <article class="entry">
+        <div><h3>Simulating social media with language model agents</h3><p>If you want to know what a different recommender would do to a conversation, you can't run that experiment on a real platform, and no platform will run it for you. So we build the platform instead: a population of language model agents posting, reading, and responding under a recommender we control. Then we change the recommender. The interesting question, and the one that worries me most, is how much of any result is an artefact of the agents rather than a property of the ranking.</p></div>
+        <div class="meta">2026<br>part of DeSiRe</div>
+      </article>
+      <article class="entry">
+        <div><h3>Sandboxing cultural evolution with LLMs</h3><p>Cumulative culture is design that no individual worked out, accumulated through transmission, and it has no model system: transmission chains with people are too short for anything to accumulate, the historical record happened once, and formal models have control but no cognition. A population of language model agents is the first substrate with ideas and control at the same time, so we're building one on a hidden fitness landscape whose optimum we know. A rising fitness curve does not say where the design came from, since a population of agents each learning alone produces the same curve as one that is accumulating. So the contribution is the instrument: a detection battery that returns a verdict on whether the design in a run accumulated through transmission or was worked out by each agent alone, every test against a null fixed in advance, plus freeze-and-branch replay that cuts the peer channel mid-run to ask what it was worth, which is what Lenski's freezer does for a bacterial lineage. Theory and battery design are written; the code is landing now.</p></div>
+        <div class="meta">2026</div>
+      </article>
+      <article class="entry">
+        <div><h3>Belief networks, and how a population's attitudes hold together</h3><p>This uses decades of General Social Survey data to treat a population's attitudes as a network: beliefs are nodes, correlations between them are edges, and the shape of the whole thing shifts over time. The claim I most want to make is the conceptual one, that a population's belief correlation structure is a real object worth studying in its own right, since it is the environment that any new belief has to fit. Different sub-populations appear to have differently shaped structures, which would mean that liberals and conservatives differ in how their beliefs connect, as well as in which beliefs they hold.</p></div>
+        <div class="meta">2025&ndash;2026<br>with a co-author</div>
+      </article>
+      <article class="entry">
+        <div><h3>Does a model have a now?</h3><p>A collaboration in philosophy of language that began with how models handle generics and default reasoning, and has drifted towards temporal reasoning: whether a language model has any working sense of the present moment, and what it would mean to say that it did. This is at the reading and arguing stage. There is nothing to show yet.</p></div>
+        <div class="meta">early<br>with two philosophers</div>
+      </article>
+      <article class="entry">
+        <div><h3>Pulling knowledge graphs out of text</h3><p>Given an ontology and a pile of text, can a language model produce a knowledge graph you'd trust? This is a pipeline for finding out: extraction, then coverage checking, then entity normalisation, benchmarked against Text2KGBench and CS-KG-3600.</p></div>
+        <div class="meta">2026</div>
+      </article>
+      <article class="entry">
+        <div><h3>An opt-in alternative to the nation state</h3><p>A shared writing project about whether political membership has to be territorial, and what an opt-in polity, with coordination boundaries drawn around problems rather than borders, would require. It's philosophy, not measurement, which makes it a holiday from the rest of this.</p></div>
+        <div class="meta">2026</div>
+      </article>
+    </section>
+    <section class="grp">
+      <h2>Convening</h2>
+      <article class="entry">
+        <div><h3>What platforms are for</h3><p>Arguments about social media almost always skip the prior question of what a platform is for. I'm convening a working group to take that question seriously: three days in Berlin in December, hosted at the Max Planck Institute for Human Development. It is deliberately small and by invitation.</p></div>
+        <div class="meta">December 2026<br>Berlin</div>
+      </article>
+    </section>
+    <section class="grp">
+      <h2>Earlier</h2>
+      <article class="entry">
+        <div><h3>Timid walks and prudent walks</h3><p>Self-avoiding walks are paths on a lattice that never cross themselves. They are a decent model for polymer chains and a notoriously hard object to analyse. Certain restricted variants, timid walks and prudent walks, give up some generality in exchange for being tractable, and I spent my honours year on those under the supervision of Nathan Clisby. It is a long way from my current work, and it is where I learned to do research.</p></div>
+        <div class="meta">honours work<br>Swinburne</div>
+      </article>
+    </section>
+  </section>
+  <section class="body" data-page="freelancing" hidden>
+    <div class="prose">
+      <p class="lede">I take on contract and consulting work: recommender and ranking
+      design, data science on large or messy sources, measurement, and applied work with
+      language models.</p>
+    </div>
+
+    <dl class="rows">
+<dt>Recommender and ranking.</dt><dd><span>Designing one, or auditing one you already run to find out what its objective selects for.</span></dd>
+<dt>Measurement.</dt><dd><span>Construct definition, codebook development, human coding, and inter-rater agreement.</span></dd>
+<dt>LLM labelling at scale.</dt><dd><span>Classification and annotation across corpora too large to read, validated against human coders on a stratified sample.</span></dd>
+<dt>Data engineering.</dt><dd><span>Multilingual, malformed, and very large sources turned into something a team can query, entity resolution included.</span></dd>
+<dt>Knowledge graphs.</dt><dd><span>Ontology-driven extraction from text with entity normalisation and coverage checking, benchmarked against a public dataset.</span></dd>
+<dt>Matching and allocation.</dt><dd><span>Assignment and allocation problems solved to optimality, with a review interface so a person can overrule the result.</span></dd>
+<dt>Interpretability.</dt><dd><span>Mechanistic work on how a model arrives at its output, for when test-set performance isn't enough to justify a decision.</span></dd>
+</dl>
+
+    <section class="sec">
+      <div class="prose">
+        <p>Please contact me at <a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>.</p>
+      </div>
+    </section>
+  </section>
+  <section class="body" data-page="about" hidden>
+    <div class="prose">
+      <p>Platforms rank for engagement, and a ranking function is a selector with an
+      objective. It sets which ideas spread and which people rise, and because the
+      objective is the platform's, everything else it does is a side effect. Those side
+      effects reach into politics, into how people build a sense of themselves, and into
+      what they end up finding worth doing. Almost everything that matters here gets
+      asserted rather than measured, whether a conversation was any good,
+      whether a culture is accumulating anything, what a platform is for, how a
+      population's beliefs hang together. So a good deal of my time goes into building the
+      instruments that would let us settle those questions, because the interventions I
+      want to make depend on them.</p>
+
+      <p>My motivating belief is that better collective decision-making is possible. An
+      internet that avoids the harms and power imbalances of the current one would be a
+      start. I want a future in which the internet, and governance itself, are built to
+      help groups think and decide better than they ever have.</p>
+
+      <p>My current home is the Complex Social &amp; Computational Systems group at the
+      University of Graz, where I work with Prof. Jana Lasser on DeSiRe. I also convene a
+      working group on what social media platforms ought to be for, and take on
+      <a class="link" href="freelancing.html">freelance work</a>.</p>
+    </div>
+
+    <section class="sec">
+      <h2>Some lore</h2>
+      <div class="prose">
+        <p>I was born in Perth, Western Australia. I lived there until midway through high
+        school, when I dropped out and left home to live in Melbourne, Victoria.</p>
+
+        <p>While finishing my high school certificate, I found an interest in mathematical
+        beauty. I was captivated by how mathematical thinking could offer piercing ways to
+        understand the complexities of the world.</p>
+
+        <p>I self-studied mathematics using Khan Academy, and enrolled at whatever
+        university would accept a student with no prerequisites and a low graduating score
+        into a physics program. That happened to be Swinburne University of Technology.</p>
+
+        <p>During university I thrived. It was a place where I could chase my interests with
+        little restriction. I worked across optical fibre physics, hydroacoustics, and
+        social analytics, before realising theoretical work is where my interests reside.
+        Alongside this, I started to become more critical of the real world outside of
+        physics and mathematics, and I realised there are problems with society that are far
+        too frustrating and unfair to ignore. Complex systems was a natural path forward,
+        where I could satisfy this frustration, contribute my abilities in physics and
+        maths, and of course retain proximity to the mathematical beauty that still
+        captivates me.</p>
+
+        <p>I completed my honours degree at Swinburne University, Melbourne, studying
+        self-avoiding walk models under the supervision of Prof. Nathan Clisby. After that I
+        was a visiting scholar at GSAIS, Kyoto University (a.k.a. &#24605;&#20462;&#39208;),
+        studying the entropy of complex systems under the supervision of Prof. Liang
+        Zhao.</p>
+
+        <p>Then, as a PhD candidate at the Complexity Science Hub Vienna, I experienced and
+        witnessed supervisor abuse. Moving quickly to a genuine academic path without
+        cutting corners is something I'm proud of. This showed me academia's structural
+        flaws &mdash; how short-term junior roles stifle collective advocacy, how
+        institutions hold power over international students, and how incentives push rushed,
+        less rigorous work.</p>
+
+        <p>Outside of work, I'm very into philosophy, activism, and some specific subgenres of
+        techno.</p>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>If you went through something similar</h2>
+      <div class="prose">
+        <p>If you're dealing with something like what I went through in Vienna, my inbox is
+        always open: <a class="link" href="mailto:tim.book.RE@gmail.com">tim.book.RE@gmail.com</a>. I can't
+        promise solutions, but I can offer perspective, solidarity, and a listening ear.</p>
+      </div>
+    </section>
+  </section>
+  <section class="body" data-page="contact" hidden>
+    <div class="prose">
+      <p class="lede">Write to me about anything. Collaboration, a question about the
+      work, or a general argument about complex systems, platforms, and recommendation.</p>
+      <p>I'm happy to be reached out to by students, journalists, professionals, and
+      researchers. For contract and consulting work, see
+      <a class="link" href="freelancing.html">freelancing</a>.</p>
+    </div>
+
+    <dl class="rows">
+      <dt>Academic.</dt>
+      <dd><a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a></dd>
+      <dt>Personal.</dt>
+      <dd><a class="link" href="mailto:tim.book.RE@gmail.com">tim.book.RE@gmail.com</a></dd>
+      <dt>Bluesky.</dt>
+      <dd><a class="link" href="https://bsky.app/profile/timzyzz.bsky.social">@timzyzz.bsky.social</a></dd>
+      <dt>GitHub.</dt>
+      <dd><a class="link" href="https://github.com/tims-not-real">tims-not-real</a></dd>
+    </dl>
+
+  </section>
 
   <footer><p>I respectfully acknowledge the Traditional Owners of the land in which we work and learn, and pay respects to their elders, past, present and future.</p><p class="llms">For language models: <a href="/llms.txt">llms.txt</a></p></footer>
 </div>
@@ -382,9 +639,44 @@ for.</p>
 })();
 </script>
 <script>
+var TB = (function(){
+  var defs = {}, made = {}, cur = null, raf = 0, ticks = {};
+  function stop(){
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0; cur = null;
+  }
+  function mount(name){
+    if (made[name] || !defs[name]) return;
+    var el = document.querySelector('.viz[data-plate="' + name + '"]');
+    if (el) made[name] = defs[name](el);
+  }
+  function run(name){
+    stop();
+    mount(name);
+    var p = made[name];
+    if (!p) return;                    // this page has no plate, so nothing runs
+    cur = name;
+    raf = requestAnimationFrame(function loop(){
+      ticks[name] = (ticks[name] || 0) + 1;
+      if (p.tick() === false){ raf = 0; cur = null; return; }   // settled, and stops
+      raf = requestAnimationFrame(loop);
+    });
+  }
+  return {
+    define: function(name, fn){ defs[name] = fn; },
+    mount: mount, run: run, stop: stop,
+    // Four lines that make the claim checkable rather than asserted: which model is
+    // stepping, which have been built, and how many frames each of them has had.
+    ticks: ticks,
+    running: function(){ return cur; },
+    mounted: function(){ var k = []; for (var n in made) k.push(n); return k; }
+  };
+})();
+
 // ---- 2D Ising model, Metropolis, with block-spin renormalisation -------------
 // One rule: a site prefers to agree with its neighbours. Temperature fights that.
 // At Tc the coarse-grained lattices look like the original at every scale.
+TB.define('home', function(root){
 var N = 216;                       // 216 = 8*27, so /3 three times lands cleanly
 var TC = 2/Math.log(1+Math.SQRT2); // 2.269..., Onsager
 var spin = new Int8Array(N*N);
@@ -425,12 +717,8 @@ function hex(h){
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
 
-var canvases = [
-  [document.getElementById('c0'), N],
-  [document.getElementById('c1'), N/3],
-  [document.getElementById('c2'), N/9],
-  [document.getElementById('c3'), N/27]
-];
+var cvs = root.querySelectorAll('canvas');
+var canvases = [[cvs[0], N], [cvs[1], N/3], [cvs[2], N/9], [cvs[3], N/27]];
 canvases.forEach(function(p){ p[0].width = p[1]; p[0].height = p[1]; });
 
 function draw(cv, lat, n, on, off){
@@ -452,9 +740,9 @@ function paint(){
   draw(canvases[3][0], l3,   N/27, on, off);
 }
 // the slider is in units of Tc, so the readout and the control agree
-var slider = document.getElementById('temp'), out = document.getElementById('tout');
+var slider = root.querySelector('input'), out = root.querySelector('output');
 // finite size broadens the critical region, so the band is findable but still a band
-var BAND = 0.04, cap = document.getElementById('cap');
+var BAND = 0.04, cap = root.querySelector('.note');
 function setT(u){
   T = u * TC; retable();
   out.textContent = u.toFixed(2);
@@ -462,26 +750,546 @@ function setT(u){
   cap.textContent = at ? 'Perhaps the most important idea about the universe ever uncovered. Process becomes substance.'
                        : (u < 1 ? 'Beautiful order' : 'Beautiful chaos');
   cap.classList.toggle('crit', at);
-  document.querySelector('.viz').classList.toggle('crit-on', at);
+  root.classList.toggle('crit-on', at);
 }
 slider.addEventListener('input', function(){ setT(parseFloat(this.value)); });
 setT(0.2);
 
 // Equilibration is slow: from a random start, ordering at low T needs a few hundred
-// sweeps, not a few dozen. When motion is allowed we simply let the loop do it and you
-// watch the lattice organise itself. When it is not, we pay the cost up front.
+// sweeps, not a few dozen.
 var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-// Warm up AFTER the browser has painted, not before. Equilibrating sixteen million spin
-// flips inside the parsing script blocks rendering entirely, and on a view-transition
-// navigation that holds the whole site on the old page until it finishes. Two frames of
-// an empty plate cost nothing. A third of a second of frozen navigation costs a lot.
+// Warm up AFTER the browser has painted, and across frames rather than in one block.
+// Equilibrating sixteen million spin flips at once costs 362ms of page that cannot be
+// scrolled or repainted. That was tolerable when it landed just after a fresh
+// document's first paint and it is not when it lands just after a navigation, so the
+// same 350 sweeps are paid a dozen at a time. The model cannot tell the difference:
+// the state after 350 sweeps is the state after 350 sweeps.
 canvases.forEach(function(p){ p[0].style.opacity = 0; });
-function warm(){
-  sweep(N*N*350);
-  paint();
-  canvases.forEach(function(p){ p[0].style.opacity = 1; });
-  if (!reduce) (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
+var left = N*N*350;
+return { tick: function(){
+  if (left > 0){
+    var t0 = performance.now();
+    do { var c = left < N*N ? left : N*N; sweep(c); left -= c; }
+    while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
+    paint();
+    canvases.forEach(function(p){ p[0].style.opacity = 1; });
+    return !reduce;                // reduced motion: one frame, and then nothing runs
+  }
+  sweep((N*N*2/5)|0); paint(); return true;
+} };
+});
+
+// ---- Chordal SLE in the half plane, growing without end ---------------------
+// Loewner's equation turns a Brownian driving function of variance kappa into a curve
+// that starts on the real axis and grows up into the half plane. Kappa is the whole
+// parameter: it is how hard the driver shakes, and so how rough the curve comes out.
+//
+// It can run forever because the object is scale invariant. Magnifying by L and slowing
+// time by L squared gives a curve with exactly the same law, so the picture needs no
+// edge to bounce off. It grows, the frame pulls back, and by that identity you are
+// always looking at the same thing statistically.
+TB.define('research', function(root){
+var S = 736;      // square, and 23rem is 368 CSS px, so two canvas pixels to one of those
+var CAP = 1600;   // driving increments held at once; the past is coarsened, never dropped
+
+var cv = root.querySelector('canvas');
+cv.width = S; cv.height = S;
+var cx = cv.getContext('2d');
+var kap = 6, dt = 1/1600, n = 0, coarse = 0;
+var dW = new Float64Array(CAP), px = new Float64Array(CAP), py = new Float64Array(CAP);
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
-requestAnimationFrame(function(){ requestAnimationFrame(warm); });
+// The same two inks as the Ising, and the same way round: the blue is the field and the
+// off-white is what is drawn on it. Blue line on the neutral plate ground was tried both
+// ways round first and read as faint either way; inverting it is what fixed that, not
+// finding a third colour.
+var FIELD = hex(css('--lat-on')), INK = hex(css('--lat-off'));
+
+// The square root taken on the branch that stays in the upper half plane, because the
+// trace never leaves it.
+function csqrtUp(a,b,out){
+  var r=Math.sqrt(a*a+b*b);
+  var u=Math.sqrt(Math.max(0,(r+a)/2));
+  var v=Math.sqrt(Math.max(0,(r-a)/2));
+  if (b<0) v=-v;
+  if (v<0){ u=-u; v=-v; }
+  out[0]=u; out[1]=v;
+}
+var spare=null;
+function gauss(){
+  if (spare!==null){ var s=spare; spare=null; return s; }
+  var u,v,r;
+  do { u=Math.random()*2-1; v=Math.random()*2-1; r=u*u+v*v; } while (r===0||r>=1);
+  var m=Math.sqrt(-2*Math.log(r)/r);
+  spare=v*m; return u*m;
+}
+
+// Appending one step only needs the new tip. The earlier trace points are unchanged, so
+// this is one pass down the composition rather than a rebuild, and the plate can grow
+// indefinitely at a cost per frame that never grows with it. Kappa is read here, on the
+// new increment alone, which is why moving the fader changes what the curve does next
+// and leaves everything behind the tip exactly as it was.
+var tmp=[0,0];
+function extend(){
+  if (n>=CAP) coarsen();
+  dW[n]=Math.sqrt(kap*dt)*gauss();
+  var four=4*dt, a=0, b=0;
+  for (var i=n;i>=0;i--){
+    csqrtUp(a*a-b*b-four, 2*a*b, tmp);
+    a=tmp[0]+dW[i]; b=tmp[1];
+  }
+  px[n]=a; py[n]=b;
+  n++;
+}
+
+// Halve the resolution of the past by adding consecutive driving increments in pairs.
+// For Brownian motion that is exact and not an approximation: two independent increments
+// of variance kappa*dt sum to one of variance 2*kappa*dt, which is one increment at the
+// doubled step. So the past is coarsened at precisely the rate the frame zooms out.
+// Nothing is discarded and nothing is faked; the early curve is still on screen, drawn
+// at fewer points because at that magnification there is nothing more to see.
+function coarsen(){
+  var m=n>>1, i;
+  for (i=0;i<m;i++){
+    dW[i]=dW[2*i]+dW[2*i+1];
+    px[i]=px[2*i+1]; py[i]=py[2*i+1];
+  }
+  n=m; dt*=2; coarse++;
+}
+
+var sl=root.querySelector('input'), out=root.querySelector('output'),
+    cap=root.querySelector('.note');
+
+// One scale for both axes. Fitting x and y to the frame separately would fill it better
+// and would be wrong: conformal invariance is the property that makes this what it is,
+// and a stretched SLE is not an SLE. The rule along the bottom is the real axis the
+// curve grows off, so the trace is anchored to it and any slack goes above.
+function draw(){
+  cx.fillStyle='rgb('+FIELD.join(',')+')'; cx.fillRect(0,0,S,S);
+  // the real axis the curve grows off, in the drawing ink but held back so it reads as
+  // the boundary rather than as part of the trace
+  cx.globalAlpha=0.45;
+  cx.fillStyle='rgb('+INK.join(',')+')'; cx.fillRect(0,S-2,S,2);
+  cx.globalAlpha=1;
+  if (n<2) return;
+  var x0=px[0], x1=px[0], y1=py[0], i;
+  for (i=0;i<n;i++){
+    if (px[i]<x0) x0=px[i];
+    if (px[i]>x1) x1=px[i];
+    if (py[i]>y1) y1=py[i];
+  }
+  var pad=(x1-x0)*0.06+1e-9;
+  x0-=pad; x1+=pad; y1*=1.06;
+  var sc=Math.min((S-8)/(x1-x0), (S-12)/y1);
+  var ox=(S-(x1-x0)*sc)/2;
+  // One ink for the whole curve. Ramping it along its length said which end was older,
+  // which is not something the curve is about.
+  cx.lineWidth=1.9; cx.lineJoin='round'; cx.lineCap='round';
+  cx.strokeStyle='rgb('+INK.join(',')+')';
+  for (i=1;i<n;i++){
+    cx.beginPath();
+    cx.moveTo(ox+(px[i-1]-x0)*sc, (S-4)-py[i-1]*sc);
+    cx.lineTo(ox+(px[i]-x0)*sc,   (S-4)-py[i]*sc);
+    cx.stroke();
+  }
+}
+
+// Where each one turns up, rather than what it is called. The middle of the range is
+// where nature is; the two ends are where the proofs are.
+// The fader already says what kappa is, so the caption does not repeat it.
+function named(k){
+  if (Math.abs(k-2)<0.12)   return 'A river through its basin';
+  if (Math.abs(k-8/3)<0.12) return 'A polymer in a monolayer';
+  if (Math.abs(k-3)<0.12)   return 'Domain walls in a thin magnet';
+  if (Math.abs(k-4)<0.12)   return 'Contours of a rough crystal surface';
+  if (Math.abs(k-6)<0.12)   return 'Porous rock, epidemics, fire through a canopy';
+  if (Math.abs(k-8)<0.15)   return 'The whole drainage basin';
+  return null;
+}
+function say(){
+  var nm=named(kap);
+  cap.textContent = nm || 'A realisation of a universal family';
+  cap.classList.toggle('crit', !!nm);
+}
+sl.addEventListener('input',function(){
+  kap=parseFloat(this.value); out.textContent=kap.toFixed(2);
+  say();
+});
+// Open on a different kappa each visit, drawn from the six the caption knows, so the
+// plate arrives showing one of the places this curve turns up rather than the same one
+// every time. Snapped to the fader's own step so the handle sits on a stop.
+var STARTS=[2, 8/3, 3, 4, 6, 8];
+kap = Math.round(STARTS[Math.floor(Math.random()*STARTS.length)]/0.05)*0.05;
+sl.value = kap; out.textContent = kap.toFixed(2);
+say();
+
+// Reduced motion still gets a curve, and gets it with the growth paid off screen: the
+// same steps, run before the only paint, and then nothing moves. Either way the growth
+// waits for the browser to have painted, so a navigation is never held on it.
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+cv.style.opacity = 0;
+var left = reduce ? 1200 : 300;    // a little history, so it opens on a curve
+return { tick: function(){
+  if (left > 0){
+    var t0 = performance.now();
+    do { extend(); left--; } while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
+    draw(); cv.style.opacity = 1;
+    return !reduce;
+  }
+  for (var i=0;i<3;i++) extend();
+  draw(); return true;
+} };
+});
+
+// ---- Gray-Scott reaction-diffusion ------------------------------------------
+// Two chemicals in an open dish. U + 2V -> 3V, so V turns U into more of itself,
+// U is fed in from outside at rate F, and everything is drained at rate k.
+//   a' = a + Da*lap(a) - a*b^2 + F*(1-a)
+//   b' = b + Db*lap(b) + a*b^2 - (F+k)*b
+// Da is twice Db. V cannot spread as fast as the U it needs, so a front cannot
+// smooth itself out, and that difference in the two diffusion rates is the whole
+// reason there is structure here rather than a uniform soup.
+TB.define('freelancing', function(root){
+var N = 216, L = N*N;              // the Ising plate's grid, one cell per screen block
+var DA = 1.0, DB = 0.5;
+
+// k is fixed and F is the only control, so k has to be the value that keeps the whole
+// fader worth moving. Swept over the (F, k) plane at this resolution: below about
+// 0.058 the plate saturates to a uniform field of V across the top of the F range and
+// there is nothing left to look at, and above about 0.064 the band that supports any
+// pattern narrows to a sliver. At 0.062 a seed takes anywhere in F = 0.028..0.065, an
+// established pattern survives down to about F = 0.020, and the fader crosses four
+// structures on the way: spots, worms, labyrinth, coarse cells.
+var T = 0.62;                      // position along the path, which is what the fader moves
+var K = 0.062;
+var F = 0.045;
+
+var ga = new Float32Array(L), gb = new Float32Array(L),
+    ga2 = new Float32Array(L), gb2 = new Float32Array(L);
+
+var cv = root.querySelector('canvas');
+cv.width = N; cv.height = N;
+var ctx = cv.getContext('2d'), img = ctx.createImageData(N, N);
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// Bare medium takes the field colour and V is knocked out of it: the same two-colour
+// ramp, the same way round, as the lattice on the front page.
+var ON = hex(css('--lat-on')), OFF = hex(css('--lat-off'));
+
+// The only thing that ever puts V into the dish. 24 patches rather than a handful,
+// because on a grid this size a handful leaves the plate bare for twenty seconds.
+function seed(){
+  for (var j=0;j<24;j++){
+    var cx=(Math.random()*N)|0, cy=(Math.random()*N)|0;
+    for (var y=-3;y<=3;y++) for (var x=-3;x<=3;x++){
+      var i=((cy+y+N)%N)*N + ((cx+x+N)%N);
+      ga[i]=0.5+0.02*(Math.random()-0.5);
+      gb[i]=0.25+0.02*(Math.random()-0.5);
+    }
+  }
+}
+
+// Nine-point Laplacian: 0.2 on the orthogonals, 0.05 on the diagonals, -1 at the
+// centre. The weights sum to zero, so a flat field stays flat. F is read here on every
+// step, which is why moving the fader changes the chemistry under the pattern that is
+// already there instead of starting a new one.
+function step(){
+  for (var y=0;y<N;y++){
+    var yu=((y-1+N)%N)*N, yd=((y+1)%N)*N, y0=y*N;
+    for (var x=0;x<N;x++){
+      var xl=(x-1+N)%N, xr=(x+1)%N, i=y0+x;
+      var la = 0.2*(ga[y0+xl]+ga[y0+xr]+ga[yu+x]+ga[yd+x])
+             + 0.05*(ga[yu+xl]+ga[yu+xr]+ga[yd+xl]+ga[yd+xr]) - ga[i];
+      var lb = 0.2*(gb[y0+xl]+gb[y0+xr]+gb[yu+x]+gb[yd+x])
+             + 0.05*(gb[yu+xl]+gb[yu+xr]+gb[yd+xl]+gb[yd+xr]) - gb[i];
+      var a=ga[i], b=gb[i], abb=a*b*b;
+      var na=a + DA*la - abb + F*(1-a);
+      var nb=b + DB*lb + abb - (F+K)*b;
+      ga2[i]= na<0?0 : na>1?1 : na;
+      gb2[i]= nb<0?0 : nb>1?1 : nb;
+    }
+  }
+  var t;
+  t=ga; ga=ga2; ga2=t;
+  t=gb; gb=gb2; gb2=t;
+}
+
+function paint(){
+  var d = img.data;
+  for (var i=0;i<L;i++){
+    var t = gb[i]*2.6; if (t>1) t=1;
+    d[i*4]   = ON[0]+(OFF[0]-ON[0])*t;
+    d[i*4+1] = ON[1]+(OFF[1]-ON[1])*t;
+    d[i*4+2] = ON[2]+(OFF[2]-ON[2])*t;
+    d[i*4+3] = 255;
+  }
+  ctx.putImageData(img,0,0);
+}
+
+// How much V is left, sampled on every seventh cell. It is only ever compared with a
+// threshold and never shown, because a readout of it is not what the plate is for.
+function live(){
+  var s=0;
+  for (var i=0;i<L;i+=7) s+=gb[i];
+  return s*7/L;
+}
+
+var GONE = 0.0008;
+var slider = root.querySelector('input'), out = root.querySelector('output'),
+    cap = root.querySelector('.note');
+
+// One fader, two parameters. The regimes worth seeing do not lie along a line of constant
+// k; they lie in diagonal bands, so a fader that only moved F would cut across one of them
+// and miss the rest. These waypoints were found by sweeping the (F, k) plane, scoring each
+// point for how much it was still doing after it had settled, and then routing between the
+// best of each kind without leaving living ground.
+//
+// It stops at 0.82 of the way along. Past that the dish starves at 216 squared, even
+// though it survives on the smaller lattice the sweep used, because the same seed is a far
+// smaller fraction of a bigger dish. That is the one number here measured on the page
+// rather than in the sweep, and it is the one that matters, since a starved dish cannot
+// restart itself.
+var WAY = [[0.0186,0.0462],[0.0214,0.0486],[0.0214,0.0521],[0.0300,0.0557],
+           [0.0357,0.0581],[0.0329,0.0605],[0.0414,0.0605],[0.0500,0.0605],
+           [0.0586,0.0617],[0.0614,0.0629]];
+var CAP = 0.82;
+function walk(t){
+  var x = t*CAP*(WAY.length-1), i = Math.min(Math.floor(x), WAY.length-2), u = x-i;
+  F = WAY[i][0]*(1-u) + WAY[i+1][0]*u;
+  K = WAY[i][1]*(1-u) + WAY[i+1][1]*u;
+}
+
+// b = 0 everywhere is an exact fixed point of the second equation at every F, so a
+// starved dish cannot restart itself and no fader position will do it either. Seeding
+// is the only way back, and it waits out two continuous seconds of death first, on the
+// clock rather than in frames, so a slow machine waits the same two seconds.
+var WAIT = 2000, deadAt = 0, seededAt = -1e9;
+
+// The boundaries are where the behaviour changes, not round numbers: below 0.028 no
+// seeded pattern establishes and a pattern dragged down from above only thins, and
+// above 0.055 the structure closes up and the bare medium is what is left over.
+// The state, then where that state turns up — the register the plate on Research uses.
+// Not the mechanism: the plate is the mechanism, and saying it twice helps nobody.
+//
+// Every one of these is a place where reaction and diffusion really are the model, not
+// somewhere that merely comes out looking similar. Gray and Scott were describing a
+// stirred tank to begin with; fingerprint ridges were shown to follow a Turing mechanism
+// in 2023; and vegetation patterning in drylands is modelled as water and biomass with
+// different transport, after Klausmeier and Rietkerk. Coat markings on a fish were the
+// obvious fourth and are out on purpose — those patterns are Turing-like, but the
+// mechanism is interactions between pigment cells, not this chemistry.
+function regime(){
+  if (T < 0.18) return 'Restless · spots that divide in a gel reactor';
+  if (T < 0.45) return 'Sparse · spots and stripes in a chemical reactor';
+  if (T < 0.78) return 'A labyrinth · ridges on a fingertip';
+  return 'Crowded · vegetation in a dry landscape';
+}
+
+function say(){
+  var t = performance.now(), dead = !!deadAt, text;
+  // the seeding line holds for a moment even if the dish dies again straight away,
+  // which at F = 0 it does
+  if (t - seededAt < 1200)
+    text = 'Seeded again from outside';
+  else if (dead)
+    text = 'Bare medium · nothing inside the dish can start it again';
+  else
+    text = regime();
+  if (cap.textContent !== text) cap.textContent = text;
+  if (cap.classList.contains('crit') !== dead) cap.classList.toggle('crit', dead);
+}
+
+slider.addEventListener('input', function(){
+  T = parseFloat(this.value);
+  walk(T);
+  out.textContent = T.toFixed(2);
+  say();
+});
+
+// The dish starts full of U and empty of V, which is the state a starved one decays
+// back towards. Reseeding after that only drops the patches in; it does not reset U,
+// because the medium is still there and only V ever went missing.
+ga.fill(1); gb.fill(0);
+seed();
+out.textContent = F.toFixed(3);
+
+// Opening on a plate that is still mostly bare would be opening on the seed rather
+// than on the chemistry, so the first 1200 steps are paid before it is shown. They cost
+// 634ms in one block, which is half a second of page that cannot be scrolled, so they
+// are paid across frames instead. The same cost buys the single frame in the
+// reduced-motion case.
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+cv.style.opacity = 0;
+var left = 1200, primed = false;
+return { tick: function(){
+  if (left > 0){
+    if (!primed){ walk(T); primed = true; }
+    var t0 = performance.now();
+    do { step(); left--; } while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
+    paint();
+    cv.style.opacity = 1;
+    say();
+    return !reduce;
+  }
+  for (var s=0;s<6;s++) step();
+  paint();
+  var t = performance.now();
+  if (live() >= GONE) deadAt = 0;
+  else if (!deadAt) deadAt = t;
+  else if (t - deadAt >= WAIT){ seed(); deadAt = 0; seededAt = t; }
+  say();
+  return true;
+} };
+});
+
+(function(){
+  var root = document.documentElement;
+  var PAGE = {"home": {"f": "home.html", "t": "Tim Booker", "d": "Tim Booker is a complex systems scientist who studies cultural evolution online, where much of the selection now runs through ranking functions, and what those ought to select for."}, "research": {"f": "research.html", "t": "Research — Tim Booker", "d": "Tim Booker is a complex systems scientist who studies cultural evolution online, where much of the selection now runs through ranking functions, and what those ought to select for."}, "freelancing": {"f": "freelancing.html", "t": "Freelancing — Tim Booker", "d": "Tim Booker takes on contract work in recommender and ranking design, measurement, LLM labelling at scale, and data science on large or messy sources."}, "about": {"f": "about.html", "t": "About — Tim Booker", "d": "Tim Booker is a complex systems scientist who studies cultural evolution online, where much of the selection now runs through ranking functions, and what those ought to select for."}, "contact": {"f": "contact.html", "t": "Contact — Tim Booker", "d": "Tim Booker is a complex systems scientist who studies cultural evolution online, where much of the selection now runs through ranking functions, and what those ought to select for."}};
+  var file = {}, k;
+  for (k in PAGE) file[PAGE[k].f] = k;
+
+  var hero = document.querySelector('.hero');
+  var meta = document.querySelector('meta[name=description]');
+  var mark = document.querySelector('.title');
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  var cur = 'home', at = {}, tok = 0;
+
+  root.className = root.className ? root.className + ' app' : 'app';
+  try { history.replaceState({p:cur}, '', location.href); } catch (e) {}
+
+  function sec(key){ return document.querySelector('[data-page="' + key + '"]'); }
+  function viz(key){ return document.querySelector('.viz[data-plate="' + key + '"]'); }
+
+  function show(key, on){
+    var s = sec(key), v = viz(key);
+    if (s) s.hidden = !on;
+    if (v) v.hidden = !on;
+  }
+
+  // The two names the transition works with, set for the length of a swap and cleared
+  // at the end of it. They are not in the stylesheet, because a name is not a free
+  // declaration: it promotes the element to a compositing layer of its own for as long
+  // as it is set, which takes the text on it off subpixel antialiasing. Left on
+  // permanently that redrew every glyph in the body of every page read inside the app.
+  // One page carries them at a time, which is the one being captured: the outgoing page
+  // when the old state is taken, the incoming one when the new state is.
+  var held = null;
+  function hold(key){
+    if (held === key) return;
+    var s, v;
+    if (held !== null){
+      s = sec(held); v = viz(held);
+      if (s) s.style.viewTransitionName = '';
+      if (v) v.style.viewTransitionName = '';
+    }
+    held = key;
+    if (key !== null){
+      s = sec(key); v = viz(key);
+      if (s) s.style.viewTransitionName = 'page';
+      if (v) v.style.viewTransitionName = 'plate';
+    }
+  }
+  // The label's only moving parts. Both are writes to elements that stay exactly where
+  // they are: the label is not rebuilt, and neither write changes its layout. The
+  // wordmark is plain text on home and a link everywhere else, which is how it has
+  // always been written, and it draws identically either way.
+  function label(key){
+    var a = document.querySelectorAll('.label nav a'), i;
+    for (i = 0; i < a.length; i++){
+      if (file[a[i].getAttribute('href')] === key) a[i].setAttribute('aria-current','page');
+      else a[i].removeAttribute('aria-current');
+    }
+    mark.innerHTML = key === 'home' ? 'Tim Booker' : '<a href="home.html">Tim Booker</a>';
+  }
+  function head(key){
+    document.title = PAGE[key].t;
+    if (meta) meta.setAttribute('content', PAGE[key].d);
+  }
+
+  function swap(next, push){
+    if (next === cur || !PAGE[next]) return;
+    // Where you were on the page you are leaving, so that coming back to it puts you
+    // back. There is no page load to survive any more, so nothing is stored anywhere.
+    var y0 = Math.round(pageYOffset), y1 = at[next] || 0;
+    var h0 = hero.getBoundingClientRect().height;
+    var mine = ++tok, anim = null;
+    at[cur] = y0;
+    TB.stop();                          // nothing steps while we are between pages
+    if (push) try { history.pushState({p:next}, '', PAGE[next].f); } catch (e) {}
+
+    function update(){
+      show(cur, false); show(next, true);
+      label(next); head(next);
+      cur = next;
+      if (held !== null) hold(next);    // the incoming page carries the names now
+      TB.mount(next);                   // built here, but not run here
+      if (y1 !== y0) scrollTo(0, y1);
+    }
+    function settle(){
+      if (anim) anim.cancel();
+      // Click again before the first swap is done and the browser drops the first
+      // transition, which lands here while the second is still running. The second one
+      // owns the page from that moment, so this one clears up after itself and stops.
+      if (mine !== tok) return;
+      hold(null);                       // nothing is named, and nothing is promoted
+      hero.style.height = ''; hero.style.gridTemplateRows = '';
+      TB.run(next);                     // and the model starts once the page is still
+    }
+    if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
+
+    hold(cur);                          // the page being left, for the old capture
+    var vt = document.startViewTransition(update);
+    vt.ready.then(function(){
+      // Home's label is 145px taller than every other, because its plate column is. In
+      // one document the label is a real element that is still there, so that
+      // difference can be travelled rather than jumped. The groups are pinned to the
+      // live layout, so animating the row the label sits in carries the body with it
+      // and the two move as one thing; see the note in site_style.py.
+      var h1 = hero.getBoundingClientRect().height;
+      if (Math.abs(h1 - h0) < 1) return;
+      // A grid row will not size below its content, and the row this is arriving at is
+      // sometimes shorter than the plate that has just been put in it. A percentage
+      // track against a height we are setting ourselves will.
+      hero.style.gridTemplateRows = '100%';
+      hero.style.height = h0 + 'px';
+      anim = hero.animate([{height:h0 + 'px'}, {height:h1 + 'px'}],
+                          {duration:180, easing:'ease', fill:'forwards'});
+    }, function(){});
+    vt.finished.then(settle, settle);
+  }
+
+  addEventListener('popstate', function(e){
+    var key = (e.state && e.state.p) || file[location.pathname.split('/').pop()];
+    swap(key || 'home', false);
+  });
+
+  // Anything with a modifier, a middle click, a target, a download or an address that
+  // is not one of these five files is left to the browser exactly as it was.
+  addEventListener('click', function(e){
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a || a.target || a.hasAttribute('download')) return;
+    var key = file[a.getAttribute('href')];
+    if (!key) return;
+    e.preventDefault();
+    swap(key, true);
+  });
+})();
+
+TB.mount('home');
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){ TB.run('home'); });
+});
 </script></body>
 </html>

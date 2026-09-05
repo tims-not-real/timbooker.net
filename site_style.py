@@ -61,6 +61,9 @@ CSS = FACES + """
   --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+/* The page states are held in the document and shown one at a time, and .viz sets
+   its own display, which would otherwise win against the UA's [hidden] rule. */
+[hidden]{display:none !important}
 html{-webkit-text-size-adjust:100%}
 body{
   background:var(--bg); color:var(--fg); min-height:100vh;
@@ -300,6 +303,50 @@ footer p.llms{white-space:nowrap; max-width:none}
     animation-duration:0s !important;
   }
 }
+
+/* ---- and moving between them inside one document ----
+   The rules above stay, because every page is still written as a complete standalone
+   document and a reader who arrives on one navigates out of it the cross-document way.
+   These take over only where the router is running, which is where `app` is set on the
+   root element by script. With no JavaScript the class is never set and nothing below
+   applies.
+
+   The root loses its name, so the document is not captured at all. Nothing is
+   snapshotted unless it is named, and the label is not named: it is not lifted out of
+   the page, not composited against a copy of itself and not re-laid-out. It is simply
+   still there, being the same element it was before the click. That is the whole of the
+   fix, and it is one declaration.
+
+   What is named is what actually differs between two pages: the plate in the right
+   column and the page body. Those two names are not here, because a name is not a free
+   declaration. Naming an element promotes it to a compositing layer of its own for as
+   long as the name is set, which takes its text off subpixel antialiasing — 78,785
+   pixels of the home page changed against the build before this one, every glyph in the
+   body outlined, and the same on every page read inside the app. So the router sets
+   those two names in script immediately before a swap and clears them at the end of it,
+   and at rest nothing on the page is named and nothing is promoted. */
+html.app{view-transition-name:none}
+html.app .label{view-transition-name:none}
+/* And the grain gives its name back, because the reason it was given one has gone. It
+   was named so that it would be lifted into the transition layer along with the label
+   and could still reach it. Here the label is not lifted at all, so the grain reaches it
+   by simply staying where it is. Named, with no root snapshot beneath it in that layer
+   to blend with, its overlay has nothing to work against and it lands as a flat grey
+   veil over the whole page: 29 of 255, measured, for the length of every swap. */
+html.app body::after{view-transition-name:none}
+/* The groups do not animate, and that is deliberate. A browser re-targets a group at
+   the live element on every frame, so an animating group interpolates from where the
+   element was towards wherever it is right now — and while the label's row is being
+   animated, "right now" is itself moving, so the body only ever reaches the product of
+   the two progressions and trails the label by up to 36px mid-swap. Measured, and the
+   reason the label's move looked wrong however it was eased.
+
+   Pinned, a group sits exactly on the live element, so the outgoing page and the
+   incoming one both travel with the layout and the label's bottom edge and the text
+   under it move as one thing. It also means a swap that changes the scroll position
+   does not slide: only the cross-fade is animated, which is all a cross-fade needs. */
+html.app::view-transition-group(page),
+html.app::view-transition-group(plate){animation:none}
 
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 

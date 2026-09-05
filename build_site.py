@@ -5,6 +5,12 @@
 Writes index.html, home.html, research.html, freelancing.html, about.html,
 contact.html, 404.html and llms.txt, plus the favicon set (SVG inline in the
 heads, ICO and touch icon drawn by Pillow when it is installed).
+
+Each page's copy is written once and used twice. index.html and home.html, which have
+always been the same file, carry all five pages as states of one document and a router
+that swaps between them; the other files carry one page each and are complete standalone
+documents, which is what a crawler, a language model, a pasted link and a reader with no
+JavaScript gets. The router is an improvement on a site that already works without it.
 """
 import io
 import os
@@ -14,6 +20,10 @@ from site_style import CSS
 PAGES = [('home.html', 'Home'), ('research.html', 'Research'),
          ('freelancing.html', 'Freelancing'), ('about.html', 'About'),
          ('contact.html', 'Contact')]
+
+# The five states the one document holds, keyed by the file each one is also written
+# to. 404 is not among them: nothing links to it, and GitHub Pages serves it by path.
+KEYS = [href[:-5] for href, _ in PAGES]
 
 BSKY = 'https://bsky.app/profile/timzyzz.bsky.social'
 GITHUB = 'https://github.com/tims-not-real'
@@ -92,7 +102,7 @@ LABEL = """
 """
 
 
-def hero(page, plate=''):
+def hero(page, current, plates=()):
     """The full Blue Note label, the same object on every page.
 
     The label says who this is, not where you are: it is the sleeve, and the sleeve
@@ -104,18 +114,31 @@ def hero(page, plate=''):
     reflex worth keeping. On home itself it stays plain text: a self-link is noise.
     Either way it looks the same, so the name never reads as a piece of navigation.
 
-    `plate` is the 23rem right column: pass the markup for a live model and the hero
-    is two columns and so is a page without one: the label is the same size everywhere,
-    and a page with no plate yet holds its column open. A page fills the column by handing
-    this one argument a `<div class="viz">` block.
+    `.plate` is the 23rem right column, and it is always there: the label is the same
+    size everywhere, and a page with no plate holds its column open rather than
+    collapsing. In the one document it holds every plate at once and shows one, which
+    is why a plate can be left mounted and picked up again where it was.
     """
     name = ('Tim Booker' if page == 'Home'
             else '<a href="home.html">Tim Booker</a>')
+    col = ['    <div class="plate">']
+    for key in plates:
+        col.append(PLATES[key].replace('__HIDE__', '' if key == current else ' hidden'))
+    col.append('    </div>')
     return ((LABEL % ('', nav(page)))
             .replace('__NAME__', name)
             .replace('__GROUP__', GROUP).replace('__UNI__', UNI)
-            + ('\n' + plate + '\n' if plate else '')
-            + '  </div>\n')
+            + '\n'.join(col) + '\n  </div>\n')
+
+
+def section(key, inner, current):
+    """One page's body, as a state of the document rather than a document of its own.
+
+    The same string is written into the standalone file and into the one document, so
+    there is one source for each page's content and no way for the two to drift.
+    """
+    return ('  <section class="body" data-page="%s"%s>%s  </section>\n'
+            % (key, '' if key == current else ' hidden', inner))
 
 
 SHELL = """<!DOCTYPE html>
@@ -189,12 +212,218 @@ def render(path, title, main, js='', desc=DESC, narrow=False):
     return len(html)
 
 
+# ============================================================ the plates, and the rule
+
+# One registry, one loop, one handle. A plate is defined here and mounted when its page
+# is first shown; mounting wires up the controls and sizes the canvas and does not step
+# the model. Stepping happens in a single loop under a single name, so starting a plate
+# stops whatever was running before it and there is never a second model turning over
+# behind the page you are reading.
+#
+# Nothing is ever unmounted, and that is the point. A plate you have already visited
+# still holds the lattice, the concentration fields or the curve it had when you left,
+# and picks up from where it stopped rather than starting again. There is no eviction
+# rule because three mounted plates cost a few megabytes and there is nothing to evict.
+RUNTIME_JS = r"""
+var TB = (function(){
+  var defs = {}, made = {}, cur = null, raf = 0, ticks = {};
+  function stop(){
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0; cur = null;
+  }
+  function mount(name){
+    if (made[name] || !defs[name]) return;
+    var el = document.querySelector('.viz[data-plate="' + name + '"]');
+    if (el) made[name] = defs[name](el);
+  }
+  function run(name){
+    stop();
+    mount(name);
+    var p = made[name];
+    if (!p) return;                    // this page has no plate, so nothing runs
+    cur = name;
+    raf = requestAnimationFrame(function loop(){
+      ticks[name] = (ticks[name] || 0) + 1;
+      if (p.tick() === false){ raf = 0; cur = null; return; }   // settled, and stops
+      raf = requestAnimationFrame(loop);
+    });
+  }
+  return {
+    define: function(name, fn){ defs[name] = fn; },
+    mount: mount, run: run, stop: stop,
+    // Four lines that make the claim checkable rather than asserted: which model is
+    // stepping, which have been built, and how many frames each of them has had.
+    ticks: ticks,
+    running: function(){ return cur; },
+    mounted: function(){ var k = []; for (var n in made) k.push(n); return k; }
+  };
+})();
+"""
+
+# The plate is wired up while the page parses, so its canvas is hidden before it is ever
+# painted and a reader with no JavaScript is left with an empty plate rather than a
+# hole. It starts stepping after the first paint, never before it.
+BOOT_JS = """
+TB.mount('__KEY__');
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){ TB.run('__KEY__'); });
+});
+"""
+
+# ============================================================ one document, five states
+
+# Progressive enhancement, not replacement. Every page is still written as a complete
+# standalone document and still works with no JavaScript at all; this intercepts the
+# links between them and swaps a state instead of loading a document. The URL it pushes
+# is the real file, so a reload lands on the page it names.
+#
+# What it buys is what a page load cannot: the label is never destroyed and rebuilt, so
+# it cannot flash; and the plate is never destroyed either, so a page you come back to
+# carries on from where you left it.
+ROUTER_JS = r"""
+(function(){
+  var root = document.documentElement;
+  var PAGE = __PAGES__;
+  var file = {}, k;
+  for (k in PAGE) file[PAGE[k].f] = k;
+
+  var hero = document.querySelector('.hero');
+  var meta = document.querySelector('meta[name=description]');
+  var mark = document.querySelector('.title');
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  var cur = '__START__', at = {}, tok = 0;
+
+  root.className = root.className ? root.className + ' app' : 'app';
+  try { history.replaceState({p:cur}, '', location.href); } catch (e) {}
+
+  function sec(key){ return document.querySelector('[data-page="' + key + '"]'); }
+  function viz(key){ return document.querySelector('.viz[data-plate="' + key + '"]'); }
+
+  function show(key, on){
+    var s = sec(key), v = viz(key);
+    if (s) s.hidden = !on;
+    if (v) v.hidden = !on;
+  }
+
+  // The two names the transition works with, set for the length of a swap and cleared
+  // at the end of it. They are not in the stylesheet, because a name is not a free
+  // declaration: it promotes the element to a compositing layer of its own for as long
+  // as it is set, which takes the text on it off subpixel antialiasing. Left on
+  // permanently that redrew every glyph in the body of every page read inside the app.
+  // One page carries them at a time, which is the one being captured: the outgoing page
+  // when the old state is taken, the incoming one when the new state is.
+  var held = null;
+  function hold(key){
+    if (held === key) return;
+    var s, v;
+    if (held !== null){
+      s = sec(held); v = viz(held);
+      if (s) s.style.viewTransitionName = '';
+      if (v) v.style.viewTransitionName = '';
+    }
+    held = key;
+    if (key !== null){
+      s = sec(key); v = viz(key);
+      if (s) s.style.viewTransitionName = 'page';
+      if (v) v.style.viewTransitionName = 'plate';
+    }
+  }
+  // The label's only moving parts. Both are writes to elements that stay exactly where
+  // they are: the label is not rebuilt, and neither write changes its layout. The
+  // wordmark is plain text on home and a link everywhere else, which is how it has
+  // always been written, and it draws identically either way.
+  function label(key){
+    var a = document.querySelectorAll('.label nav a'), i;
+    for (i = 0; i < a.length; i++){
+      if (file[a[i].getAttribute('href')] === key) a[i].setAttribute('aria-current','page');
+      else a[i].removeAttribute('aria-current');
+    }
+    mark.innerHTML = key === 'home' ? 'Tim Booker' : '<a href="home.html">Tim Booker</a>';
+  }
+  function head(key){
+    document.title = PAGE[key].t;
+    if (meta) meta.setAttribute('content', PAGE[key].d);
+  }
+
+  function swap(next, push){
+    if (next === cur || !PAGE[next]) return;
+    // Where you were on the page you are leaving, so that coming back to it puts you
+    // back. There is no page load to survive any more, so nothing is stored anywhere.
+    var y0 = Math.round(pageYOffset), y1 = at[next] || 0;
+    var h0 = hero.getBoundingClientRect().height;
+    var mine = ++tok, anim = null;
+    at[cur] = y0;
+    TB.stop();                          // nothing steps while we are between pages
+    if (push) try { history.pushState({p:next}, '', PAGE[next].f); } catch (e) {}
+
+    function update(){
+      show(cur, false); show(next, true);
+      label(next); head(next);
+      cur = next;
+      if (held !== null) hold(next);    // the incoming page carries the names now
+      TB.mount(next);                   // built here, but not run here
+      if (y1 !== y0) scrollTo(0, y1);
+    }
+    function settle(){
+      if (anim) anim.cancel();
+      // Click again before the first swap is done and the browser drops the first
+      // transition, which lands here while the second is still running. The second one
+      // owns the page from that moment, so this one clears up after itself and stops.
+      if (mine !== tok) return;
+      hold(null);                       // nothing is named, and nothing is promoted
+      hero.style.height = ''; hero.style.gridTemplateRows = '';
+      TB.run(next);                     // and the model starts once the page is still
+    }
+    if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
+
+    hold(cur);                          // the page being left, for the old capture
+    var vt = document.startViewTransition(update);
+    vt.ready.then(function(){
+      // Home's label is 145px taller than every other, because its plate column is. In
+      // one document the label is a real element that is still there, so that
+      // difference can be travelled rather than jumped. The groups are pinned to the
+      // live layout, so animating the row the label sits in carries the body with it
+      // and the two move as one thing; see the note in site_style.py.
+      var h1 = hero.getBoundingClientRect().height;
+      if (Math.abs(h1 - h0) < 1) return;
+      // A grid row will not size below its content, and the row this is arriving at is
+      // sometimes shorter than the plate that has just been put in it. A percentage
+      // track against a height we are setting ourselves will.
+      hero.style.gridTemplateRows = '100%';
+      hero.style.height = h0 + 'px';
+      anim = hero.animate([{height:h0 + 'px'}, {height:h1 + 'px'}],
+                          {duration:180, easing:'ease', fill:'forwards'});
+    }, function(){});
+    vt.finished.then(settle, settle);
+  }
+
+  addEventListener('popstate', function(e){
+    var key = (e.state && e.state.p) || file[location.pathname.split('/').pop()];
+    swap(key || 'home', false);
+  });
+
+  // Anything with a modifier, a middle click, a target, a download or an address that
+  // is not one of these five files is left to the browser exactly as it was.
+  addEventListener('click', function(e){
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a || a.target || a.hasAttribute('download')) return;
+    var key = file[a.getAttribute('href')];
+    if (!key) return;
+    e.preventDefault();
+    swap(key, true);
+  });
+})();
+"""
+
+
 # ============================================================ HOME
 
 ISING_JS = r"""
 // ---- 2D Ising model, Metropolis, with block-spin renormalisation -------------
 // One rule: a site prefers to agree with its neighbours. Temperature fights that.
 // At Tc the coarse-grained lattices look like the original at every scale.
+TB.define('home', function(root){
 var N = 216;                       // 216 = 8*27, so /3 three times lands cleanly
 var TC = 2/Math.log(1+Math.SQRT2); // 2.269..., Onsager
 var spin = new Int8Array(N*N);
@@ -235,12 +464,8 @@ function hex(h){
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
 
-var canvases = [
-  [document.getElementById('c0'), N],
-  [document.getElementById('c1'), N/3],
-  [document.getElementById('c2'), N/9],
-  [document.getElementById('c3'), N/27]
-];
+var cvs = root.querySelectorAll('canvas');
+var canvases = [[cvs[0], N], [cvs[1], N/3], [cvs[2], N/9], [cvs[3], N/27]];
 canvases.forEach(function(p){ p[0].width = p[1]; p[0].height = p[1]; });
 
 function draw(cv, lat, n, on, off){
@@ -262,9 +487,9 @@ function paint(){
   draw(canvases[3][0], l3,   N/27, on, off);
 }
 // the slider is in units of Tc, so the readout and the control agree
-var slider = document.getElementById('temp'), out = document.getElementById('tout');
+var slider = root.querySelector('input'), out = root.querySelector('output');
 // finite size broadens the critical region, so the band is findable but still a band
-var BAND = 0.04, cap = document.getElementById('cap');
+var BAND = 0.04, cap = root.querySelector('.note');
 function setT(u){
   T = u * TC; retable();
   out.textContent = u.toFixed(2);
@@ -272,27 +497,35 @@ function setT(u){
   cap.textContent = at ? 'Perhaps the most important idea about the universe ever uncovered. Process becomes substance.'
                        : (u < 1 ? 'Beautiful order' : 'Beautiful chaos');
   cap.classList.toggle('crit', at);
-  document.querySelector('.viz').classList.toggle('crit-on', at);
+  root.classList.toggle('crit-on', at);
 }
 slider.addEventListener('input', function(){ setT(parseFloat(this.value)); });
 setT(0.2);
 
 // Equilibration is slow: from a random start, ordering at low T needs a few hundred
-// sweeps, not a few dozen. When motion is allowed we simply let the loop do it and you
-// watch the lattice organise itself. When it is not, we pay the cost up front.
+// sweeps, not a few dozen.
 var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-// Warm up AFTER the browser has painted, not before. Equilibrating sixteen million spin
-// flips inside the parsing script blocks rendering entirely, and on a view-transition
-// navigation that holds the whole site on the old page until it finishes. Two frames of
-// an empty plate cost nothing. A third of a second of frozen navigation costs a lot.
+// Warm up AFTER the browser has painted, and across frames rather than in one block.
+// Equilibrating sixteen million spin flips at once costs 362ms of page that cannot be
+// scrolled or repainted. That was tolerable when it landed just after a fresh
+// document's first paint and it is not when it lands just after a navigation, so the
+// same 350 sweeps are paid a dozen at a time. The model cannot tell the difference:
+// the state after 350 sweeps is the state after 350 sweeps.
 canvases.forEach(function(p){ p[0].style.opacity = 0; });
-function warm(){
-  sweep(N*N*350);
-  paint();
-  canvases.forEach(function(p){ p[0].style.opacity = 1; });
-  if (!reduce) (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
-}
-requestAnimationFrame(function(){ requestAnimationFrame(warm); });
+var left = N*N*350;
+return { tick: function(){
+  if (left > 0){
+    var t0 = performance.now();
+    do { var c = left < N*N ? left : N*N; sweep(c); left -= c; }
+    while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
+    paint();
+    canvases.forEach(function(p){ p[0].style.opacity = 1; });
+    return !reduce;                // reduced motion: one frame, and then nothing runs
+  }
+  sweep((N*N*2/5)|0); paint(); return true;
+} };
+});
 """
 
 # Register: plain academic. Chalmers and Dennett, in his words: no hype, no jargon,
@@ -359,28 +592,29 @@ def rows_block(rows):
             .replace('__UNI__', UNI))
 
 
-ISING_PLATE = """    <div class="viz">
-      <canvas id="c0" aria-label="An Ising lattice at temperature T"></canvas>
-      <div class="row">
-        <figure><canvas id="c1"></canvas><figcaption>&divide;3</figcaption></figure>
-        <figure><canvas id="c2"></canvas><figcaption>&divide;9</figcaption></figure>
-        <figure><canvas id="c3"></canvas><figcaption>&divide;27</figcaption></figure>
-      </div>
-      <div class="ctrl">
-        <label for="temp">T / T<sub>c</sub></label>
-        <input id="temp" type="range" min="0.2" max="1.6" step="0.005" value="0.2">
-        <output id="tout">0.20</output>
-      </div>
-      <p class="note" id="cap">Beautiful order</p>
-    </div>"""
+# Every plate now lives in the same document as the other two, so a plate finds its own
+# parts by looking inside itself rather than by id. The only ids left are the ones a
+# <label for> needs, and those were already distinct.
+ISING_PLATE = """      <div class="viz" data-plate="home"__HIDE__>
+        <canvas aria-label="An Ising lattice at temperature T"></canvas>
+        <div class="row">
+          <figure><canvas></canvas><figcaption>&divide;3</figcaption></figure>
+          <figure><canvas></canvas><figcaption>&divide;9</figcaption></figure>
+          <figure><canvas></canvas><figcaption>&divide;27</figcaption></figure>
+        </div>
+        <div class="ctrl">
+          <label for="temp">T / T<sub>c</sub></label>
+          <input id="temp" type="range" min="0.2" max="1.6" step="0.005" value="0.2">
+          <output>0.20</output>
+        </div>
+        <p class="note">Beautiful order</p>
+      </div>"""
 
 
 HOME_BODY = """
-  <div class="body">
     <div class="prose">__INTRO__</div>
     __INTERESTS__
     __ROWS__
-  </div>
 """
 
 
@@ -396,10 +630,11 @@ SLE_JS = r"""
 // time by L squared gives a curve with exactly the same law, so the picture needs no
 // edge to bounce off. It grows, the frame pulls back, and by that identity you are
 // always looking at the same thing statistically.
+TB.define('research', function(root){
 var S = 736;      // square, and 23rem is 368 CSS px, so two canvas pixels to one of those
 var CAP = 1600;   // driving increments held at once; the past is coarsened, never dropped
 
-var cv = document.getElementById('sle');
+var cv = root.querySelector('canvas');
 cv.width = S; cv.height = S;
 var cx = cv.getContext('2d');
 var kap = 6, dt = 1/1600, n = 0, coarse = 0;
@@ -468,13 +703,8 @@ function coarsen(){
   n=m; dt*=2; coarse++;
 }
 
-function reset(){
-  n=0; dt=1/1600; coarse=0;
-  for (var i=0;i<300;i++) extend();      // a little history, so it opens on a curve
-}
-
-var sl=document.getElementById('k'), out=document.getElementById('ko'),
-    cap=document.getElementById('cap');
+var sl=root.querySelector('input'), out=root.querySelector('output'),
+    cap=root.querySelector('.note');
 
 // One scale for both axes. Fitting x and y to the frame separately would fill it better
 // and would be wrong: conformal invariance is the property that makes this what it is,
@@ -540,30 +770,36 @@ sl.value = kap; out.textContent = kap.toFixed(2);
 say();
 
 // Reduced motion still gets a curve, and gets it with the growth paid off screen: the
-// same loop, run once before the only paint, and then nothing moves. Either way the
-// growth waits for the browser to have painted, so a navigation is never held on it.
+// same steps, run before the only paint, and then nothing moves. Either way the growth
+// waits for the browser to have painted, so a navigation is never held on it.
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function frame(){ for (var i=0;i<3;i++) extend(); draw(); requestAnimationFrame(frame); }
 cv.style.opacity = 0;
-function warm(){
-  reset();
-  cv.style.opacity = 1;
-  if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
-}
-requestAnimationFrame(function(){ requestAnimationFrame(warm); });
+var left = reduce ? 1200 : 300;    // a little history, so it opens on a curve
+return { tick: function(){
+  if (left > 0){
+    var t0 = performance.now();
+    do { extend(); left--; } while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
+    draw(); cv.style.opacity = 1;
+    return !reduce;
+  }
+  for (var i=0;i<3;i++) extend();
+  draw(); return true;
+} };
+});
 """
 
 # The 23rem column on Research. Same shape as ISING_PLATE and GS_PLATE: canvas, the one
 # fader, the caption. The caption is the whole label, so the plate carries no figcaption.
-SLE_PLATE = """    <div class="viz">
-      <canvas id="sle" aria-label="An SLE trace growing without end"></canvas>
-      <div class="ctrl">
-        <label for="k">&kappa;</label>
-        <input id="k" type="range" min="0.4" max="8.6" step="0.05" value="6">
-        <output id="ko">6.00</output>
-      </div>
-      <p class="note" id="cap"></p>
-    </div>"""
+SLE_PLATE = """      <div class="viz" data-plate="research"__HIDE__>
+        <canvas aria-label="An SLE trace growing without end"></canvas>
+        <div class="ctrl">
+          <label for="k">&kappa;</label>
+          <input id="k" type="range" min="0.4" max="8.6" step="0.05" value="6">
+          <output>6.00</output>
+        </div>
+        <p class="note"></p>
+      </div>"""
 
 
 RESEARCH_LEDE = """
@@ -688,7 +924,7 @@ RESEARCH_GROUPS = [
 
 
 def research_body():
-    out = ['  <div class="body">', '    <div class="prose">', RESEARCH_LEDE, '    </div>']
+    out = ['', '    <div class="prose">', RESEARCH_LEDE, '    </div>']
     for i, (group, entries) in enumerate(RESEARCH_GROUPS):
         out.append('    <section class="grp%s">' % (' first' if i == 0 else ''))
         out.append('      <h2>%s</h2>' % group)
@@ -698,14 +934,13 @@ def research_body():
             out.append('        <div class="meta">%s</div>' % meta)
             out.append('      </article>')
         out.append('    </section>')
-    out.append('  </div>')
+    out.append('')
     return '\n'.join(out)
 
 
 # ============================================================ ABOUT
 
 ABOUT = """
-  <div class="body">
     <div class="prose">
       <p>Platforms rank for engagement, and a ranking function is a selector with an
       objective. It sets which ideas spread and which people rise, and because the
@@ -779,14 +1014,12 @@ ABOUT = """
         promise solutions, but I can offer perspective, solidarity, and a listening ear.</p>
       </div>
     </section>
-  </div>
 """.replace('__PERSONAL__', PERSONAL)
 
 
 # ============================================================ CONTACT
 
 CONTACT = """
-  <div class="body">
     <div class="prose">
       <p class="lede">Write to me about anything. Collaboration, a question about the
       work, or a general argument about complex systems, platforms, and recommendation.</p>
@@ -806,7 +1039,6 @@ CONTACT = """
       <dd><a class="link" href="__GITHUB__">tims-not-real</a></dd>
     </dl>
 
-  </div>
 """.replace('__UNI__', UNI).replace('__PERSONAL__', PERSONAL) \
    .replace('__BSKY__', BSKY).replace('__GITHUB__', GITHUB)
 
@@ -856,6 +1088,7 @@ GRAY_SCOTT_JS = r"""
 // Da is twice Db. V cannot spread as fast as the U it needs, so a front cannot
 // smooth itself out, and that difference in the two diffusion rates is the whole
 // reason there is structure here rather than a uniform soup.
+TB.define('freelancing', function(root){
 var N = 216, L = N*N;              // the Ising plate's grid, one cell per screen block
 var DA = 1.0, DB = 0.5;
 
@@ -873,7 +1106,7 @@ var F = 0.045;
 var ga = new Float32Array(L), gb = new Float32Array(L),
     ga2 = new Float32Array(L), gb2 = new Float32Array(L);
 
-var cv = document.getElementById('gs');
+var cv = root.querySelector('canvas');
 cv.width = N; cv.height = N;
 var ctx = cv.getContext('2d'), img = ctx.createImageData(N, N);
 
@@ -945,8 +1178,8 @@ function live(){
 }
 
 var GONE = 0.0008;
-var slider = document.getElementById('feed'), out = document.getElementById('fout'),
-    cap = document.getElementById('gcap');
+var slider = root.querySelector('input'), out = root.querySelector('output'),
+    cap = root.querySelector('.note');
 
 // One fader, two parameters. The regimes worth seeing do not lie along a line of constant
 // k; they lie in diagonal bands, so a fader that only moved F would cut across one of them
@@ -1024,46 +1257,49 @@ seed();
 out.textContent = F.toFixed(3);
 
 // Opening on a plate that is still mostly bare would be opening on the seed rather
-// than on the chemistry, so the first 1200 steps are paid before the first paint. The
-// same cost buys the single frame in the reduced-motion case.
+// than on the chemistry, so the first 1200 steps are paid before it is shown. They cost
+// 634ms in one block, which is half a second of page that cannot be scrolled, so they
+// are paid across frames instead. The same cost buys the single frame in the
+// reduced-motion case.
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 cv.style.opacity = 0;
-function warm(){
-walk(T);
-for (var w=0;w<1200;w++) step();
-paint();
-cv.style.opacity = 1;
-say();
-
-if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
-  (function loop(){
-    for (var s=0;s<6;s++) step();
+var left = 1200, primed = false;
+return { tick: function(){
+  if (left > 0){
+    if (!primed){ walk(T); primed = true; }
+    var t0 = performance.now();
+    do { step(); left--; } while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
     paint();
-    var t = performance.now();
-    if (live() >= GONE) deadAt = 0;
-    else if (!deadAt) deadAt = t;
-    else if (t - deadAt >= WAIT){ seed(); deadAt = 0; seededAt = t; }
+    cv.style.opacity = 1;
     say();
-    requestAnimationFrame(loop);
-  })();
-}
-}
-requestAnimationFrame(function(){ requestAnimationFrame(warm); });
+    return !reduce;
+  }
+  for (var s=0;s<6;s++) step();
+  paint();
+  var t = performance.now();
+  if (live() >= GONE) deadAt = 0;
+  else if (!deadAt) deadAt = t;
+  else if (t - deadAt >= WAIT){ seed(); deadAt = 0; seededAt = t; }
+  say();
+  return true;
+} };
+});
 """
 # The 23rem column on Freelancing. Same shape as ISING_PLATE: canvas, the one fader,
 # the caption that says what the chemistry is doing.
-GS_PLATE = """    <div class="viz">
-      <canvas id="gs" aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
-      <div class="ctrl">
-        <label for="feed">Drive</label>
-        <input id="feed" type="range" min="0" max="1" step="0.002" value="0.62">
-        <output id="fout">0.62</output>
-      </div>
-      <p class="note" id="gcap"></p>
-    </div>"""
+GS_PLATE = """      <div class="viz" data-plate="freelancing"__HIDE__>
+        <canvas aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
+        <div class="ctrl">
+          <label for="feed">Drive</label>
+          <input id="feed" type="range" min="0" max="1" step="0.002" value="0.62">
+          <output>0.62</output>
+        </div>
+        <p class="note"></p>
+      </div>"""
 
 
 FREELANCING = """
-  <div class="body">
     <div class="prose">
       <p class="lede">I take on contract and consulting work: recommender and ranking
       design, data science on large or messy sources, measurement, and applied work with
@@ -1077,7 +1313,6 @@ FREELANCING = """
         <p>Please contact me at <a class="link" href="mailto:__UNI__">__UNI__</a>.</p>
       </div>
     </section>
-  </div>
 """
 
 
@@ -1085,7 +1320,6 @@ FREELANCING = """
 # ============================================================ 404
 
 NOT_FOUND = """
-  <div class="body">
     <div class="prose">
       <p class="lede">Nothing here.</p>
       <p>Either the address is wrong or I moved something and didn't leave a note.
@@ -1097,7 +1331,6 @@ NOT_FOUND = """
       broken, tell me:
       <a class="link" href="mailto:__UNI__">__UNI__</a>.</p>
     </div>
-  </div>
 """.replace('__UNI__', UNI)
 
 
@@ -1182,29 +1415,74 @@ I'm happy to be reached out to by students, journalists, professionals, and rese
 
 # ============================================================ build
 
+# The three plates, the markup for each and the model behind it, keyed by the page they
+# belong to. A page not named here has no plate and its column is held open and empty.
+PLATES = {'home': ISING_PLATE, 'research': SLE_PLATE, 'freelancing': GS_PLATE}
+PLATE_JS = {'home': ISING_JS, 'research': SLE_JS, 'freelancing': GRAY_SCOTT_JS}
+
+# Title and description per page. The head carries the current one; the router carries
+# all of them, since it has to rewrite the head as the state changes.
+NAMES = dict((href[:-5], name) for href, name in PAGES)
+META = {
+    'home':        ('Tim Booker', DESC),
+    'research':    ('Research &mdash; Tim Booker', DESC),
+    'freelancing': ('Freelancing &mdash; Tim Booker', FREELANCE_DESC),
+    'about':       ('About &mdash; Tim Booker', DESC),
+    'contact':     ('Contact &mdash; Tim Booker', DESC),
+}
+
+
+def bodies():
+    """The inner markup of each page, once. Both the standalone document and the state
+    inside the one document are written from these, so the two cannot drift apart."""
+    return {
+        'home': (HOME_BODY.replace('__INTRO__', HOME_INTRO)
+                          .replace('__INTERESTS__', rows_block(INTEREST_ROWS))
+                          .replace('__ROWS__', rows_block(HOME_ROWS))),
+        'research': research_body(),
+        'freelancing': (FREELANCING.replace('__OFFERS__', offer_rows())
+                                   .replace('__UNI__', UNI)),
+        'about': ABOUT,
+        'contact': CONTACT,
+    }
+
+
+def page_map():
+    """The five states, as the router needs them: file, title, description."""
+    import json
+    out = dict((k, {'f': k + '.html',
+                    't': META[k][0].replace('&mdash;', '—'),
+                    'd': META[k][1]}) for k in KEYS)
+    return json.dumps(out, ensure_ascii=False).replace('<', '\\u003c')
+
+
 if __name__ == '__main__':
-    home = (hero('Home', ISING_PLATE)
-            + HOME_BODY.replace('__INTRO__', HOME_INTRO)
-                       .replace('__INTERESTS__', rows_block(INTEREST_ROWS))
-                       .replace('__ROWS__', rows_block(HOME_ROWS)))
-    written = [
-        ('index.html', render('index.html', 'Tim Booker', home, ISING_JS, narrow=True)),
-        ('home.html', render('home.html', 'Tim Booker', home, ISING_JS, narrow=True)),
-        ('research.html', render('research.html', 'Research &mdash; Tim Booker',
-                                 hero('Research', SLE_PLATE) + research_body(),
-                                 SLE_JS, narrow=True)),
-        ('freelancing.html', render('freelancing.html', 'Freelancing &mdash; Tim Booker',
-                                    hero('Freelancing', GS_PLATE) +
-                                    FREELANCING.replace('__OFFERS__', offer_rows())
-                                               .replace('__UNI__', UNI),
-                                    GRAY_SCOTT_JS, desc=FREELANCE_DESC, narrow=True)),
-        ('about.html', render('about.html', 'About &mdash; Tim Booker',
-                              hero('About') + ABOUT)),
-        ('contact.html', render('contact.html', 'Contact &mdash; Tim Booker',
-                                hero('Contact') + CONTACT)),
-        ('404.html', render('404.html', 'Not found &mdash; Tim Booker',
-                            hero('404') + NOT_FOUND)),
-    ]
+    body = bodies()
+    written = []
+
+    # ---- the one document. Every state, one label, one plate column, one of each
+    # shown. Written to index.html and to home.html, which have always been the same
+    # file, so the app is what you get at the root and at the address the nav points to.
+    app = (hero('Home', 'home', ['home', 'research', 'freelancing'])
+           + ''.join(section(k, body[k], 'home') for k in KEYS))
+    app_js = (RUNTIME_JS + ISING_JS + SLE_JS + GRAY_SCOTT_JS
+              + ROUTER_JS.replace('__PAGES__', page_map()).replace('__START__', 'home')
+              + BOOT_JS.replace('__KEY__', 'home'))
+    for path in ('index.html', 'home.html'):
+        written.append((path, render(path, META['home'][0], app, app_js, narrow=True)))
+
+    # ---- and the standalone documents, unchanged in what they are: one page each,
+    # complete, and the truth for crawlers, language models and anyone with JS off.
+    for key in KEYS[1:]:
+        js = (RUNTIME_JS + PLATE_JS[key] + BOOT_JS.replace('__KEY__', key)
+              if key in PLATES else '')
+        written.append((key + '.html', render(
+            key + '.html', META[key][0],
+            hero(NAMES[key], key, [key] if key in PLATES else []) + section(key, body[key], key),
+            js, desc=META[key][1], narrow=key in PLATES)))
+
+    written.append(('404.html', render('404.html', 'Not found &mdash; Tim Booker',
+                                       hero('404', '404') + section('404', NOT_FOUND, '404'))))
     io.open('llms.txt', 'w', encoding='utf-8').write(LLMS)
     written.append(('llms.txt', len(LLMS)))
     written.extend(write_bitmap_icons())
