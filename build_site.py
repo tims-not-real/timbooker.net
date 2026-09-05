@@ -305,27 +305,31 @@ ROUTER_JS = r"""
     if (v) v.hidden = !on;
   }
 
-  // The two names the transition works with, set for the length of a swap and cleared
-  // at the end of it. They are not in the stylesheet, because a name is not a free
+  // The one name the transition works with, set for the length of a swap and cleared at
+  // the end of it. It is not in the stylesheet, because a name is not a free
   // declaration: it promotes the element to a compositing layer of its own for as long
   // as it is set, which takes the text on it off subpixel antialiasing. Left on
   // permanently that redrew every glyph in the body of every page read inside the app.
-  // One page carries them at a time, which is the one being captured: the outgoing page
+  // One page carries it at a time, which is the one being captured: the outgoing page
   // when the old state is taken, the incoming one when the new state is.
+  //
+  // The plate is not named, and so is not captured. It was, and that was the flicker
+  // Tim saw leaving home: the browser puts the outgoing snapshot up once more as the
+  // transition tears down, and home's plate is 613 tall against Research's 468, so its
+  // three renormalisation boxes landed on bare page ground for a frame. Uncaptured, the
+  // plate hard-cuts instead of cross-fading, which is the trade.
   var held = null;
   function hold(key){
     if (held === key) return;
-    var s, v;
+    var s;
     if (held !== null){
-      s = sec(held); v = viz(held);
+      s = sec(held);
       if (s) s.style.viewTransitionName = '';
-      if (v) v.style.viewTransitionName = '';
     }
     held = key;
     if (key !== null){
-      s = sec(key); v = viz(key);
+      s = sec(key);
       if (s) s.style.viewTransitionName = 'page';
-      if (v) v.style.viewTransitionName = 'plate';
     }
   }
   // The label's only moving parts. Both are writes to elements that stay exactly where
@@ -360,7 +364,7 @@ ROUTER_JS = r"""
       show(cur, false); show(next, true);
       label(next); head(next);
       cur = next;
-      if (held !== null) hold(next);    // the incoming page carries the names now
+      if (held !== null) hold(next);    // the incoming page carries the name now
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
     }
