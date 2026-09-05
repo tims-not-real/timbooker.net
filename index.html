@@ -119,6 +119,8 @@ a{color:inherit}
   display:block; width:100%; height:auto; image-rendering:pixelated;
   border:1px solid var(--rule); background:var(--plate);
 }
+/* The chemistry dish takes a click, and this is the whole of how it says so. */
+.viz[data-plate=freelancing] canvas{cursor:crosshair}
 .viz .row{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem}
 .viz .row figure{margin:0}
 .viz .row figcaption{
@@ -1006,16 +1008,32 @@ function hex(h){
 // ramp, the same way round, as the lattice on the front page.
 var ON = hex(css('--lat-on')), OFF = hex(css('--lat-off'));
 
+// One cell of the only disturbance there is: V put in and the U under it knocked down.
+function put(i){
+  ga[i]=0.5+0.02*(Math.random()-0.5);
+  gb[i]=0.25+0.02*(Math.random()-0.5);
+}
+
 // The only thing that ever puts V into the dish. 24 patches rather than a handful,
 // because on a grid this size a handful leaves the plate bare for twenty seconds.
 function seed(){
   for (var j=0;j<24;j++){
     var cx=(Math.random()*N)|0, cy=(Math.random()*N)|0;
-    for (var y=-3;y<=3;y++) for (var x=-3;x<=3;x++){
-      var i=((cy+y+N)%N)*N + ((cx+x+N)%N);
-      ga[i]=0.5+0.02*(Math.random()-0.5);
-      gb[i]=0.25+0.02*(Math.random()-0.5);
-    }
+    for (var y=-3;y<=3;y++) for (var x=-3;x<=3;x++)
+      put(((cy+y+N)%N)*N + ((cx+x+N)%N));
+  }
+}
+
+// The same disturbance, once, where a click landed. R = 4 was measured: from a bare
+// dish, one disc and nothing else, 21 positions of the fader and 10 draws at each.
+// R = 2 dies from T = 0.30 up and R = 3 dies from T = 0.90 up; R = 4 takes hold at
+// every one of the 210. It is 49 cells, which is the size of one seed patch, and the
+// smallest thing here that outruns its own drain everywhere the fader goes.
+var R = 4;
+function disc(cx, cy){
+  for (var y=-R;y<=R;y++) for (var x=-R;x<=R;x++){
+    if (x*x + y*y > R*R) continue;
+    put(((cy+y+N)%N)*N + ((cx+x+N)%N));
   }
 }
 
@@ -1141,7 +1159,18 @@ slider.addEventListener('input', function(){
 // because the medium is still there and only V ever went missing.
 ga.fill(1); gb.fill(0);
 seed();
-out.textContent = F.toFixed(3);
+
+// Open somewhere else each visit. The plate on Research draws from six named values
+// because its caption only speaks near one of them; here the four regimes are bands
+// that between them cover the fader, so every draw lands in one and none of them has
+// to be aimed at. The fader's own range is already the living part of the path —
+// walk() folds CAP into it, so 1 on the handle is 0.82 of the way along — and the draw
+// runs over all of it. The handle snaps it to its own step and it is read back from
+// there, so the number under the fader is the number the model is running.
+slider.value = Math.random();
+T = parseFloat(slider.value);
+walk(T);
+out.textContent = T.toFixed(2);
 
 // Opening on a plate that is still mostly bare would be opening on the seed rather
 // than on the chemistry, so the first 1200 steps are paid before it is shown. They cost
@@ -1149,11 +1178,35 @@ out.textContent = F.toFixed(3);
 // are paid across frames instead. The same cost buys the single frame in the
 // reduced-motion case.
 var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// A click disturbs the dish where it landed. The picture is 216 cells across a box the
+// page sizes in CSS pixels, and the box carries its 1px border inside its own width, so
+// the border comes off the rect before the scale — otherwise the last pixel of the
+// picture resolves to cell 216, which is not a cell. Pointer events, so a finger works.
+cv.addEventListener('pointerdown', function(e){
+  var r = cv.getBoundingClientRect(), s = getComputedStyle(cv),
+      bl = parseFloat(s.borderLeftWidth), bt = parseFloat(s.borderTopWidth),
+      w = r.width - bl - parseFloat(s.borderRightWidth),
+      h = r.height - bt - parseFloat(s.borderBottomWidth),
+      cx = Math.floor((e.clientX - r.left - bl) * N / w),
+      cy = Math.floor((e.clientY - r.top - bt) * N / h);
+  cx = cx < 0 ? 0 : cx > N-1 ? N-1 : cx;
+  cy = cy < 0 ? 0 : cy > N-1 ? N-1 : cy;
+  disc(cx, cy);
+  // It is seeding, so it counts as seeding: the death clock is cleared and the caption
+  // is taken, which is what makes a click on a starved dish revive it rather than be
+  // swallowed by the two seconds it is already counting.
+  deadAt = 0; seededAt = performance.now();
+  say();
+  // Under reduced motion the model has already stopped, so nothing is coming to paint
+  // the disc. This is the frame it gets.
+  if (reduce) paint();
+});
+
 cv.style.opacity = 0;
-var left = 1200, primed = false;
+var left = 1200;
 return { tick: function(){
   if (left > 0){
-    if (!primed){ walk(T); primed = true; }
     var t0 = performance.now();
     do { step(); left--; } while (left > 0 && performance.now() - t0 < 12);
     if (left > 0) return true;
