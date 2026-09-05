@@ -828,6 +828,7 @@ var DA = 1.0, DB = 0.5;
 // pattern narrows to a sliver. At 0.062 a seed takes anywhere in F = 0.028..0.065, an
 // established pattern survives down to about F = 0.020, and the fader crosses four
 // structures on the way: spots, worms, labyrinth, coarse cells.
+var T = 0.62;                      // position along the path, which is what the fader moves
 var K = 0.062;
 var F = 0.045;
 
@@ -909,6 +910,27 @@ var GONE = 0.0008;
 var slider = document.getElementById('feed'), out = document.getElementById('fout'),
     cap = document.getElementById('gcap');
 
+// One fader, two parameters. The regimes worth seeing do not lie along a line of constant
+// k; they lie in diagonal bands, so a fader that only moved F would cut across one of them
+// and miss the rest. These waypoints were found by sweeping the (F, k) plane, scoring each
+// point for how much it was still doing after it had settled, and then routing between the
+// best of each kind without leaving living ground.
+//
+// It stops at 0.82 of the way along. Past that the dish starves at 216 squared, even
+// though it survives on the smaller lattice the sweep used, because the same seed is a far
+// smaller fraction of a bigger dish. That is the one number here measured on the page
+// rather than in the sweep, and it is the one that matters, since a starved dish cannot
+// restart itself.
+var WAY = [[0.0186,0.0462],[0.0214,0.0486],[0.0214,0.0521],[0.0300,0.0557],
+           [0.0357,0.0581],[0.0329,0.0605],[0.0414,0.0605],[0.0500,0.0605],
+           [0.0586,0.0617],[0.0614,0.0629]];
+var CAP = 0.82;
+function walk(t){
+  var x = t*CAP*(WAY.length-1), i = Math.min(Math.floor(x), WAY.length-2), u = x-i;
+  F = WAY[i][0]*(1-u) + WAY[i+1][0]*u;
+  K = WAY[i][1]*(1-u) + WAY[i+1][1]*u;
+}
+
 // b = 0 everywhere is an exact fixed point of the second equation at every F, so a
 // starved dish cannot restart itself and no fader position will do it either. Seeding
 // is the only way back, and it waits out two continuous seconds of death first, on the
@@ -929,10 +951,10 @@ var WAIT = 2000, deadAt = 0, seededAt = -1e9;
 // obvious fourth and are out on purpose — those patterns are Turing-like, but the
 // mechanism is interactions between pigment cells, not this chemistry.
 function regime(){
-  if (F < 0.028) return 'Starving';
-  if (F < 0.042) return 'Fed thinly · spots in a chemical reactor';
-  if (F < 0.055) return 'Well fed · ridges on a fingertip';
-  return 'Fed hard · vegetation in a dry landscape';
+  if (T < 0.18) return 'Restless · spots that divide in a gel reactor';
+  if (T < 0.45) return 'Sparse · spots and stripes in a chemical reactor';
+  if (T < 0.78) return 'A labyrinth · ridges on a fingertip';
+  return 'Crowded · vegetation in a dry landscape';
 }
 
 function say(){
@@ -950,8 +972,9 @@ function say(){
 }
 
 slider.addEventListener('input', function(){
-  F = parseFloat(this.value);
-  out.textContent = F.toFixed(3);
+  T = parseFloat(this.value);
+  walk(T);
+  out.textContent = T.toFixed(2);
   say();
 });
 
@@ -967,6 +990,7 @@ out.textContent = F.toFixed(3);
 // same cost buys the single frame in the reduced-motion case.
 cv.style.opacity = 0;
 function warm(){
+walk(T);
 for (var w=0;w<1200;w++) step();
 paint();
 cv.style.opacity = 1;
@@ -992,9 +1016,9 @@ requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 GS_PLATE = """    <div class="viz">
       <canvas id="gs" aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
       <div class="ctrl">
-        <label for="feed">Feed F</label>
-        <input id="feed" type="range" min="0" max="0.065" step="0.001" value="0.045">
-        <output id="fout">0.045</output>
+        <label for="feed">Drive</label>
+        <input id="feed" type="range" min="0" max="1" step="0.002" value="0.62">
+        <output id="fout">0.62</output>
       </div>
       <p class="note" id="gcap"></p>
     </div>"""
