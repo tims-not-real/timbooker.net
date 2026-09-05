@@ -515,19 +515,19 @@ function draw(){
 
 // Where each one turns up, rather than what it is called. The middle of the range is
 // where nature is; the two ends are where the proofs are.
+// The fader already says what kappa is, so the caption does not repeat it.
 function named(k){
-  if (Math.abs(k-2)<0.12)   return ['&kappa; = 2', 'a river through its basin'];
-  if (Math.abs(k-8/3)<0.12) return ['&kappa; = 8/3', 'a polymer in a monolayer'];
-  if (Math.abs(k-3)<0.12)   return ['&kappa; = 3', 'domain walls in a thin magnet'];
-  if (Math.abs(k-4)<0.12)   return ['&kappa; = 4', 'contours of a rough crystal surface'];
-  if (Math.abs(k-6)<0.12)   return ['&kappa; = 6', 'porous rock, epidemics, fire through a canopy'];
-  if (Math.abs(k-8)<0.15)   return ['&kappa; = 8', 'the whole drainage basin'];
+  if (Math.abs(k-2)<0.12)   return 'A river through its basin';
+  if (Math.abs(k-8/3)<0.12) return 'A polymer in a monolayer';
+  if (Math.abs(k-3)<0.12)   return 'Domain walls in a thin magnet';
+  if (Math.abs(k-4)<0.12)   return 'Contours of a rough crystal surface';
+  if (Math.abs(k-6)<0.12)   return 'Porous rock, epidemics, fire through a canopy';
+  if (Math.abs(k-8)<0.15)   return 'The whole drainage basin';
   return null;
 }
 function say(){
   var nm=named(kap);
-  cap.innerHTML = nm ? '<b>'+nm[0]+'</b> &middot; '+nm[1]
-                     : 'A curve nobody has found outdoors yet.';
+  cap.textContent = nm || 'A curve nobody has found outdoors yet.';
   cap.classList.toggle('crit', !!nm);
 }
 sl.addEventListener('input',function(){
