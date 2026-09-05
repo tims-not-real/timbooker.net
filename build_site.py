@@ -141,6 +141,32 @@ __CSS__
 __MAIN__
   <footer><p>__FOOTER__</p><p class="llms">__FOOTER_LLMS__</p></footer>
 </div>
+<script>
+// Keep the reader where they were. A cross-document navigation resets scroll to the top,
+// which on a site whose pages share a header means losing your place for no reason. The
+// position is stashed on the way out and restored on the way in, clamped to whatever the
+// new page can actually scroll to. Session storage, so a genuinely new tab starts at the
+// top as it should.
+(function(){
+  try{
+    // Deliberately NOT touching history.scrollRestoration. Setting it to manual would
+    // take back and forward away from the browser too, and this only remembers one
+    // position, so it would restore the wrong one.
+    var k = 'tb:y', y = parseInt(sessionStorage.getItem(k) || '0', 10);
+    if (y > 0){
+      var go = function(){
+        var max = document.documentElement.scrollHeight - innerHeight;
+        window.scrollTo(0, Math.max(0, Math.min(y, max)));
+      };
+      go();
+      addEventListener('load', go);          // again once images and fonts have settled
+    }
+    addEventListener('pagehide', function(){
+      try { sessionStorage.setItem(k, String(Math.round(scrollY))); } catch(e){}
+    });
+  } catch(e){}
+})();
+</script>
 __SCRIPT__</body>
 </html>
 """
