@@ -527,7 +527,7 @@ function named(k){
 }
 function say(){
   var nm=named(kap);
-  cap.textContent = nm || 'One realisation of a universality class';
+  cap.textContent = nm || 'A realisation of a universal family';
   cap.classList.toggle('crit', !!nm);
 }
 sl.addEventListener('input',function(){
