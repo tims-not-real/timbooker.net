@@ -55,7 +55,11 @@ a{color:inherit}
 .hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
 /* no model on this page yet: one column, label full width. Holding the 23rem open and
    empty reads as a missing thing, and a big empty field is a failure, not a minimum. */
-.hero.solo{grid-template-columns:minmax(0,1fr)}
+/* The label is the same object on every page, so it is the same size on every page:
+   one column width and one height, set by what Research needs. A page with no plate yet
+   still holds the column open, because the alternative is the label changing shape on the
+   day a plate arrives. */
+.label{height:29.25rem}
 
 /* ---- the label: blue field, white knocked out, hierarchy by weight ---- */
 /* the same object on every page; the nav says which page you are on, so nothing
@@ -98,7 +102,11 @@ a{color:inherit}
 
 /* ---- the toy ---- */
 .viz{display:flex; flex-direction:column; gap:.6rem}
-.viz canvas{
+/* The plate arrives when its model has warmed up, rather than snapping in. The canvas
+   is visible by default and the script hides it before it starts work, so with no
+   JavaScript there is still an empty plate here rather than a hole. */
+.viz canvas{transition:opacity .35s ease;
+
   display:block; width:100%; height:auto; image-rendering:pixelated;
   border:1px solid var(--rule); background:var(--plate);
 }
@@ -216,6 +224,46 @@ footer{margin-top:4rem; padding-top:1.2rem; border-top:1px solid var(--rule);
        align-items:baseline}
 footer p{max-width:62ch}
 footer p.llms{white-space:nowrap; max-width:none}
+
+/* ---- moving between pages ----
+   Cross-document view transitions. Every page stays a complete standalone document,
+   so there is no router and no shared shell, and a browser that does not know these
+   rules drops them and navigates exactly as it did before.
+
+   Nothing carries a view-transition-name, which is the opposite of the obvious move
+   and is deliberate. A named element is lifted into the transition's own layer,
+   above the page, where the fixed grain on body::after can no longer reach it: the
+   label loses the paper tooth for the length of the transition and gets it back at
+   the end, a step of about 10/255 on the blue field. It buys nothing to pay that
+   for. The label sits in the same place on every page, so inside one whole-page
+   cross-fade it is already identical frame to frame and simply holds, grain and all.
+   What crosses is what actually differs between the two pages: the plate in the
+   right column, the body beneath, the underline in the nav.
+
+   A cross-fade and nothing else. Displacing the incoming page would take the label
+   with it, and the label holding still is the whole of the effect. */
+@view-transition{navigation:auto}
+/* The label is the one thing that is genuinely the same object on both pages, so it is
+   carried across rather than cross-faded with itself. Without this its text is composited
+   twice through the transition and visibly reloads. The cost is that a named element is
+   lifted out of the root snapshot, so the fixed grain on body::after cannot reach it for
+   the length of the transition — about 10/255 on the blue field, for 180ms. That is the
+   cheaper of the two. */
+.label{view-transition-name:label}
+::view-transition-group(label){animation-duration:.18s}
+::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){
+  animation-duration:.18s; animation-timing-function:ease;
+}
+@media(prefers-reduced-motion:reduce){
+  @view-transition{navigation:none}
+  /* and where that descriptor is not understood, every animation is over on the
+     frame it starts, which comes to the same thing */
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){
+    animation-duration:0s !important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
 @media(max-width:880px){
   .wrap{padding:1.25rem 1.25rem 4rem}

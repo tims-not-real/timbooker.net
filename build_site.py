@@ -105,12 +105,13 @@ def hero(page, plate=''):
     Either way it looks the same, so the name never reads as a piece of navigation.
 
     `plate` is the 23rem right column: pass the markup for a live model and the hero
-    is two columns; pass nothing and the hero is one, with the label full width. A
-    page fills the column by handing this one argument a `<div class="viz">` block.
+    is two columns and so is a page without one: the label is the same size everywhere,
+    and a page with no plate yet holds its column open. A page fills the column by handing
+    this one argument a `<div class="viz">` block.
     """
     name = ('Tim Booker' if page == 'Home'
             else '<a href="home.html">Tim Booker</a>')
-    return ((LABEL % ('' if plate else ' solo', nav(page)))
+    return ((LABEL % ('', nav(page)))
             .replace('__NAME__', name)
             .replace('__GROUP__', GROUP).replace('__UNI__', UNI)
             + ('\n' + plate + '\n' if plate else '')
@@ -140,6 +141,32 @@ __CSS__
 __MAIN__
   <footer><p>__FOOTER__</p><p class="llms">__FOOTER_LLMS__</p></footer>
 </div>
+<script>
+// Keep the reader where they were. A cross-document navigation resets scroll to the top,
+// which on a site whose pages share a header means losing your place for no reason. The
+// position is stashed on the way out and restored on the way in, clamped to whatever the
+// new page can actually scroll to. Session storage, so a genuinely new tab starts at the
+// top as it should.
+(function(){
+  try{
+    // Deliberately NOT touching history.scrollRestoration. Setting it to manual would
+    // take back and forward away from the browser too, and this only remembers one
+    // position, so it would restore the wrong one.
+    var k = 'tb:y', y = parseInt(sessionStorage.getItem(k) || '0', 10);
+    if (y > 0){
+      var go = function(){
+        var max = document.documentElement.scrollHeight - innerHeight;
+        window.scrollTo(0, Math.max(0, Math.min(y, max)));
+      };
+      go();
+      addEventListener('load', go);          // again once images and fonts have settled
+    }
+    addEventListener('pagehide', function(){
+      try { sessionStorage.setItem(k, String(Math.round(scrollY))); } catch(e){}
+    });
+  } catch(e){}
+})();
+</script>
 __SCRIPT__</body>
 </html>
 """
@@ -248,16 +275,18 @@ setT(0.2);
 // sweeps, not a few dozen. When motion is allowed we simply let the loop do it and you
 // watch the lattice organise itself. When it is not, we pay the cost up front.
 var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (reduce){
+// Warm up AFTER the browser has painted, not before. Equilibrating sixteen million spin
+// flips inside the parsing script blocks rendering entirely, and on a view-transition
+// navigation that holds the whole site on the old page until it finishes. Two frames of
+// an empty plate cost nothing. A third of a second of frozen navigation costs a lot.
+canvases.forEach(function(p){ p[0].style.opacity = 0; });
+function warm(){
   sweep(N*N*350);
   paint();
-} else {
-  // Equilibrate before the first paint, so the page opens settled rather than on noise.
-  // This happens off-screen; the visible animation runs at one constant slow rate.
-  sweep(N*N*350);
-  paint();
-  (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
+  canvases.forEach(function(p){ p[0].style.opacity = 1; });
+  if (!reduce) (function loop(){ sweep((N*N*2/5)|0); paint(); requestAnimationFrame(loop); })();
 }
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 """
 
 # Register: plain academic. Chalmers and Dennett, in his words: no hype, no jargon,
@@ -465,10 +494,12 @@ function draw(){
   x0-=pad; x1+=pad; y1*=1.06;
   var sc=Math.min((S-8)/(x1-x0), (S-12)/y1);
   var ox=(S-(x1-x0)*sc)/2;
+  // One ink for the whole curve. Ramping it along its length said which end was older,
+  // which is not something the curve is about, and it put the early half in the blue that
+  // the plate ground swallows.
   cx.lineWidth=1.9; cx.lineJoin='round'; cx.lineCap='round';
+  cx.strokeStyle='rgb('+OFF.join(',')+')';
   for (i=1;i<n;i++){
-    var c=ramp(i/(n-1));
-    cx.strokeStyle='rgb('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+')';
     cx.beginPath();
     cx.moveTo(ox+(px[i-1]-x0)*sc, (S-4)-py[i-1]*sc);
     cx.lineTo(ox+(px[i]-x0)*sc,   (S-4)-py[i]*sc);
@@ -497,13 +528,20 @@ sl.addEventListener('input',function(){
   kap=parseFloat(this.value); out.textContent=kap.toFixed(2);
   say();
 });
-say(); reset();
+say();
 
 // Reduced motion still gets a curve, and gets it with the growth paid off screen: the
-// same loop, run once before the only paint, and then nothing moves.
+// same loop, run once before the only paint, and then nothing moves. Either way the
+// growth waits for the browser to have painted, so a navigation is never held on it.
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function frame(){ for (var i=0;i<3;i++) extend(); draw(); requestAnimationFrame(frame); }
-if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
+cv.style.opacity = 0;
+function warm(){
+  reset();
+  cv.style.opacity = 1;
+  if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
+}
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 """
 
 # The 23rem column on Research. Same shape as ISING_PLATE and GS_PLATE: canvas, the one
@@ -819,6 +857,7 @@ var DA = 1.0, DB = 0.5;
 // pattern narrows to a sliver. At 0.062 a seed takes anywhere in F = 0.028..0.065, an
 // established pattern survives down to about F = 0.020, and the fader crosses four
 // structures on the way: spots, worms, labyrinth, coarse cells.
+var T = 0.62;                      // position along the path, which is what the fader moves
 var K = 0.062;
 var F = 0.045;
 
@@ -900,6 +939,27 @@ var GONE = 0.0008;
 var slider = document.getElementById('feed'), out = document.getElementById('fout'),
     cap = document.getElementById('gcap');
 
+// One fader, two parameters. The regimes worth seeing do not lie along a line of constant
+// k; they lie in diagonal bands, so a fader that only moved F would cut across one of them
+// and miss the rest. These waypoints were found by sweeping the (F, k) plane, scoring each
+// point for how much it was still doing after it had settled, and then routing between the
+// best of each kind without leaving living ground.
+//
+// It stops at 0.82 of the way along. Past that the dish starves at 216 squared, even
+// though it survives on the smaller lattice the sweep used, because the same seed is a far
+// smaller fraction of a bigger dish. That is the one number here measured on the page
+// rather than in the sweep, and it is the one that matters, since a starved dish cannot
+// restart itself.
+var WAY = [[0.0186,0.0462],[0.0214,0.0486],[0.0214,0.0521],[0.0300,0.0557],
+           [0.0357,0.0581],[0.0329,0.0605],[0.0414,0.0605],[0.0500,0.0605],
+           [0.0586,0.0617],[0.0614,0.0629]];
+var CAP = 0.82;
+function walk(t){
+  var x = t*CAP*(WAY.length-1), i = Math.min(Math.floor(x), WAY.length-2), u = x-i;
+  F = WAY[i][0]*(1-u) + WAY[i+1][0]*u;
+  K = WAY[i][1]*(1-u) + WAY[i+1][1]*u;
+}
+
 // b = 0 everywhere is an exact fixed point of the second equation at every F, so a
 // starved dish cannot restart itself and no fader position will do it either. Seeding
 // is the only way back, and it waits out two continuous seconds of death first, on the
@@ -909,17 +969,21 @@ var WAIT = 2000, deadAt = 0, seededAt = -1e9;
 // The boundaries are where the behaviour changes, not round numbers: below 0.028 no
 // seeded pattern establishes and a pattern dragged down from above only thins, and
 // above 0.055 the structure closes up and the bare medium is what is left over.
+// The state, then where that state turns up — the register the plate on Research uses.
+// Not the mechanism: the plate is the mechanism, and saying it twice helps nobody.
+//
+// Every one of these is a place where reaction and diffusion really are the model, not
+// somewhere that merely comes out looking similar. Gray and Scott were describing a
+// stirred tank to begin with; fingerprint ridges were shown to follow a Turing mechanism
+// in 2023; and vegetation patterning in drylands is modelled as water and biomass with
+// different transport, after Klausmeier and Rietkerk. Coat markings on a fish were the
+// obvious fourth and are out on purpose — those patterns are Turing-like, but the
+// mechanism is interactions between pigment cells, not this chemistry.
 function regime(){
-  if (F < 0.028) return 'Starving. Less U arrives than V consumes, so the structure '
-    + 'thins rather than settling into a calmer one, and it will not stop thinning.';
-  if (F < 0.042) return 'Fed thinly. A front advances only where U has had time to '
-    + 'diffuse back in, so the structure breaks into worms and into spots that divide '
-    + 'as they grow.';
-  if (F < 0.055) return 'Well fed. Every front is supplied from behind, so the '
-    + 'structure holds its width and wanders, neither filling the dish nor retreating '
-    + 'from it.';
-  return 'Fed hard. U is replaced almost as fast as V takes it, so the fronts close on '
-    + 'one another and bare medium survives only in the gaps between them.';
+  if (T < 0.18) return 'Restless · spots that divide in a gel reactor';
+  if (T < 0.45) return 'Sparse · spots and stripes in a chemical reactor';
+  if (T < 0.78) return 'A labyrinth · ridges on a fingertip';
+  return 'Crowded · vegetation in a dry landscape';
 }
 
 function say(){
@@ -927,11 +991,9 @@ function say(){
   // the seeding line holds for a moment even if the dish dies again straight away,
   // which at F = 0 it does
   if (t - seededAt < 1200)
-    text = 'Seeded again from outside, after two seconds bare. Nothing inside the dish '
-         + 'could have done it.';
+    text = 'Seeded again from outside';
   else if (dead)
-    text = 'Bare medium. Making V takes V, and there is none left, so this state is '
-         + 'absorbing: no value of F recovers it. Only seeding it from outside will.';
+    text = 'Bare medium · nothing inside the dish can start it again';
   else
     text = regime();
   if (cap.textContent !== text) cap.textContent = text;
@@ -939,8 +1001,9 @@ function say(){
 }
 
 slider.addEventListener('input', function(){
-  F = parseFloat(this.value);
-  out.textContent = F.toFixed(3);
+  T = parseFloat(this.value);
+  walk(T);
+  out.textContent = T.toFixed(2);
   say();
 });
 
@@ -954,8 +1017,12 @@ out.textContent = F.toFixed(3);
 // Opening on a plate that is still mostly bare would be opening on the seed rather
 // than on the chemistry, so the first 1200 steps are paid before the first paint. The
 // same cost buys the single frame in the reduced-motion case.
+cv.style.opacity = 0;
+function warm(){
+walk(T);
 for (var w=0;w<1200;w++) step();
 paint();
+cv.style.opacity = 1;
 say();
 
 if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
@@ -970,15 +1037,17 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
     requestAnimationFrame(loop);
   })();
 }
+}
+requestAnimationFrame(function(){ requestAnimationFrame(warm); });
 """
 # The 23rem column on Freelancing. Same shape as ISING_PLATE: canvas, the one fader,
 # the caption that says what the chemistry is doing.
 GS_PLATE = """    <div class="viz">
       <canvas id="gs" aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
       <div class="ctrl">
-        <label for="feed">Feed F</label>
-        <input id="feed" type="range" min="0" max="0.065" step="0.001" value="0.045">
-        <output id="fout">0.045</output>
+        <label for="feed">Drive</label>
+        <input id="feed" type="range" min="0" max="1" step="0.002" value="0.62">
+        <output id="fout">0.62</output>
       </div>
       <p class="note" id="gcap"></p>
     </div>"""
