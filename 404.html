@@ -30,6 +30,9 @@
   --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+/* The page states are held in the document and shown one at a time, and .viz sets
+   its own display, which would otherwise win against the UA's [hidden] rule. */
+[hidden]{display:none !important}
 html{-webkit-text-size-adjust:100%}
 body{
   background:var(--bg); color:var(--fg); min-height:100vh;
@@ -270,6 +273,48 @@ footer p.llms{white-space:nowrap; max-width:none}
   }
 }
 
+/* ---- and moving between them inside one document ----
+   The rules above stay, because every page is still written as a complete standalone
+   document and a reader who arrives on one navigates out of it the cross-document way.
+   These take over only where the router is running, which is where `app` is set on the
+   root element by script. With no JavaScript the class is never set and nothing below
+   applies.
+
+   The root loses its name, so the document is not captured at all. Nothing is
+   snapshotted unless it is named, and the label is not named: it is not lifted out of
+   the page, not composited against a copy of itself and not re-laid-out. It is simply
+   still there, being the same element it was before the click. That is the whole of the
+   fix, and it is one declaration.
+
+   What is named is what actually differs between two pages: the plate in the right
+   column and the page body. The grain keeps the name it already had, so it is lifted
+   into the transition layer and lands on top of those two rather than being left in a
+   root snapshot that no longer exists. */
+html.app{view-transition-name:none}
+html.app .label{view-transition-name:none}
+/* And the grain gives its name back, because the reason it was given one has gone. It
+   was named so that it would be lifted into the transition layer along with the label
+   and could still reach it. Here the label is not lifted at all, so the grain reaches it
+   by simply staying where it is. Named, with no root snapshot beneath it in that layer
+   to blend with, its overlay has nothing to work against and it lands as a flat grey
+   veil over the whole page: 29 of 255, measured, for the length of every swap. */
+html.app body::after{view-transition-name:none}
+html.app .plate > .viz:not([hidden]){view-transition-name:plate}
+html.app [data-page]:not([hidden]){view-transition-name:page}
+/* The groups do not animate, and that is deliberate. A browser re-targets a group at
+   the live element on every frame, so an animating group interpolates from where the
+   element was towards wherever it is right now — and while the label's row is being
+   animated, "right now" is itself moving, so the body only ever reaches the product of
+   the two progressions and trails the label by up to 36px mid-swap. Measured, and the
+   reason the label's move looked wrong however it was eased.
+
+   Pinned, a group sits exactly on the live element, so the outgoing page and the
+   incoming one both travel with the layout and the label's bottom edge and the text
+   under it move as one thing. It also means a swap that changes the scroll position
+   does not slide: only the cross-fade is animated, which is all a cross-fade needs. */
+html.app::view-transition-group(page),
+html.app::view-transition-group(plate){animation:none}
+
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
 @media(max-width:880px){
@@ -306,9 +351,10 @@ footer p.llms{white-space:nowrap; max-width:none}
       </div>
       <nav><a href="home.html">Home</a><a href="research.html">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>
     </div>
+    <div class="plate">
+    </div>
   </div>
-
-  <div class="body">
+  <section class="body" data-page="404">
     <div class="prose">
       <p class="lede">Nothing here.</p>
       <p>Either the address is wrong or I moved something and didn't leave a note.
@@ -320,7 +366,7 @@ footer p.llms{white-space:nowrap; max-width:none}
       broken, tell me:
       <a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>.</p>
     </div>
-  </div>
+  </section>
 
   <footer><p>I respectfully acknowledge the Traditional Owners of the land in which we work and learn, and pay respects to their elders, past, present and future.</p><p class="llms">For language models: <a href="/llms.txt">llms.txt</a></p></footer>
 </div>

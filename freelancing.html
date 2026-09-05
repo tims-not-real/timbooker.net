@@ -31,6 +31,9 @@
   --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+/* The page states are held in the document and shown one at a time, and .viz sets
+   its own display, which would otherwise win against the UA's [hidden] rule. */
+[hidden]{display:none !important}
 html{-webkit-text-size-adjust:100%}
 body{
   background:var(--bg); color:var(--fg); min-height:100vh;
@@ -271,6 +274,48 @@ footer p.llms{white-space:nowrap; max-width:none}
   }
 }
 
+/* ---- and moving between them inside one document ----
+   The rules above stay, because every page is still written as a complete standalone
+   document and a reader who arrives on one navigates out of it the cross-document way.
+   These take over only where the router is running, which is where `app` is set on the
+   root element by script. With no JavaScript the class is never set and nothing below
+   applies.
+
+   The root loses its name, so the document is not captured at all. Nothing is
+   snapshotted unless it is named, and the label is not named: it is not lifted out of
+   the page, not composited against a copy of itself and not re-laid-out. It is simply
+   still there, being the same element it was before the click. That is the whole of the
+   fix, and it is one declaration.
+
+   What is named is what actually differs between two pages: the plate in the right
+   column and the page body. The grain keeps the name it already had, so it is lifted
+   into the transition layer and lands on top of those two rather than being left in a
+   root snapshot that no longer exists. */
+html.app{view-transition-name:none}
+html.app .label{view-transition-name:none}
+/* And the grain gives its name back, because the reason it was given one has gone. It
+   was named so that it would be lifted into the transition layer along with the label
+   and could still reach it. Here the label is not lifted at all, so the grain reaches it
+   by simply staying where it is. Named, with no root snapshot beneath it in that layer
+   to blend with, its overlay has nothing to work against and it lands as a flat grey
+   veil over the whole page: 29 of 255, measured, for the length of every swap. */
+html.app body::after{view-transition-name:none}
+html.app .plate > .viz:not([hidden]){view-transition-name:plate}
+html.app [data-page]:not([hidden]){view-transition-name:page}
+/* The groups do not animate, and that is deliberate. A browser re-targets a group at
+   the live element on every frame, so an animating group interpolates from where the
+   element was towards wherever it is right now — and while the label's row is being
+   animated, "right now" is itself moving, so the body only ever reaches the product of
+   the two progressions and trails the label by up to 36px mid-swap. Measured, and the
+   reason the label's move looked wrong however it was eased.
+
+   Pinned, a group sits exactly on the live element, so the outgoing page and the
+   incoming one both travel with the layout and the label's bottom edge and the text
+   under it move as one thing. It also means a swap that changes the scroll position
+   does not slide: only the cross-fade is animated, which is all a cross-fade needs. */
+html.app::view-transition-group(page),
+html.app::view-transition-group(plate){animation:none}
+
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
 @media(max-width:880px){
@@ -307,19 +352,19 @@ footer p.llms{white-space:nowrap; max-width:none}
       </div>
       <nav><a href="home.html">Home</a><a href="research.html">Research</a><a href="freelancing.html" aria-current="page">Freelancing</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>
     </div>
-
-    <div class="viz">
-      <canvas id="gs" aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
-      <div class="ctrl">
-        <label for="feed">Drive</label>
-        <input id="feed" type="range" min="0" max="1" step="0.002" value="0.62">
-        <output id="fout">0.62</output>
+    <div class="plate">
+      <div class="viz" data-plate="freelancing">
+        <canvas aria-label="A Gray-Scott reaction, fed at rate F"></canvas>
+        <div class="ctrl">
+          <label for="feed">Drive</label>
+          <input id="feed" type="range" min="0" max="1" step="0.002" value="0.62">
+          <output>0.62</output>
+        </div>
+        <p class="note"></p>
       </div>
-      <p class="note" id="gcap"></p>
     </div>
   </div>
-
-  <div class="body">
+  <section class="body" data-page="freelancing">
     <div class="prose">
       <p class="lede">I take on contract and consulting work: recommender and ranking
       design, data science on large or messy sources, measurement, and applied work with
@@ -341,7 +386,7 @@ footer p.llms{white-space:nowrap; max-width:none}
         <p>Please contact me at <a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>.</p>
       </div>
     </section>
-  </div>
+  </section>
 
   <footer><p>I respectfully acknowledge the Traditional Owners of the land in which we work and learn, and pay respects to their elders, past, present and future.</p><p class="llms">For language models: <a href="/llms.txt">llms.txt</a></p></footer>
 </div>
@@ -372,6 +417,40 @@ footer p.llms{white-space:nowrap; max-width:none}
 })();
 </script>
 <script>
+var TB = (function(){
+  var defs = {}, made = {}, cur = null, raf = 0, ticks = {};
+  function stop(){
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0; cur = null;
+  }
+  function mount(name){
+    if (made[name] || !defs[name]) return;
+    var el = document.querySelector('.viz[data-plate="' + name + '"]');
+    if (el) made[name] = defs[name](el);
+  }
+  function run(name){
+    stop();
+    mount(name);
+    var p = made[name];
+    if (!p) return;                    // this page has no plate, so nothing runs
+    cur = name;
+    raf = requestAnimationFrame(function loop(){
+      ticks[name] = (ticks[name] || 0) + 1;
+      if (p.tick() === false){ raf = 0; cur = null; return; }   // settled, and stops
+      raf = requestAnimationFrame(loop);
+    });
+  }
+  return {
+    define: function(name, fn){ defs[name] = fn; },
+    mount: mount, run: run, stop: stop,
+    // Four lines that make the claim checkable rather than asserted: which model is
+    // stepping, which have been built, and how many frames each of them has had.
+    ticks: ticks,
+    running: function(){ return cur; },
+    mounted: function(){ var k = []; for (var n in made) k.push(n); return k; }
+  };
+})();
+
 // ---- Gray-Scott reaction-diffusion ------------------------------------------
 // Two chemicals in an open dish. U + 2V -> 3V, so V turns U into more of itself,
 // U is fed in from outside at rate F, and everything is drained at rate k.
@@ -380,6 +459,7 @@ footer p.llms{white-space:nowrap; max-width:none}
 // Da is twice Db. V cannot spread as fast as the U it needs, so a front cannot
 // smooth itself out, and that difference in the two diffusion rates is the whole
 // reason there is structure here rather than a uniform soup.
+TB.define('freelancing', function(root){
 var N = 216, L = N*N;              // the Ising plate's grid, one cell per screen block
 var DA = 1.0, DB = 0.5;
 
@@ -397,7 +477,7 @@ var F = 0.045;
 var ga = new Float32Array(L), gb = new Float32Array(L),
     ga2 = new Float32Array(L), gb2 = new Float32Array(L);
 
-var cv = document.getElementById('gs');
+var cv = root.querySelector('canvas');
 cv.width = N; cv.height = N;
 var ctx = cv.getContext('2d'), img = ctx.createImageData(N, N);
 
@@ -469,8 +549,8 @@ function live(){
 }
 
 var GONE = 0.0008;
-var slider = document.getElementById('feed'), out = document.getElementById('fout'),
-    cap = document.getElementById('gcap');
+var slider = root.querySelector('input'), out = root.querySelector('output'),
+    cap = root.querySelector('.note');
 
 // One fader, two parameters. The regimes worth seeing do not lie along a line of constant
 // k; they lie in diagonal bands, so a fader that only moved F would cut across one of them
@@ -548,29 +628,38 @@ seed();
 out.textContent = F.toFixed(3);
 
 // Opening on a plate that is still mostly bare would be opening on the seed rather
-// than on the chemistry, so the first 1200 steps are paid before the first paint. The
-// same cost buys the single frame in the reduced-motion case.
+// than on the chemistry, so the first 1200 steps are paid before it is shown. They cost
+// 634ms in one block, which is half a second of page that cannot be scrolled, so they
+// are paid across frames instead. The same cost buys the single frame in the
+// reduced-motion case.
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 cv.style.opacity = 0;
-function warm(){
-walk(T);
-for (var w=0;w<1200;w++) step();
-paint();
-cv.style.opacity = 1;
-say();
-
-if (!matchMedia('(prefers-reduced-motion: reduce)').matches){
-  (function loop(){
-    for (var s=0;s<6;s++) step();
+var left = 1200, primed = false;
+return { tick: function(){
+  if (left > 0){
+    if (!primed){ walk(T); primed = true; }
+    var t0 = performance.now();
+    do { step(); left--; } while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
     paint();
-    var t = performance.now();
-    if (live() >= GONE) deadAt = 0;
-    else if (!deadAt) deadAt = t;
-    else if (t - deadAt >= WAIT){ seed(); deadAt = 0; seededAt = t; }
+    cv.style.opacity = 1;
     say();
-    requestAnimationFrame(loop);
-  })();
-}
-}
-requestAnimationFrame(function(){ requestAnimationFrame(warm); });
+    return !reduce;
+  }
+  for (var s=0;s<6;s++) step();
+  paint();
+  var t = performance.now();
+  if (live() >= GONE) deadAt = 0;
+  else if (!deadAt) deadAt = t;
+  else if (t - deadAt >= WAIT){ seed(); deadAt = 0; seededAt = t; }
+  say();
+  return true;
+} };
+});
+
+TB.mount('freelancing');
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){ TB.run('freelancing'); });
+});
 </script></body>
 </html>

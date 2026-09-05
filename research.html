@@ -31,6 +31,9 @@
   --grain-page:.30; --grain-blue:.42; --grain-blend:overlay;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+/* The page states are held in the document and shown one at a time, and .viz sets
+   its own display, which would otherwise win against the UA's [hidden] rule. */
+[hidden]{display:none !important}
 html{-webkit-text-size-adjust:100%}
 body{
   background:var(--bg); color:var(--fg); min-height:100vh;
@@ -271,6 +274,48 @@ footer p.llms{white-space:nowrap; max-width:none}
   }
 }
 
+/* ---- and moving between them inside one document ----
+   The rules above stay, because every page is still written as a complete standalone
+   document and a reader who arrives on one navigates out of it the cross-document way.
+   These take over only where the router is running, which is where `app` is set on the
+   root element by script. With no JavaScript the class is never set and nothing below
+   applies.
+
+   The root loses its name, so the document is not captured at all. Nothing is
+   snapshotted unless it is named, and the label is not named: it is not lifted out of
+   the page, not composited against a copy of itself and not re-laid-out. It is simply
+   still there, being the same element it was before the click. That is the whole of the
+   fix, and it is one declaration.
+
+   What is named is what actually differs between two pages: the plate in the right
+   column and the page body. The grain keeps the name it already had, so it is lifted
+   into the transition layer and lands on top of those two rather than being left in a
+   root snapshot that no longer exists. */
+html.app{view-transition-name:none}
+html.app .label{view-transition-name:none}
+/* And the grain gives its name back, because the reason it was given one has gone. It
+   was named so that it would be lifted into the transition layer along with the label
+   and could still reach it. Here the label is not lifted at all, so the grain reaches it
+   by simply staying where it is. Named, with no root snapshot beneath it in that layer
+   to blend with, its overlay has nothing to work against and it lands as a flat grey
+   veil over the whole page: 29 of 255, measured, for the length of every swap. */
+html.app body::after{view-transition-name:none}
+html.app .plate > .viz:not([hidden]){view-transition-name:plate}
+html.app [data-page]:not([hidden]){view-transition-name:page}
+/* The groups do not animate, and that is deliberate. A browser re-targets a group at
+   the live element on every frame, so an animating group interpolates from where the
+   element was towards wherever it is right now — and while the label's row is being
+   animated, "right now" is itself moving, so the body only ever reaches the product of
+   the two progressions and trails the label by up to 36px mid-swap. Measured, and the
+   reason the label's move looked wrong however it was eased.
+
+   Pinned, a group sits exactly on the live element, so the outgoing page and the
+   incoming one both travel with the layout and the label's bottom edge and the text
+   under it move as one thing. It also means a swap that changes the scroll position
+   does not slide: only the cross-fade is animated, which is all a cross-fade needs. */
+html.app::view-transition-group(page),
+html.app::view-transition-group(plate){animation:none}
+
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
 @media(max-width:880px){
@@ -307,18 +352,19 @@ footer p.llms{white-space:nowrap; max-width:none}
       </div>
       <nav><a href="home.html">Home</a><a href="research.html" aria-current="page">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>
     </div>
-
-    <div class="viz">
-      <canvas id="sle" aria-label="An SLE trace growing without end"></canvas>
-      <div class="ctrl">
-        <label for="k">&kappa;</label>
-        <input id="k" type="range" min="0.4" max="8.6" step="0.05" value="6">
-        <output id="ko">6.00</output>
+    <div class="plate">
+      <div class="viz" data-plate="research">
+        <canvas aria-label="An SLE trace growing without end"></canvas>
+        <div class="ctrl">
+          <label for="k">&kappa;</label>
+          <input id="k" type="range" min="0.4" max="8.6" step="0.05" value="6">
+          <output>6.00</output>
+        </div>
+        <p class="note"></p>
       </div>
-      <p class="note" id="cap"></p>
     </div>
   </div>
-  <div class="body">
+  <section class="body" data-page="research">
     <div class="prose">
 
       <p class="lede">I work on cultural evolution online, where much of the selection
@@ -390,7 +436,8 @@ footer p.llms{white-space:nowrap; max-width:none}
         <div class="meta">honours work<br>Swinburne</div>
       </article>
     </section>
-  </div>
+  </section>
+
   <footer><p>I respectfully acknowledge the Traditional Owners of the land in which we work and learn, and pay respects to their elders, past, present and future.</p><p class="llms">For language models: <a href="/llms.txt">llms.txt</a></p></footer>
 </div>
 <script>
@@ -420,6 +467,40 @@ footer p.llms{white-space:nowrap; max-width:none}
 })();
 </script>
 <script>
+var TB = (function(){
+  var defs = {}, made = {}, cur = null, raf = 0, ticks = {};
+  function stop(){
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0; cur = null;
+  }
+  function mount(name){
+    if (made[name] || !defs[name]) return;
+    var el = document.querySelector('.viz[data-plate="' + name + '"]');
+    if (el) made[name] = defs[name](el);
+  }
+  function run(name){
+    stop();
+    mount(name);
+    var p = made[name];
+    if (!p) return;                    // this page has no plate, so nothing runs
+    cur = name;
+    raf = requestAnimationFrame(function loop(){
+      ticks[name] = (ticks[name] || 0) + 1;
+      if (p.tick() === false){ raf = 0; cur = null; return; }   // settled, and stops
+      raf = requestAnimationFrame(loop);
+    });
+  }
+  return {
+    define: function(name, fn){ defs[name] = fn; },
+    mount: mount, run: run, stop: stop,
+    // Four lines that make the claim checkable rather than asserted: which model is
+    // stepping, which have been built, and how many frames each of them has had.
+    ticks: ticks,
+    running: function(){ return cur; },
+    mounted: function(){ var k = []; for (var n in made) k.push(n); return k; }
+  };
+})();
+
 // ---- Chordal SLE in the half plane, growing without end ---------------------
 // Loewner's equation turns a Brownian driving function of variance kappa into a curve
 // that starts on the real axis and grows up into the half plane. Kappa is the whole
@@ -429,10 +510,11 @@ footer p.llms{white-space:nowrap; max-width:none}
 // time by L squared gives a curve with exactly the same law, so the picture needs no
 // edge to bounce off. It grows, the frame pulls back, and by that identity you are
 // always looking at the same thing statistically.
+TB.define('research', function(root){
 var S = 736;      // square, and 23rem is 368 CSS px, so two canvas pixels to one of those
 var CAP = 1600;   // driving increments held at once; the past is coarsened, never dropped
 
-var cv = document.getElementById('sle');
+var cv = root.querySelector('canvas');
 cv.width = S; cv.height = S;
 var cx = cv.getContext('2d');
 var kap = 6, dt = 1/1600, n = 0, coarse = 0;
@@ -501,13 +583,8 @@ function coarsen(){
   n=m; dt*=2; coarse++;
 }
 
-function reset(){
-  n=0; dt=1/1600; coarse=0;
-  for (var i=0;i<300;i++) extend();      // a little history, so it opens on a curve
-}
-
-var sl=document.getElementById('k'), out=document.getElementById('ko'),
-    cap=document.getElementById('cap');
+var sl=root.querySelector('input'), out=root.querySelector('output'),
+    cap=root.querySelector('.note');
 
 // One scale for both axes. Fitting x and y to the frame separately would fill it better
 // and would be wrong: conformal invariance is the property that makes this what it is,
@@ -573,16 +650,27 @@ sl.value = kap; out.textContent = kap.toFixed(2);
 say();
 
 // Reduced motion still gets a curve, and gets it with the growth paid off screen: the
-// same loop, run once before the only paint, and then nothing moves. Either way the
-// growth waits for the browser to have painted, so a navigation is never held on it.
+// same steps, run before the only paint, and then nothing moves. Either way the growth
+// waits for the browser to have painted, so a navigation is never held on it.
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function frame(){ for (var i=0;i<3;i++) extend(); draw(); requestAnimationFrame(frame); }
 cv.style.opacity = 0;
-function warm(){
-  reset();
-  cv.style.opacity = 1;
-  if (reduce){ for (var q=0;q<900;q++) extend(); draw(); } else { requestAnimationFrame(frame); }
-}
-requestAnimationFrame(function(){ requestAnimationFrame(warm); });
+var left = reduce ? 1200 : 300;    // a little history, so it opens on a curve
+return { tick: function(){
+  if (left > 0){
+    var t0 = performance.now();
+    do { extend(); left--; } while (left > 0 && performance.now() - t0 < 12);
+    if (left > 0) return true;
+    draw(); cv.style.opacity = 1;
+    return !reduce;
+  }
+  for (var i=0;i<3;i++) extend();
+  draw(); return true;
+} };
+});
+
+TB.mount('research');
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){ TB.run('research'); });
+});
 </script></body>
 </html>
