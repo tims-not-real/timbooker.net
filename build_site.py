@@ -410,11 +410,11 @@ function hex(h){
   h = h.replace('#','');
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
-// The curve is --lat-on, the same blue the Ising plate uses for a spin that is on, so the
-// two plates are drawn in one ink. It measures 1.05:1 against the #333330 ground, which
-// says it should be invisible and is simply wrong here: that ratio is luminance only, and
-// a saturated hue against a neutral reads on colour long before it reads on lightness.
-var INK = hex(css('--lat-on')), PLATE = hex(css('--plate')), RULE = hex(css('--rule'));
+// The same two inks as the Ising, and the same way round: the blue is the field and the
+// off-white is what is drawn on it. Blue line on the neutral plate ground was tried both
+// ways round first and read as faint either way; inverting it is what fixed that, not
+// finding a third colour.
+var FIELD = hex(css('--lat-on')), INK = hex(css('--lat-off'));
 
 // The square root taken on the branch that stays in the upper half plane, because the
 // trace never leaves it.
@@ -481,8 +481,12 @@ var sl=document.getElementById('k'), out=document.getElementById('ko'),
 // and a stretched SLE is not an SLE. The rule along the bottom is the real axis the
 // curve grows off, so the trace is anchored to it and any slack goes above.
 function draw(){
-  cx.fillStyle='rgb('+PLATE.join(',')+')'; cx.fillRect(0,0,S,S);
-  cx.fillStyle='rgb('+RULE.join(',')+')'; cx.fillRect(0,S-2,S,2);
+  cx.fillStyle='rgb('+FIELD.join(',')+')'; cx.fillRect(0,0,S,S);
+  // the real axis the curve grows off, in the drawing ink but held back so it reads as
+  // the boundary rather than as part of the trace
+  cx.globalAlpha=0.45;
+  cx.fillStyle='rgb('+INK.join(',')+')'; cx.fillRect(0,S-2,S,2);
+  cx.globalAlpha=1;
   if (n<2) return;
   var x0=px[0], x1=px[0], y1=py[0], i;
   for (i=0;i<n;i++){
@@ -527,6 +531,12 @@ sl.addEventListener('input',function(){
   kap=parseFloat(this.value); out.textContent=kap.toFixed(2);
   say();
 });
+// Open on a different kappa each visit, drawn from the six the caption knows, so the
+// plate arrives showing one of the places this curve turns up rather than the same one
+// every time. Snapped to the fader's own step so the handle sits on a stop.
+var STARTS=[2, 8/3, 3, 4, 6, 8];
+kap = Math.round(STARTS[Math.floor(Math.random()*STARTS.length)]/0.05)*0.05;
+sl.value = kap; out.textContent = kap.toFixed(2);
 say();
 
 // Reduced motion still gets a curve, and gets it with the growth paid off screen: the
