@@ -410,17 +410,10 @@ function hex(h){
   h = h.replace('#','');
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
-// Age is the ink: the oldest surviving stretch is the label blue and the tip is near
-// white, through the grey that belongs to the ground family rather than to a second
-// accent. Two anchors put the whole curve on one periwinkle ramp and it reads as flat.
-var ON = hex(css('--lat-on')), MID = hex(css('--lat-mid')), OFF = hex(css('--lat-off')),
-    PLATE = hex(css('--plate')), RULE = hex(css('--rule'));
-function ramp(t){
-  if (t<0) t=0; if (t>1) t=1;
-  return t<0.5 ? [ON[0]+(MID[0]-ON[0])*t*2, ON[1]+(MID[1]-ON[1])*t*2, ON[2]+(MID[2]-ON[2])*t*2]
-               : [MID[0]+(OFF[0]-MID[0])*(t-0.5)*2, MID[1]+(OFF[1]-MID[1])*(t-0.5)*2,
-                  MID[2]+(OFF[2]-MID[2])*(t-0.5)*2];
-}
+// The curve is the accent periwinkle, --accent. Not --lat-on: the label blue is #0204a7
+// against a #333330 ground, which is 1.05:1 and simply is not there. --accent measures
+// 5.21:1 on the same ground, against 8.92:1 for the off-white it replaces.
+var INK = hex(css('--accent')), PLATE = hex(css('--plate')), RULE = hex(css('--rule'));
 
 // The square root taken on the branch that stays in the upper half plane, because the
 // trace never leaves it.
@@ -501,10 +494,9 @@ function draw(){
   var sc=Math.min((S-8)/(x1-x0), (S-12)/y1);
   var ox=(S-(x1-x0)*sc)/2;
   // One ink for the whole curve. Ramping it along its length said which end was older,
-  // which is not something the curve is about, and it put the early half in the blue that
-  // the plate ground swallows.
+  // which is not something the curve is about.
   cx.lineWidth=1.9; cx.lineJoin='round'; cx.lineCap='round';
-  cx.strokeStyle='rgb('+OFF.join(',')+')';
+  cx.strokeStyle='rgb('+INK.join(',')+')';
   for (i=1;i<n;i++){
     cx.beginPath();
     cx.moveTo(ox+(px[i-1]-x0)*sc, (S-4)-py[i-1]*sc);
