@@ -149,6 +149,8 @@ a{color:inherit}
   display:block; width:100%; height:auto; image-rendering:pixelated;
   border:1px solid var(--rule); background:var(--plate);
 }
+/* The chemistry dish takes a click, and this is the whole of how it says so. */
+.viz[data-plate=freelancing] canvas{cursor:crosshair}
 .viz .row{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem}
 .viz .row figure{margin:0}
 .viz .row figcaption{
