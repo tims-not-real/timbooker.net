@@ -441,6 +441,7 @@ var TB = (function(){
     mount(name);
     var p = made[name];
     if (!p) return;                    // this page has no plate, so nothing runs
+    if (p.enter) p.enter();            // a plate that begins again says so, here
     cur = name;
     raf = requestAnimationFrame(function loop(){
       ticks[name] = (ticks[name] || 0) + 1;
