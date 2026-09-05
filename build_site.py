@@ -527,7 +527,7 @@ function named(k){
 }
 function say(){
   var nm=named(kap);
-  cap.textContent = nm || 'A curve nobody has found outdoors yet.';
+  cap.textContent = nm || 'One realisation of a universality class';
   cap.classList.toggle('crit', !!nm);
 }
 sl.addEventListener('input',function(){
