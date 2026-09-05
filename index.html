@@ -287,14 +287,21 @@ footer p.llms{white-space:nowrap; max-width:none}
    still there, being the same element it was before the click. That is the whole of the
    fix, and it is one declaration.
 
-   What is named is what actually differs between two pages: the plate in the right
-   column and the page body. Those two names are not here, because a name is not a free
-   declaration. Naming an element promotes it to a compositing layer of its own for as
-   long as the name is set, which takes its text off subpixel antialiasing — 78,785
-   pixels of the home page changed against the build before this one, every glyph in the
-   body outlined, and the same on every page read inside the app. So the router sets
-   those two names in script immediately before a swap and clears them at the end of it,
-   and at rest nothing on the page is named and nothing is promoted. */
+   What is named is the page body, and nothing else. That name is not here, because a
+   name is not a free declaration. Naming an element promotes it to a compositing layer
+   of its own for as long as the name is set, which takes its text off subpixel
+   antialiasing — 78,785 pixels of the home page changed against the build before this
+   one, every glyph in the body outlined, and the same on every page read inside the app.
+   So the router sets that name in script immediately before a swap and clears it at the
+   end of it, and at rest nothing on the page is named and nothing is promoted.
+
+   The plate in the right column is not named either, so it is not captured and it hard-
+   cuts rather than cross-fading. It was named, and that was the flicker of the ÷3 ÷9 ÷27
+   boxes leaving home: a browser puts the outgoing snapshot up once more as the
+   transition tears down, and home's plate is 613 tall against Research's 468, so that
+   row was the part of it that landed on bare page ground and read as a blink. Ablated
+   one thing at a time — the name held for ever, the canvas fade, the height animation,
+   the pinned group — not capturing the plate was the only one that stopped it. */
 html.app{view-transition-name:none}
 html.app .label{view-transition-name:none}
 /* And the grain gives its name back, because the reason it was given one has gone. It
@@ -304,19 +311,18 @@ html.app .label{view-transition-name:none}
    to blend with, its overlay has nothing to work against and it lands as a flat grey
    veil over the whole page: 29 of 255, measured, for the length of every swap. */
 html.app body::after{view-transition-name:none}
-/* The groups do not animate, and that is deliberate. A browser re-targets a group at
-   the live element on every frame, so an animating group interpolates from where the
-   element was towards wherever it is right now — and while the label's row is being
-   animated, "right now" is itself moving, so the body only ever reaches the product of
-   the two progressions and trails the label by up to 36px mid-swap. Measured, and the
-   reason the label's move looked wrong however it was eased.
+/* The one group there is does not animate, and that is deliberate. A browser re-targets
+   a group at the live element on every frame, so an animating group interpolates from
+   where the element was towards wherever it is right now — and while the label's row is
+   being animated, "right now" is itself moving, so the body only ever reaches the
+   product of the two progressions and trails the label by up to 36px mid-swap. Measured,
+   and the reason the label's move looked wrong however it was eased.
 
-   Pinned, a group sits exactly on the live element, so the outgoing page and the
+   Pinned, the group sits exactly on the live element, so the outgoing page and the
    incoming one both travel with the layout and the label's bottom edge and the text
    under it move as one thing. It also means a swap that changes the scroll position
    does not slide: only the cross-fade is animated, which is all a cross-fade needs. */
-html.app::view-transition-group(page),
-html.app::view-transition-group(plate){animation:none}
+html.app::view-transition-group(page){animation:none}
 
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
@@ -1177,27 +1183,31 @@ return { tick: function(){
     if (v) v.hidden = !on;
   }
 
-  // The two names the transition works with, set for the length of a swap and cleared
-  // at the end of it. They are not in the stylesheet, because a name is not a free
+  // The one name the transition works with, set for the length of a swap and cleared at
+  // the end of it. It is not in the stylesheet, because a name is not a free
   // declaration: it promotes the element to a compositing layer of its own for as long
   // as it is set, which takes the text on it off subpixel antialiasing. Left on
   // permanently that redrew every glyph in the body of every page read inside the app.
-  // One page carries them at a time, which is the one being captured: the outgoing page
+  // One page carries it at a time, which is the one being captured: the outgoing page
   // when the old state is taken, the incoming one when the new state is.
+  //
+  // The plate is not named, and so is not captured. It was, and that was the flicker
+  // Tim saw leaving home: the browser puts the outgoing snapshot up once more as the
+  // transition tears down, and home's plate is 613 tall against Research's 468, so its
+  // three renormalisation boxes landed on bare page ground for a frame. Uncaptured, the
+  // plate hard-cuts instead of cross-fading, which is the trade.
   var held = null;
   function hold(key){
     if (held === key) return;
-    var s, v;
+    var s;
     if (held !== null){
-      s = sec(held); v = viz(held);
+      s = sec(held);
       if (s) s.style.viewTransitionName = '';
-      if (v) v.style.viewTransitionName = '';
     }
     held = key;
     if (key !== null){
-      s = sec(key); v = viz(key);
+      s = sec(key);
       if (s) s.style.viewTransitionName = 'page';
-      if (v) v.style.viewTransitionName = 'plate';
     }
   }
   // The label's only moving parts. Both are writes to elements that stay exactly where
@@ -1232,7 +1242,7 @@ return { tick: function(){
       show(cur, false); show(next, true);
       label(next); head(next);
       cur = next;
-      if (held !== null) hold(next);    // the incoming page carries the names now
+      if (held !== null) hold(next);    // the incoming page carries the name now
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
     }
