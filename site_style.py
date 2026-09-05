@@ -55,7 +55,11 @@ a{color:inherit}
 .hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
 /* no model on this page yet: one column, label full width. Holding the 23rem open and
    empty reads as a missing thing, and a big empty field is a failure, not a minimum. */
-.hero.solo{grid-template-columns:minmax(0,1fr)}
+/* The label is the same object on every page, so it is the same size on every page:
+   one column width and one height, set by what Research needs. A page with no plate yet
+   still holds the column open, because the alternative is the label changing shape on the
+   day a plate arrives. */
+.label{height:29.25rem}
 
 /* ---- the label: blue field, white knocked out, hierarchy by weight ---- */
 /* the same object on every page; the nav says which page you are on, so nothing
@@ -239,6 +243,14 @@ footer p.llms{white-space:nowrap; max-width:none}
    A cross-fade and nothing else. Displacing the incoming page would take the label
    with it, and the label holding still is the whole of the effect. */
 @view-transition{navigation:auto}
+/* The label is the one thing that is genuinely the same object on both pages, so it is
+   carried across rather than cross-faded with itself. Without this its text is composited
+   twice through the transition and visibly reloads. The cost is that a named element is
+   lifted out of the root snapshot, so the fixed grain on body::after cannot reach it for
+   the length of the transition — about 10/255 on the blue field, for 180ms. That is the
+   cheaper of the two. */
+.label{view-transition-name:label}
+::view-transition-group(label){animation-duration:.18s}
 ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){
   animation-duration:.18s; animation-timing-function:ease;
 }

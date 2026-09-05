@@ -105,12 +105,13 @@ def hero(page, plate=''):
     Either way it looks the same, so the name never reads as a piece of navigation.
 
     `plate` is the 23rem right column: pass the markup for a live model and the hero
-    is two columns; pass nothing and the hero is one, with the label full width. A
-    page fills the column by handing this one argument a `<div class="viz">` block.
+    is two columns and so is a page without one: the label is the same size everywhere,
+    and a page with no plate yet holds its column open. A page fills the column by handing
+    this one argument a `<div class="viz">` block.
     """
     name = ('Tim Booker' if page == 'Home'
             else '<a href="home.html">Tim Booker</a>')
-    return ((LABEL % ('' if plate else ' solo', nav(page)))
+    return ((LABEL % ('', nav(page)))
             .replace('__NAME__', name)
             .replace('__GROUP__', GROUP).replace('__UNI__', UNI)
             + ('\n' + plate + '\n' if plate else '')
@@ -467,10 +468,12 @@ function draw(){
   x0-=pad; x1+=pad; y1*=1.06;
   var sc=Math.min((S-8)/(x1-x0), (S-12)/y1);
   var ox=(S-(x1-x0)*sc)/2;
+  // One ink for the whole curve. Ramping it along its length said which end was older,
+  // which is not something the curve is about, and it put the early half in the blue that
+  // the plate ground swallows.
   cx.lineWidth=1.9; cx.lineJoin='round'; cx.lineCap='round';
+  cx.strokeStyle='rgb('+OFF.join(',')+')';
   for (i=1;i<n;i++){
-    var c=ramp(i/(n-1));
-    cx.strokeStyle='rgb('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+')';
     cx.beginPath();
     cx.moveTo(ox+(px[i-1]-x0)*sc, (S-4)-py[i-1]*sc);
     cx.lineTo(ox+(px[i]-x0)*sc,   (S-4)-py[i]*sc);
