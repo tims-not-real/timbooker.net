@@ -11,6 +11,10 @@ The site. Built by hand, no framework yet.
 
 - `build_site.py` — all the copy, and page assembly. Edit the copy here.
 - `site_style.py` — the CSS, the paper grain, the fonts. Edit the look here.
+- `fonts/` — Archivo and Archivo Narrow, the same latin woff2 Google Fonts was serving,
+  now in the repo. Self-hosted so first paint waits on nothing but this origin, and so a
+  reader's browser stops calling Google on every page load. SIL Open Font License; the
+  licence sits beside the files, which is what it asks for.
 - `design-goals.md` — what any change gets checked against. Read it first. It carries
   every locked decision and every ruling, in order, with the reasoning.
 - `principles.md` — the content and architecture principles, signed off 2026-08-27.

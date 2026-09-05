@@ -9,9 +9,36 @@ width, so there is no empty field waiting to be filled.
 """
 import io
 
-FONTS = ("https://fonts.googleapis.com/css2?"
-         "family=Archivo:wght@400..700&"
-         "family=Archivo+Narrow:wght@400..700&display=swap")
+# The type is in the repo. These are the same two variable woff2 files fonts.gstatic.com
+# was serving, latin subset, byte for byte, with Google's own descriptors kept: the same
+# wght 400-700 range and the same unicode-range, so not a glyph moves. Only the origin
+# changes, from a stylesheet on someone else's server that had to answer before anything
+# could paint, to one same-origin request that starts while the page is still parsing.
+#
+# Latin is the whole of it, checked rather than assumed. Everything the site sets in these
+# faces is inside that range, the en dash, the em dash, the middle dot and the division
+# sign included. The kappa on Research and the three kanji on About have no glyph in any
+# Archivo subset Google publishes, so they fell back to Helvetica before and still do.
+# Latin-ext and Vietnamese cover nothing the site writes and were never fetched anyway.
+#
+# These rules go in the CSS below, which is inlined into every page, so there is no
+# stylesheet to block the first paint. font-display:swap, so the words are readable while
+# the file is in flight.
+LATIN = ("U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,"
+         "U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD")
+
+FACES = """
+@font-face{
+  font-family:Archivo; font-style:normal; font-weight:400 700; font-stretch:100%;
+  font-display:swap; src:url(fonts/archivo-latin.woff2) format('woff2');
+  unicode-range:__LATIN__;
+}
+@font-face{
+  font-family:'Archivo Narrow'; font-style:normal; font-weight:400 700;
+  font-display:swap; src:url(fonts/archivo-narrow-latin.woff2) format('woff2');
+  unicode-range:__LATIN__;
+}
+""".replace('__LATIN__', LATIN)
 
 # Two layers, because one is not a scan. A fine tooth plus a coarser mottle.
 # Built by concatenation: the SVG is full of literal % escapes, so % formatting fights it.
@@ -26,7 +53,7 @@ def turb(freq, octaves, size):
 GRAIN_FINE   = turb('0.95', 4, 200)
 GRAIN_MOTTLE = turb('0.035', 4, 620)
 
-CSS = """
+CSS = FACES + """
 :root{
   --bg:#2b2b29; --fg:#f6f6f8; --dim:#a3a39f; --rule:#43433f;
   --accent:#9a9dff; --fill:#0204a7; --on-fill:#f6f6f8; --plate:#333330;

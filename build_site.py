@@ -9,7 +9,7 @@ heads, ICO and touch icon drawn by Pillow when it is installed).
 import io
 import os
 from urllib.parse import quote
-from site_style import CSS, FONTS
+from site_style import CSS
 
 PAGES = [('home.html', 'Home'), ('research.html', 'Research'),
          ('freelancing.html', 'Freelancing'), ('about.html', 'About'),
@@ -129,10 +129,8 @@ SHELL = """<!DOCTYPE html>
 <!-- Language-model index: /llms.txt -->
 <title>__TITLE__</title>
 <meta name="description" content="__DESC__">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="__FONTS__" rel="stylesheet">
-<style>
+<link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+__NARROW__<style>
 __CSS__
 </style>
 </head>
@@ -172,10 +170,18 @@ __SCRIPT__</body>
 """
 
 
-def render(path, title, main, js='', desc=DESC):
+# Archivo Narrow sets one thing, the number beside a fader, so only the pages that carry
+# a plate preload it. On the other three the browser would fetch 18KB and never draw a
+# glyph with it. The face is still declared for all of them; nothing asks for it there.
+NARROW = ('<link rel="preload" href="fonts/archivo-narrow-latin.woff2" as="font" '
+          'type="font/woff2" crossorigin>\n')
+
+
+def render(path, title, main, js='', desc=DESC, narrow=False):
     script = "<script>" + js + "</script>" if js else ""
     html = (SHELL.replace('__TITLE__', title).replace('__DESC__', desc)
-                 .replace('__FONTS__', FONTS).replace('__CSS__', CSS)
+                 .replace('__NARROW__', NARROW if narrow else '')
+                 .replace('__CSS__', CSS)
                  .replace('__MAIN__', main).replace('__FOOTER__', FOOTER)
                  .replace('__FOOTER_LLMS__', FOOTER_LLMS)
                  .replace('__ICON__', ICON_URI).replace('__SCRIPT__', script))
@@ -1179,16 +1185,16 @@ if __name__ == '__main__':
                        .replace('__INTERESTS__', rows_block(INTEREST_ROWS))
                        .replace('__ROWS__', rows_block(HOME_ROWS)))
     written = [
-        ('index.html', render('index.html', 'Tim Booker', home, ISING_JS)),
-        ('home.html', render('home.html', 'Tim Booker', home, ISING_JS)),
+        ('index.html', render('index.html', 'Tim Booker', home, ISING_JS, narrow=True)),
+        ('home.html', render('home.html', 'Tim Booker', home, ISING_JS, narrow=True)),
         ('research.html', render('research.html', 'Research &mdash; Tim Booker',
                                  hero('Research', SLE_PLATE) + research_body(),
-                                 SLE_JS)),
+                                 SLE_JS, narrow=True)),
         ('freelancing.html', render('freelancing.html', 'Freelancing &mdash; Tim Booker',
                                     hero('Freelancing', GS_PLATE) +
                                     FREELANCING.replace('__OFFERS__', offer_rows())
                                                .replace('__UNI__', UNI),
-                                    GRAY_SCOTT_JS, desc=FREELANCE_DESC)),
+                                    GRAY_SCOTT_JS, desc=FREELANCE_DESC, narrow=True)),
         ('about.html', render('about.html', 'About &mdash; Tim Booker',
                               hero('About') + ABOUT)),
         ('contact.html', render('contact.html', 'Contact &mdash; Tim Booker',
