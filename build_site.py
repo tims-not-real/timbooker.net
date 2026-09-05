@@ -221,9 +221,15 @@ def render(path, title, main, js='', desc=DESC, narrow=False):
 # behind the page you are reading.
 #
 # Nothing is ever unmounted, and that is the point. A plate you have already visited
-# still holds the lattice, the concentration fields or the curve it had when you left,
-# and picks up from where it stopped rather than starting again. There is no eviction
-# rule because three mounted plates cost a few megabytes and there is nothing to evict.
+# still holds the lattice or the concentration fields it had when you left, and picks up
+# from where it stopped rather than starting again. There is no eviction rule because
+# three mounted plates cost a few megabytes and there is nothing to evict.
+#
+# A plate that is interesting to watch grow rather than interesting as a state says so,
+# by returning an optional enter() alongside tick(). It is called on every entry, before
+# the first tick, and it is where that plate puts itself back to the beginning. Only the
+# SLE has one: the Ising and Gray-Scott are dishes you tuned and left, and a curve you
+# come back to is already enormous and coarsened and is not the thing you left.
 RUNTIME_JS = r"""
 var TB = (function(){
   var defs = {}, made = {}, cur = null, raf = 0, ticks = {};
@@ -241,6 +247,7 @@ var TB = (function(){
     mount(name);
     var p = made[name];
     if (!p) return;                    // this page has no plate, so nothing runs
+    if (p.enter) p.enter();            // a plate that begins again says so, here
     cur = name;
     raf = requestAnimationFrame(function loop(){
       ticks[name] = (ticks[name] || 0) + 1;
@@ -765,21 +772,34 @@ sl.addEventListener('input',function(){
   kap=parseFloat(this.value); out.textContent=kap.toFixed(2);
   say();
 });
-// Open on a different kappa each visit, drawn from the six the caption knows, so the
-// plate arrives showing one of the places this curve turns up rather than the same one
-// every time. Snapped to the fader's own step so the handle sits on a stop.
-var STARTS=[2, 8/3, 3, 4, 6, 8];
-kap = Math.round(STARTS[Math.floor(Math.random()*STARTS.length)]/0.05)*0.05;
-sl.value = kap; out.textContent = kap.toFixed(2);
-say();
-
 // Reduced motion still gets a curve, and gets it with the growth paid off screen: the
 // same steps, run before the only paint, and then nothing moves. Either way the growth
 // waits for the browser to have painted, so a navigation is never held on it.
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 cv.style.opacity = 0;
-var left = reduce ? 1200 : 300;    // a little history, so it opens on a curve
-return { tick: function(){
+var left = 0;                      // set by enter(), which runs before the first tick
+var STARTS=[2, 8/3, 3, 4, 6, 8];   // the six the caption knows a place for
+
+// Every entry is a new walk. The other two plates are dishes you tuned and left, and
+// coming back to the state you left is the point of them; this one is a curve being
+// drawn, and the one you would come back to is a different object from the one you
+// watched. So the driver, the trace and the clock all go back to the beginning, and a
+// fresh kappa is drawn from the six the caption knows, snapped to the fader's own step
+// so the handle sits on a stop. The head start is put back with them: from zero means a
+// new walk, not a blank square, and it is paid across frames the same way.
+function enter(){
+  n=0; coarse=0; dt=1/1600;        // dt is doubled by every coarsening, so it resets too
+  dW.fill(0); px.fill(0); py.fill(0);
+  left = reduce ? 1200 : 300;      // a little history, so it opens on a curve
+  kap = Math.round(STARTS[Math.floor(Math.random()*STARTS.length)]/0.05)*0.05;
+  sl.value = kap; out.textContent = kap.toFixed(2);
+  say();
+}
+// Mounting has always left the fader and the caption fit to be painted, and still does;
+// it steps no model. Without this the plate would sit on the HTML's default 6.00 and an
+// empty caption from the moment the page is shown until the swap settles.
+enter();
+return { enter: enter, tick: function(){
   if (left > 0){
     var t0 = performance.now();
     do { extend(); left--; } while (left > 0 && performance.now() - t0 < 12);
