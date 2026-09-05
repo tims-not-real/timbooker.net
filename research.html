@@ -443,10 +443,11 @@ function hex(h){
   h = h.replace('#','');
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
-// The curve is the accent periwinkle, --accent. Not --lat-on: the label blue is #0204a7
-// against a #333330 ground, which is 1.05:1 and simply is not there. --accent measures
-// 5.21:1 on the same ground, against 8.92:1 for the off-white it replaces.
-var INK = hex(css('--accent')), PLATE = hex(css('--plate')), RULE = hex(css('--rule'));
+// The curve is --lat-on, the same blue the Ising plate uses for a spin that is on, so the
+// two plates are drawn in one ink. It measures 1.05:1 against the #333330 ground, which
+// says it should be invisible and is simply wrong here: that ratio is luminance only, and
+// a saturated hue against a neutral reads on colour long before it reads on lightness.
+var INK = hex(css('--lat-on')), PLATE = hex(css('--plate')), RULE = hex(css('--rule'));
 
 // The square root taken on the branch that stays in the upper half plane, because the
 // trace never leaves it.
