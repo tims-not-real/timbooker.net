@@ -296,11 +296,37 @@ ROUTER_JS = r"""
   root.className = root.className ? root.className + ' app' : 'app';
   try { history.replaceState({p:cur}, '', location.href); } catch (e) {}
 
+  function sec(key){ return document.querySelector('[data-page="' + key + '"]'); }
+  function viz(key){ return document.querySelector('.viz[data-plate="' + key + '"]'); }
+
   function show(key, on){
-    var s = document.querySelector('[data-page="' + key + '"]');
+    var s = sec(key), v = viz(key);
     if (s) s.hidden = !on;
-    var v = document.querySelector('.viz[data-plate="' + key + '"]');
     if (v) v.hidden = !on;
+  }
+
+  // The two names the transition works with, set for the length of a swap and cleared
+  // at the end of it. They are not in the stylesheet, because a name is not a free
+  // declaration: it promotes the element to a compositing layer of its own for as long
+  // as it is set, which takes the text on it off subpixel antialiasing. Left on
+  // permanently that redrew every glyph in the body of every page read inside the app.
+  // One page carries them at a time, which is the one being captured: the outgoing page
+  // when the old state is taken, the incoming one when the new state is.
+  var held = null;
+  function hold(key){
+    if (held === key) return;
+    var s, v;
+    if (held !== null){
+      s = sec(held); v = viz(held);
+      if (s) s.style.viewTransitionName = '';
+      if (v) v.style.viewTransitionName = '';
+    }
+    held = key;
+    if (key !== null){
+      s = sec(key); v = viz(key);
+      if (s) s.style.viewTransitionName = 'page';
+      if (v) v.style.viewTransitionName = 'plate';
+    }
   }
   // The label's only moving parts. Both are writes to elements that stay exactly where
   // they are: the label is not rebuilt, and neither write changes its layout. The
@@ -334,6 +360,7 @@ ROUTER_JS = r"""
       show(cur, false); show(next, true);
       label(next); head(next);
       cur = next;
+      if (held !== null) hold(next);    // the incoming page carries the names now
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
     }
@@ -343,11 +370,13 @@ ROUTER_JS = r"""
       // transition, which lands here while the second is still running. The second one
       // owns the page from that moment, so this one clears up after itself and stops.
       if (mine !== tok) return;
+      hold(null);                       // nothing is named, and nothing is promoted
       hero.style.height = ''; hero.style.gridTemplateRows = '';
       TB.run(next);                     // and the model starts once the page is still
     }
     if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
 
+    hold(cur);                          // the page being left, for the old capture
     var vt = document.startViewTransition(update);
     vt.ready.then(function(){
       // Home's label is 145px taller than every other, because its plate column is. In

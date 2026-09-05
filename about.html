@@ -287,9 +287,13 @@ footer p.llms{white-space:nowrap; max-width:none}
    fix, and it is one declaration.
 
    What is named is what actually differs between two pages: the plate in the right
-   column and the page body. The grain keeps the name it already had, so it is lifted
-   into the transition layer and lands on top of those two rather than being left in a
-   root snapshot that no longer exists. */
+   column and the page body. Those two names are not here, because a name is not a free
+   declaration. Naming an element promotes it to a compositing layer of its own for as
+   long as the name is set, which takes its text off subpixel antialiasing — 78,785
+   pixels of the home page changed against the build before this one, every glyph in the
+   body outlined, and the same on every page read inside the app. So the router sets
+   those two names in script immediately before a swap and clears them at the end of it,
+   and at rest nothing on the page is named and nothing is promoted. */
 html.app{view-transition-name:none}
 html.app .label{view-transition-name:none}
 /* And the grain gives its name back, because the reason it was given one has gone. It
@@ -299,8 +303,6 @@ html.app .label{view-transition-name:none}
    to blend with, its overlay has nothing to work against and it lands as a flat grey
    veil over the whole page: 29 of 255, measured, for the length of every swap. */
 html.app body::after{view-transition-name:none}
-html.app .plate > .viz:not([hidden]){view-transition-name:plate}
-html.app [data-page]:not([hidden]){view-transition-name:page}
 /* The groups do not animate, and that is deliberate. A browser re-targets a group at
    the live element on every frame, so an animating group interpolates from where the
    element was towards wherever it is right now — and while the label's row is being
