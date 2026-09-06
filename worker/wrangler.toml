@@ -42,7 +42,7 @@ ALLOW_ORIGIN = "https://timbooker.net,https://www.timbooker.net"
 [[kv_namespaces]]
 binding = "PATS"
 # Replace after `wrangler kv namespace create PATS`. Ignored entirely by `--local`.
-id = "REPLACE_ME_AFTER_kv_namespace_create"
+id = "fd821df7d78f4b44886ebd6806e40a86"
 
 [observability]
 enabled = true
