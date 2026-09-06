@@ -1,0 +1,14 @@
+# Pinned exactly, and the pins are load-bearing.
+#
+# torch 2.6 produces a COMPLETELY different 192 lines from 2.9 and 2.14 -- all of them,
+# not a handful. Determinism here is a property of a pinned environment, not of the
+# maths, so an unpinned float is a silently different creature. Install torch from the
+# CPU index; the CUDA wheel is 2GB of nothing this job uses.
+#
+#   pip install -r evolution/requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+#
+torch==2.7.0
+numpy==2.5.2
+safetensors==0.5.3
+tokenizers==0.21.1
+huggingface_hub==0.31.1

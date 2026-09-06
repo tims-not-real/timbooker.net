@@ -8,6 +8,12 @@
   "found": 0.15,
   "step": 0.025
  },
+ "env": {
+  "model": "SimpleStories/SimpleStories-V2-5M",
+  "revision": "c4b3a4bb81297f5316697098e1d4b65c1249daf8",
+  "torch": "2.7.0+cpu",
+  "numpy": "2.5.2"
+ },
  "agents": [
   {
    "slot": 0,

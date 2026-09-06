@@ -5,6 +5,7 @@
     python -m evolution.roll roll --counts f.json  the same, from a file
     python -m evolution.roll lines                 regenerate the current lines, no evolution
     python -m evolution.roll verify                the determinism proof
+    python -m evolution.roll floortest             the per-line filter does not launder
     python -m evolution.roll reconstruct           the lineage proof
     python -m evolution.roll simulate 20           selection only, fake counts, 20 rolls
 
@@ -71,6 +72,16 @@ def parse_counts(body, gen):
     return out
 
 
+def announce(subject):
+    """The one line the commit gets. Written to $GITHUB_OUTPUT when there is one, so
+    the workflow does not have to parse stdout and nothing is left on disk."""
+    print(subject)
+    out = os.environ.get("GITHUB_OUTPUT")
+    if out:
+        with open(out, "a", encoding="utf-8") as fh:
+            fh.write("subject=%s\n" % subject.replace(chr(10), " "))
+
+
 def write(pop, lines, log=print):
     P.save(pop, P.POP_PATH)
     P.save(lines, P.LINES_PATH)
@@ -116,12 +127,24 @@ def cmd_roll(args):
 
     thin = P.thin_data(counts, pop["agents"])
     if thin:
-        print("SKIPPED: not enough data. Agents %s have fewer than %d shows."
-              % (", ".join(str(s) for s in thin), P.MIN_SHOWS))
-        print("Nothing written. Do not evolve on nothing.")
+        # The generation does not roll, but the file is still touched, on purpose.
+        # GitHub disables a scheduled workflow in a public repo after 60 days with no
+        # repository activity. A skip that commits nothing would stop the creature dead
+        # after nine quiet weeks, with no error anywhere to say why.
+        pop["checked"] = {"date": _today(), "action": "skipped",
+                          "reason": "fewer than %d shows for agents %s"
+                                    % (P.MIN_SHOWS, thin),
+                          "shows": {str(a["slot"]): counts.get(a["slot"], {}).get("shows", 0)
+                                    for a in pop["agents"]}}
+        P.save(pop, P.POP_PATH)
+        announce("Generation %d stands: agents %s were shown fewer than %d times"
+                 % (gen, ", ".join(str(s) for s in thin), P.MIN_SHOWS))
+        print("Not enough data to select on. Nothing but the checked date moved, which"
+              " is what keeps the schedule alive.")
         return 0
 
     nxt = P.step(pop, counts, {a["slot"]: a.get("ce", 0.0) for a in pop["agents"]})
+    nxt["checked"] = {"date": _today(), "action": "rolled"}
     print("\ngeneration %d:" % nxt["generation"])
     for a in nxt["agents"]:
         print("  slot %d  %-12s %-14s parent %s"
@@ -133,16 +156,21 @@ def cmd_roll(args):
     print("  lineages: %s" % json.dumps(nxt["last"]["lineages"]))
     lines, _ = P.generate(nxt)
     write(nxt, lines)
+    sh = nxt["last"]["lineages"]
+    announce("Generation %d: %d lineages, biggest %d of %d, %d immigrant%s"
+             % (nxt["generation"], len(sh), max(sh.values()), P.N_AGENTS,
+                sum(1 for a in nxt["agents"] if a["origin"].startswith("immigrant")),
+                "" if sum(1 for a in nxt["agents"]
+                          if a["origin"].startswith("immigrant")) == 1 else "s"))
     return 0
 
 
 def cmd_verify(args):
     """Acceptance check 3: the same population.json regenerates byte-identical lines."""
     pop = P.load()
-    a, _ = P.generate(dict(pop, agents=[dict(x) for x in pop["agents"]]), screen=False,
-                      log=lambda *x: None)
-    b, _ = P.generate(dict(pop, agents=[dict(x) for x in pop["agents"]]), screen=False,
-                      log=lambda *x: None)
+    quiet = dict(screen=False, log=lambda *x: None)
+    a, _ = P.generate(dict(pop, agents=[dict(x) for x in pop["agents"]]), **quiet)
+    b, _ = P.generate(dict(pop, agents=[dict(x) for x in pop["agents"]]), **quiet)
     sa = json.dumps(a, sort_keys=True, ensure_ascii=False).encode()
     sb = json.dumps(b, sort_keys=True, ensure_ascii=False).encode()
     on_disk = open(P.LINES_PATH, "rb").read() if os.path.exists(P.LINES_PATH) else b""
@@ -232,6 +260,56 @@ def cmd_simulate(args):
     return 0 if worst <= P.MAX_LINEAGE else 1
 
 
+def cmd_floortest(args):
+    """The per-line filter must not launder a bad agent past the agent-level floor.
+
+    If the agent-level floor scored what survived the per-line filter, a broken agent
+    would look fluent because its worst output had already been removed, the floor would
+    quietly stop firing, and the population could drift out of English with nothing
+    saying so. So: a deliberately broken agent -- one draw at sigma 0.45, well past the
+    0.2 where the model stops speaking English -- is scored with the per-line filter
+    switched ON, dropped into a real eight-agent population, and given the best pat ratio
+    in it. It has to die anyway."""
+    from . import tinylm
+    m = tinylm.model()
+    sc = P.scales(m)
+    pop = P.load()
+    broken = {"slot": 0, "lineage": "broken", "origin": "founder", "born": 0,
+              "parent": None, "seeds": [[12345, 0.45]], "line_seed": 777}
+    said, ce, rec = P.agent_lines(m, sc, pop, broken, filter_lines=True)
+    print("a broken agent at sigma 0.45, per-line filter ON")
+    print("  agent-level ce      %.3f   (floor %.2f, over it: %s)"
+          % (ce, P.FLUENCY_FLOOR, ce > P.FLUENCY_FLOOR))
+    print("  lines published     %d of %d draws" % (rec["published"], rec["drawn"]))
+    print("  it says             %s"
+          % json.dumps(said[0] if said else "(nothing publishable)"))
+
+    agents = [dict(broken, slot=0)] + [dict(a) for a in pop["agents"][1:]]
+    ces = {0: ce}
+    counts = {0: {"shows": 100, "pats": 90}}          # patted nine times out of ten
+    for a in agents[1:]:
+        ces[a["slot"]] = a["ce"]
+        counts[a["slot"]] = {"shows": 100, "pats": 10}
+    ranked = P.rank(agents, counts, ces)
+    print("\ndropped into generation %d and given a 0.90 pat ratio against everyone else's 0.10:"
+          % pop["generation"])
+    for r in ranked:
+        print("  slot %d  %-8s ratio %.2f  ce %5.3f  %s"
+              % (r["slot"], r["lineage"], r["ratio"], r["ce"],
+                 "DEAD, floored" if r["floored"] else "alive"))
+    nxt = P.step({"generation": pop["generation"], "agents": agents,
+                  "n_lines": pop["n_lines"], "prompt": pop["prompt"]}, counts, ces)
+    survived = any(a["lineage"] == "broken" for a in nxt["agents"])
+    ok = ranked[-1]["lineage"] == "broken" and ranked[-1]["floored"] and not survived
+    print("\nlast, floored, and gone from the next generation despite the pats: %s" % ok)
+    return 0 if ok else 1
+
+
+def _today():
+    import datetime
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+
+
 def _sha(b):
     import hashlib
     return hashlib.sha256(b).hexdigest()[:16]
@@ -247,6 +325,7 @@ def main(argv=None):
     p.add_argument("--counts"); p.add_argument("--url")
     p.set_defaults(fn=cmd_roll)
     p = sub.add_parser("verify"); p.set_defaults(fn=cmd_verify)
+    p = sub.add_parser("floortest"); p.set_defaults(fn=cmd_floortest)
     p = sub.add_parser("reconstruct"); p.set_defaults(fn=cmd_reconstruct)
     p = sub.add_parser("simulate")
     p.add_argument("n", type=int, nargs="?", default=20)

@@ -31,6 +31,16 @@ Every number in here was measured in the sandbox, not chosen. The important ones
                              fitness would fight the pat signal and hand the top score to
                              the blandest sentence available. Below the line you die;
                              above it nobody cares.
+  LINE_FLOOR                 The same statistic per line rather than per agent, for
+                             deciding what gets published. Measured on generation 0
+                             against a hand-labelled set: AUC 0.978, and no clean line
+                             above 4.99 against a junk median of 6.50. It stops at 5.5
+                             rather than 5.0 because the statistic is predictability
+                             under a children's-story model, not grammaticality, so
+                             below that it starts cutting short plain sentences -- "i
+                             take your songs.", "i see some coins." -- which are the
+                             creature's best register. It cuts 14% of draws and no agent
+                             needs more than 36 to fill 24.
   MIN_SHOWS                  Ten visits per agent per generation is 65% of the gain at
                              2.5% of the traffic. Under ten shows for any agent the roll
                              is a no-op: do not evolve on nothing.
@@ -50,6 +60,10 @@ KEEP = N_AGENTS // 2
 MAX_LINEAGE = N_AGENTS // 2
 MIN_SHOWS = 10
 FLUENCY_FLOOR = 4.6
+LINE_FLOOR = 5.5
+HEAD_PUNCT = set(".-:;!?")
+TOPUP = 8
+MAX_LINE_DRAWS = 120
 
 PROMPT = "a lonely little creature speaks to a visitor. it says: i "
 
@@ -70,6 +84,18 @@ def seed_for(kind, gen, slot, draw=0):
 
 
 # ------------------------------------------------------------------ founding
+def env():
+    """What the lines were made with. Determinism is a property of a pinned environment,
+    not of the maths: torch 2.6 produces a completely different 192 lines from 2.9, all
+    192 of them and not a handful. And an upstream reupload of the model would silently
+    re-base every lineage in the file, so the revision is pinned and written down too."""
+    import numpy as np
+    import torch
+    from . import tinylm
+    return {"model": tinylm.REPO, "revision": tinylm.REVISION,
+            "torch": torch.__version__, "numpy": np.__version__}
+
+
 def found(gen=0):
     """Generation 0. Eight founders, each one draw of the pretrained model at 0.15."""
     agents = []
@@ -90,6 +116,7 @@ def found(gen=0):
         "n_lines": N_LINES,
         "prompt": PROMPT,
         "sigma": {"found": SIGMA_FOUND, "step": SIGMA_STEP},
+        "env": env(),
         "agents": agents,
         "last": {"action": "founded"},
     }
@@ -189,6 +216,7 @@ def step(pop, counts, ce=None):
 
     out = dict(pop)
     out["generation"] = gen
+    out["env"] = pop.get("env")
     out["agents"] = new
     out["last"] = {
         "action": "rolled",
@@ -287,60 +315,157 @@ def _tidy(raw):
     return s if s[:2].lower() == "i " else ("i " + s).strip()
 
 
-def speak(m, sd, agent, n=N_LINES, prompt=PROMPT):
-    import numpy as np
-    rs = np.random.RandomState(int(agent["line_seed"]))
+def head_punct(text):
+    """True when the first thing after the leading "i" is punctuation.
+
+    `i . you can help me.` and `i - - - change faces.` are broken by shape, not by
+    vocabulary, and no fluency threshold catches them: the base model finds a full stop
+    after "i" perfectly predictable, so the first of those scores 3.98 nats, well inside
+    the clean range. A one-character rule is the right instrument for a one-character
+    fault. The comma is deliberately NOT in the set: "i, who have waited here" is
+    legitimate English and a shape rule should not quietly cut a construction the model
+    might occasionally get right."""
+    t = text[1:].lstrip() if text[:1].lower() == "i" else text
+    return t[:1] in HEAD_PUNCT
+
+
+def publishable(text, ce):
+    return ce <= LINE_FLOOR and not head_punct(text)
+
+
+def draw(m, sd, agent, n, prompt, rs):
     return [_tidy(x) for x in m.sample(sd, prompt, n, rs)]
+
+
+def speak(m, sd, agent, n=N_LINES, prompt=PROMPT):
+    """The first n draws, unfiltered. This is the sample the AGENT-LEVEL floor scores."""
+    import numpy as np
+    return draw(m, sd, agent, n, prompt, np.random.RandomState(int(agent["line_seed"])))
 
 
 BORN = {"founder": "found", "immigrant": "immig", "immigrant-cap": "immig"}
 MAX_BIRTH_DRAWS = 8
 
 
-def agent_lines(m, sc, pop, a):
+def agent_lines(m, sc, pop, a, filter_lines=True):
+    """(published lines, agent-level cross-entropy, a record of what was cut).
+
+    The two floors score DIFFERENT sets, and that separation is the whole point:
+
+      - the agent-level floor scores the first n draws, UNFILTERED. If it scored what
+        survived the per-line filter instead, the filter would launder bad agents past
+        it: every agent would look fluent because its worst output had already been
+        removed, the floor would stop firing, and the population could drift out of
+        English with nothing to say so. It would not read as a bug, only as a floor that
+        never fires.
+      - the per-line filter decides only what gets published, and resamples from the
+        same stream until the quota is full.
+
+    Every agent's fluency is therefore judged on the same sample size whatever its draw
+    count, which is also why the agent statistic stays comparable to the sandbox's."""
+    import numpy as np
+    n = pop.get("n_lines", N_LINES)
+    prompt = pop.get("prompt", PROMPT)
     sd = reconstruct(m, sc, a)
-    said = speak(m, sd, a, n=pop.get("n_lines", N_LINES), prompt=pop.get("prompt", PROMPT))
-    return said, round(m.output_ce(m.sd, said), 4)
+    rs = np.random.RandomState(int(a["line_seed"]))
+    said = draw(m, sd, a, n, prompt, rs)
+    ce = round(m.output_ce(m.sd, said), 4)
+    if not filter_lines:
+        return said, ce, {"drawn": n, "examined": n, "published": len(said),
+                          "rejected": 0, "duplicate": 0, "short": False}
+
+    scored = list(zip(said, m.line_ce(m.sd, said)))
+    while len(_pick(scored, n)[0]) < n and len(scored) < MAX_LINE_DRAWS:
+        more = draw(m, sd, a, TOPUP, prompt, rs)
+        scored += list(zip(more, m.line_ce(m.sd, more)))
+    kept, rec = _pick(scored, n)
+    rec.update(drawn=len(scored), published=len(kept), short=len(kept) < n)
+    return kept, ce, rec
 
 
-def generate(pop, screen=True, log=print):
-    """Every agent's lines, and the fluency of each agent's own output.
+def _pick(scored, n):
+    """The published lines, and what it took. `examined` stops where the quota fills, so
+    the counts describe the draws that were actually looked at rather than every draw."""
+    kept, seen, rejected, dup, examined = [], set(), 0, 0, 0
+    for t, c in scored:
+        examined += 1
+        if t in seen:
+            dup += 1
+        elif not publishable(t, c):
+            rejected += 1
+        else:
+            seen.add(t)
+            kept.append(t)
+            if len(kept) == n:
+                break
+    return kept, {"examined": examined, "rejected": rejected, "duplicate": dup}
 
-    Newborns are screened against the same floor selection uses, and a founder or an
-    immigrant that lands above it is redrawn at the same sigma. This is the floor rule
-    applied at birth rather than a week later: an agent born above the line dies on its
-    first roll whatever the visitors think of it, so leaving it in only spends a week of
-    the site saying "i od you unegrane trees" and throws away an eighth of the
-    population. The founding sigma is untouched; a rejected draw is recorded in `draw`
-    so the screening is visible in the file rather than hidden in it.
+
+def generate(pop, screen=True, filter_lines=True, log=print):
+    """Every agent's lines, its fluency, and a record of what the screens removed.
+
+    Two screens, and they act on different things.
+
+    A NEWBORN is screened against the agent floor, and a founder or an immigrant that
+    lands above it is redrawn at the same sigma. This is the floor rule applied at birth
+    rather than a week later: an agent born above the line dies on its first roll
+    whatever the visitors think of it, so leaving it in only spends a week of the site
+    saying "i od you unegrane trees" and throws away an eighth of the population. The
+    founding sigma is untouched, and a rejected draw is recorded in `draw`, so the
+    screening is visible in the file rather than hidden in it.
+
+    A LINE is screened before it is published, on LINE_FLOOR and the punctuation rule.
+    That screen never feeds back into who lives -- see agent_lines.
 
     Mutates `pop`: an accepted redraw is the agent's real seed and has to be written down.
     Returns (lines_doc, ce_by_slot)."""
     from . import tinylm
     m = tinylm.model()
     sc = scales(m)
-    lines, ce = [], {}
+    pop["env"] = env()             # the lines are only reproducible in the env that made them
+    lines, ce, cuts = [], {}, []
     for a in pop["agents"]:
-        said, c = agent_lines(m, sc, pop, a)
+        said, c, rec = agent_lines(m, sc, pop, a, filter_lines)
         kind = BORN.get(a["origin"]) if screen else None
         while kind and c > FLUENCY_FLOOR and a.get("draw", 0) + 1 < MAX_BIRTH_DRAWS:
             a["draw"] = a.get("draw", 0) + 1
             log("  agent %d  %-11s ce %5.3f over the %.2f floor, redrawing (draw %d)"
                 % (a["slot"], a["lineage"], c, FLUENCY_FLOOR, a["draw"]))
             a["seeds"] = [[seed_for(kind, a["born"], a["slot"], a["draw"]), SIGMA_FOUND]]
-            said, c = agent_lines(m, sc, pop, a)
+            said, c, rec = agent_lines(m, sc, pop, a, filter_lines)
         if kind and c > FLUENCY_FLOOR:
             log("  agent %d  %-11s still over the floor after %d draws, kept"
                 % (a["slot"], a["lineage"], MAX_BIRTH_DRAWS))
+        if rec["short"]:
+            log("  agent %d  %-11s only %d lines after %d draws"
+                % (a["slot"], a["lineage"], rec["published"], rec["drawn"]))
         a["ce"] = c
         ce[a["slot"]] = c
+        rec = dict(rec, slot=a["slot"])
+        cuts.append(rec)
         for i, t in enumerate(said):
             lines.append({"id": "g%d-a%d-l%02d" % (pop["generation"], a["slot"], i),
                           "agent": a["slot"], "lineage": a["lineage"], "text": t})
-        log("  agent %d  %-11s ce %5.3f  %s"
-            % (a["slot"], a["lineage"], c, json.dumps(said[0])))
+        log("  agent %d  %-11s ce %5.3f  %d of %d draws published  %s"
+            % (a["slot"], a["lineage"], c, rec["published"], rec["drawn"],
+               json.dumps(said[0]) if said else "(nothing)"))
+    examined = sum(r["examined"] for r in cuts)
+    drawn = sum(r["drawn"] for r in cuts)
+    rejected = sum(r["rejected"] for r in cuts)
+    dup = sum(r["duplicate"] for r in cuts)
     doc = {"generation": pop["generation"], "prompt": pop.get("prompt", PROMPT),
-           "model": {"repo": tinylm.REPO, "revision": tinylm.REVISION},
+           "env": env(),
+           # what was screened out and on what, so a reader of this file in a year can
+           # see it rather than infer it from the code that made the file
+           "screen": {"line_floor": LINE_FLOOR if filter_lines else None,
+                      "head_punctuation": "".join(sorted(HEAD_PUNCT)) if filter_lines
+                                          else None,
+                      "agent_floor": FLUENCY_FLOOR,
+                      "drawn": drawn, "examined": examined,
+                      "published": len(lines),
+                      "rejected": rejected, "duplicate": dup,
+                      "rejected_pct": round(100.0 * rejected / max(examined, 1), 1),
+                      "per_agent": cuts},
            "lines": lines}
     return doc, ce
 

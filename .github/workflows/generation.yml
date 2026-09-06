@@ -1,0 +1,68 @@
+name: Roll a generation
+
+# Monday 04:12 UTC. Off the hour on purpose: the top of the hour is when every
+# scheduled workflow on GitHub queues at once, and a late start would only push the
+# creature's week around.
+on:
+  schedule:
+    - cron: '12 4 * * 1'
+  workflow_dispatch:
+
+# This repository's default token permission is read. The job's whole point is a commit.
+permissions:
+  contents: write
+
+concurrency:
+  group: generation
+  cancel-in-progress: false
+
+jobs:
+  roll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # No actions/cache. Measured on this job: it is a net loss of 1.6 seconds, because
+      # pip's cost here is unpacking the wheel rather than downloading it, and GitHub
+      # evicts a cache unused for 7 days -- which is exactly this job's period, so the
+      # cache would usually be cold anyway.
+      - name: Install, pinned
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r evolution/requirements.txt \
+            --extra-index-url https://download.pytorch.org/whl/cpu
+
+      # Fails loudly and changes nothing if the endpoint is unreachable: roll writes
+      # nothing at all unless it gets to the end.
+      - name: Roll
+        id: roll
+        env:
+          PAT_COUNTS_URL: ${{ vars.PAT_COUNTS_URL }}
+        run: python -m evolution.roll roll
+
+      - name: Rebuild the site
+        run: python build_site.py
+
+      # Staged by name, never `git add -A`. build_site.py is not reproducible on a
+      # runner: with no copy changed it still rewrites favicon.ico and
+      # apple-touch-icon.png, because Pillow encodes the same solid differently there.
+      # Every html file and llms.txt are byte-identical. Left to itself this job would
+      # commit two churned binaries every week for ever.
+      - name: Commit
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html home.html research.html freelancing.html about.html \
+                  contact.html 404.html llms.txt \
+                  evolution/population.json evolution/lines.json
+          if git diff --cached --quiet; then
+            echo 'nothing changed'
+          else
+            git commit -m "${{ steps.roll.outputs.subject }}"
+            git push
+          fi

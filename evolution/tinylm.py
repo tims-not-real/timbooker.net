@@ -97,11 +97,15 @@ class TinyLM:
 
     # ----------------------------------------------------------------- forward
     @torch.inference_mode()
-    def logits(self, sd, ids):
+    def logits(self, sd, ids, last_only=False):
         """ids: LongTensor (B, T) -> logits (B, T, vocab), against a supplied weight dict.
 
         No KV cache. Twenty-six tokens through a 5M model is milliseconds, and recomputing
-        the prefix each step removes every special case an incremental path would need."""
+        the prefix each step removes every special case an incremental path would need.
+
+        `last_only` slices before the tied head. Sampling wants one row and the head is
+        256 x 4019, so computing it over every position and throwing all but the last away
+        is the most expensive thing in the whole job that nobody looks at."""
         B, T = ids.shape
         x = F.embedding(ids, sd[self.emb])
         for kk in self.K:
@@ -123,6 +127,8 @@ class TinyLM:
             h = self._rms(x, sd[kk["ln2"]])
             x = x + (F.silu(h @ sd[kk["gate"]].t()) * (h @ sd[kk["up"]].t())) \
                 @ sd[kk["down"]].t()
+        if last_only:
+            x = x[:, -1:]
         x = self._rms(x, sd[self.final])
         return x @ sd[self.emb].t()                        # tied head
 
@@ -137,7 +143,7 @@ class TinyLM:
         ids = torch.tensor([pid] * n, dtype=torch.long)
         done = [False] * n
         for _ in range(max_new):
-            lg = self.logits(sd, ids)[:, -1].float() / temperature
+            lg = self.logits(sd, ids, last_only=True)[:, -1].float() / temperature
             p = F.softmax(lg, -1)
             sp, si = torch.sort(p, descending=True, dim=-1)
             cut = torch.cumsum(sp, -1) - sp > top_p
@@ -168,6 +174,22 @@ class TinyLM:
         return out
 
     @torch.inference_mode()
+    def _nll(self, base_sd, texts):
+        """Per-token negative log likelihood of each text under a frozen weight set."""
+        ids = [self.tok.encode(t).ids[:self.max_pos] for t in texts]
+        keep = [r for r, i in enumerate(ids) if len(i) >= 2]
+        if not keep:
+            return None, None, keep
+        L = max(len(ids[r]) for r in keep)
+        X = torch.zeros((len(keep), L), dtype=torch.long)
+        M = torch.zeros((len(keep), L), dtype=torch.bool)
+        for r, src in enumerate(keep):
+            X[r, :len(ids[src])] = torch.tensor(ids[src])
+            M[r, :len(ids[src])] = True
+        lg = self.logits(base_sd, X)
+        lp = F.log_softmax(lg[:, :-1].float(), -1)
+        return -lp.gather(2, X[:, 1:].unsqueeze(-1)).squeeze(-1), M[:, 1:], keep
+
     def output_ce(self, base_sd, texts):
         """Cross-entropy of some agent's own lines, read by the FROZEN pretrained model.
 
@@ -176,20 +198,21 @@ class TinyLM:
         produce it. And an agent cannot mark its own paper -- fifty rounds of noise can
         leave it perfectly sure that "fubszer" was the right word. The base model never
         mutates, so it is the one yardstick here that cannot bend."""
-        ids = [self.tok.encode(t).ids[:self.max_pos] for t in texts]
-        ids = [i for i in ids if len(i) >= 2]
-        if not ids:
+        nll, mask, keep = self._nll(base_sd, texts)
+        if nll is None:
             return 99.0
-        L = max(len(i) for i in ids)
-        X = torch.zeros((len(ids), L), dtype=torch.long)
-        M = torch.zeros((len(ids), L), dtype=torch.bool)
-        for r, i in enumerate(ids):
-            X[r, :len(i)] = torch.tensor(i)
-            M[r, :len(i)] = True
-        lg = self.logits(base_sd, X)
-        lp = F.log_softmax(lg[:, :-1].float(), -1)
-        nll = -lp.gather(2, X[:, 1:].unsqueeze(-1)).squeeze(-1)
-        return float((nll * M[:, 1:]).sum() / M[:, 1:].sum())
+        return float((nll * mask).sum() / mask.sum())
+
+    def line_ce(self, base_sd, texts):
+        """The same statistic, one number per line rather than one per agent."""
+        nll, mask, keep = self._nll(base_sd, texts)
+        out = [99.0] * len(texts)
+        if nll is None:
+            return out
+        per = (nll * mask).sum(1) / mask.sum(1)
+        for r, src in enumerate(keep):
+            out[src] = float(per[r])
+        return out
 
 
 _M = None

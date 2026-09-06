@@ -13,9 +13,29 @@ documents, which is what a crawler, a language model, a pasted link and a reader
 JavaScript gets. The router is an improvement on a site that already works without it.
 """
 import io
+import json
 import os
 from urllib.parse import quote
 from site_style import CSS
+
+
+def _creature_lines():
+    """What the creature says, and which generation said it.
+
+    The list is not written here. It is the output of the weekly job in `evolution/`,
+    which selects on the pat counts, mutates the survivors, regenerates the lines and
+    commits `lines.json`. Reading it rather than holding a literal is the whole seam:
+    a generation changes this file's output without changing this file.
+
+    Every line carries the slot that said it and that slot's lineage, because #28 counts
+    shows and pats per (generation, agent) and cannot reconstruct either afterwards."""
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'evolution', 'lines.json')
+    with io.open(p, encoding='utf-8') as fh:
+        doc = json.load(fh)
+    return doc['lines'], doc['generation']
+
+
+CREATURE_LINES, CREATURE_GENERATION = _creature_lines()
 
 PAGES = [('home.html', 'Home'), ('research.html', 'Research'),
          ('freelancing.html', 'Freelancing'), ('about.html', 'About'),
