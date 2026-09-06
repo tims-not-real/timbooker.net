@@ -1460,19 +1460,20 @@ questions are what those selectors are selecting for, and what they ought to sel
 for.</p>
 """
 
-# The interests, as questions rather than as projects. One-word labels, to the register
-# of the rows below and to the 9.5rem label column. Three are measured; the fourth is
-# the normative one, and stands apart on purpose.
-INTEREST_ROWS = [
-    ('Discourse', None,
+# The interests, as questions rather than as projects. These are what the paragraph
+# above has just set up, so they are dot points and not another catalogue block: the
+# one-word label runs bold at the head of its own sentence rather than in a column.
+# Three are measured; the fourth is the normative one, and stands apart on purpose.
+INTERESTS = [
+    ('Discourse',
      'What a ranking function selects for in the quality of political discourse.'),
-    ('Conflict', None,
+    ('Conflict',
      'How a newsroom frames the victims of a war, since it is a selector too, with an '
      'objective of its own.'),
-    ('Belief', None,
+    ('Belief',
      "How the beliefs in a population hold together, since that structure is what any "
      'new belief has to fit.'),
-    ('Democracy', None,
+    ('Democracy',
      'The normative question, one for democratic theory rather than for measurement.'),
 ]
 
@@ -1497,6 +1498,14 @@ HOME_ROWS = [
      '<a class="link" href="mailto:__UNI__">__UNI__</a>. '
      'Anyone can write to me, about anything.'),
 ]
+
+
+def dots_block(items):
+    out = ['<ul class="dots">']
+    for label, text in items:
+        out.append('<li><b>%s.</b> %s</li>' % (label, text))
+    out.append('</ul>')
+    return '\n'.join(out)
 
 
 def rows_block(rows):
@@ -2418,7 +2427,7 @@ def bodies():
     inside the one document are written from these, so the two cannot drift apart."""
     return {
         'home': (HOME_BODY.replace('__INTRO__', HOME_INTRO)
-                          .replace('__INTERESTS__', rows_block(INTEREST_ROWS))
+                          .replace('__INTERESTS__', dots_block(INTERESTS))
                           .replace('__ROWS__', rows_block(HOME_ROWS))),
         'research': research_body(),
         'freelancing': (FREELANCING.replace('__OFFERS__', offer_rows())
