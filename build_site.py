@@ -230,8 +230,151 @@ NARROW = ('<link rel="preload" href="fonts/archivo-narrow-latin.woff2" as="font"
           'type="font/woff2" crossorigin>\n')
 
 
+# ============================================================ counting the pats
+
+# Where the counter lives. Empty means the site makes no request at all: the client
+# below returns on its second line and nothing is sent, nothing is stored and nothing
+# can fail. That is the state this ships in, because deploying the Worker needs a
+# Cloudflare login and that is Tim's to give. `worker/wrangler.toml` carries the
+# runbook; when it is deployed, put the URL here without a trailing slash and rebuild.
+PAT_ENDPOINT = ''
+
+# The seam with the creature (#27) and the weekly roll (#29), and it is three attributes
+# and no function calls:
+#
+#   the element the visitor clicks, or any ancestor of it, carries
+#     data-gen     the generation the line came from, and it is the only one required
+#     data-agent   the agent that wrote it
+#     data-line    the line that is on screen right now, empty when it is saying nothing
+#
+# A show is recorded when data-line becomes a line it has not just recorded, which is
+# the moment a line is put in front of somebody. A pat is recorded on pointerdown, read
+# in the capture phase so the attributes are still the ones that were on screen when the
+# click landed rather than the ones the click replaces. Nothing here calls into the
+# creature and the creature calls nothing here, so swapping the list of lines every
+# generation changes nothing on this side.
+#
+# Only data-gen has to be there at rest. The creature is silent until it is spoken to,
+# so the first click of a visit lands on a creature with no line and possibly no agent
+# either; that click is still sent, because it is the click the Worker is meant to
+# throw away, and a pat with no agent to attribute it to costs nothing but the session's
+# first-pat allowance.
+#
+# The denominator is why the show half exists. Agents are not shown equally often, so
+# pats alone say nothing; #29 ranks on pats/shows and cannot reconstruct the shows
+# afterwards. The two rules that decide what is counted are the Worker's, not this
+# file's: a session's first pat is discarded and ten are the most it can contribute.
+# They are enforced where they cannot be edited by the person doing the patting.
+#
+# Nothing personal is sent. Generation, agent, line, and an id drawn from
+# crypto.getRandomValues that lives in sessionStorage and dies with the tab. No cookie,
+# no persistent id, no timestamp — the Worker buckets its own clock to the hour — and
+# credentials are omitted, so a cookie could not ride along even if there were one.
+#
+# A failure is swallowed and the tab then stops trying, and the shape of that is the one
+# thing here worth reading twice. Chromium writes a line of its own to the console for
+# any request that cannot connect — Failed to load resource: net::ERR_CONNECTION_REFUSED
+# — and nothing in the page can suppress it. sendBeacon, fetch and an image all produce
+# it; it was measured. So the only way to keep it to one line is to make one request.
+# Until the endpoint has answered once, exactly one request is in the air and everything
+# else waits behind it: an answer of any kind releases the queue, and a failure empties
+# it and closes the whole thing down for the life of the tab. The alternative, sending
+# freely and stopping at the first rejection, sent ten before it heard back, because
+# Chromium sat on a refused connection for 2.27 seconds before reporting it.
+PAT_JS = r"""
+(function(){
+  var API = "__ENDPOINT__";
+  if (!API) return;
+
+  var state = 0, waiting = false, queue = [], last = '', mem = null;   // 0 ? 1 up 2 down
+
+  function newId(){
+    var a = new Uint8Array(12), s = '', i;
+    try { crypto.getRandomValues(a); }
+    catch(e){ for (i = 0; i < 12; i++) a[i] = Math.floor(Math.random() * 256); }
+    for (i = 0; i < 12; i++) s += (a[i] + 256).toString(16).slice(1);
+    return s;
+  }
+
+  // Per tab, and only per tab. Storage that is blocked or full falls back to an id held
+  // in memory, which lasts as long as this document does.
+  function sid(){
+    try {
+      var v = sessionStorage.getItem('tb:sid');
+      if (!v) { v = newId(); sessionStorage.setItem('tb:sid', v); }
+      return v;
+    } catch(e){ return (mem = mem || newId()); }
+  }
+
+  function read(el, needAgent){
+    if (!el || !el.dataset) return null;
+    var gen = parseInt(el.dataset.gen, 10);
+    var agent = el.dataset.agent || '';
+    if (!isFinite(gen) || (needAgent && !agent)) return null;
+    return { gen: gen, agent: agent,
+             line_id: el.dataset.line || el.dataset.lineId || '' };
+  }
+
+  function post(kind, ev){
+    return fetch(API + '/' + kind, {
+      method: 'POST',
+      body: JSON.stringify(ev),
+      headers: { 'Content-Type': 'text/plain' },     // safelisted, so no preflight
+      keepalive: true, mode: 'cors', credentials: 'omit', cache: 'no-store'
+    });
+  }
+
+  function down(){ state = 2; waiting = false; queue = []; }
+
+  function send(kind, ev){
+    if (state === 2 || !ev) return;
+    ev.session = sid();
+    try {
+      if (state === 1) { post(kind, ev).catch(function(){}); return; }
+      if (waiting) { if (queue.length < 24) queue.push([kind, ev]); return; }
+      waiting = true;                                // the one request that finds out
+      post(kind, ev).then(function(){
+        state = 1; waiting = false;
+        var q = queue; queue = [];
+        for (var i = 0; i < q.length; i++) send(q[i][0], q[i][1]);
+      }, down);
+    } catch(e){ down(); }
+  }
+
+  // A line is showing, and it is not the one already recorded.
+  function look(){
+    var ev = read(document.querySelector('[data-gen]'), true);
+    if (!ev || !ev.line_id) return;
+    var k = ev.gen + '|' + ev.agent + '|' + ev.line_id;
+    if (k === last) return;
+    last = k;
+    send('show', ev);
+  }
+
+  addEventListener('pointerdown', function(e){
+    if (e.button) return;                            // a pat is a left click or a tap
+    var el = e.target && e.target.closest ? e.target.closest('[data-gen]') : null;
+    var ev = read(el, false);
+    if (ev) send('pat', ev);                         // agent and line may be empty: the
+  }, true);                                          // first click has heard nothing yet
+
+  try {
+    new MutationObserver(look).observe(
+      document.querySelector('.label') || document.body,
+      { subtree: true, childList: true, attributes: true,
+        attributeFilter: ['data-gen', 'data-agent', 'data-line', 'data-line-id'] });
+    // .label is where #27 puts the creature; document.body is the fallback if it moves.
+  } catch(e){}
+  look();
+})();
+"""
+
+
 def render(path, title, main, js='', desc=DESC, narrow=False):
-    script = "<script>" + js + "</script>" if js else ""
+    # The counter goes on every page, because the creature does: it lives in the label
+    # and the label is on all six. Assembled here rather than at each call site, so
+    # there is one place it is added and one place it can be taken away.
+    script = "<script>" + js + PAT_JS.replace('__ENDPOINT__', PAT_ENDPOINT) + "</script>"
     html = (SHELL.replace('__TITLE__', title).replace('__DESC__', desc)
                  .replace('__NARROW__', NARROW if narrow else '')
                  .replace('__CSS__', CSS)
