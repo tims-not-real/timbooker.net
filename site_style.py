@@ -152,9 +152,10 @@ a{color:inherit}
   position:absolute; right:var(--crit-x); bottom:var(--crit-y);
   width:112px; height:96px; image-rendering:pixelated; cursor:pointer;
 }
-/* Small, white, left of the creature with its tail pointing at it. Not there at rest:
-   283px will not hold a permanent bubble beside a creature, and one that says nothing
-   until it is spoken to is the better object anyway. 122px is the sprite plus a gap. */
+/* Small, white, left of the creature with its tail pointing at it. Hidden until the
+   creature speaks, which it does on load, so in practice it is up for the whole visit:
+   somebody deciding whether to click has to be able to read the line. 122px is the
+   sprite plus a gap, and 172px is what the label's free 283 holds beside the sprite. */
 #critsay{
   position:absolute; right:calc(var(--crit-x) + 122px); bottom:calc(var(--crit-y) + 22px);
   max-width:172px; padding:.4rem .55rem; border-radius:11px;

@@ -122,9 +122,10 @@ a{color:inherit}
   position:absolute; right:var(--crit-x); bottom:var(--crit-y);
   width:112px; height:96px; image-rendering:pixelated; cursor:pointer;
 }
-/* Small, white, left of the creature with its tail pointing at it. Not there at rest:
-   283px will not hold a permanent bubble beside a creature, and one that says nothing
-   until it is spoken to is the better object anyway. 122px is the sprite plus a gap. */
+/* Small, white, left of the creature with its tail pointing at it. Hidden until the
+   creature speaks, which it does on load, so in practice it is up for the whole visit:
+   somebody deciding whether to click has to be able to read the line. 122px is the
+   sprite plus a gap, and 172px is what the label's free 283 holds beside the sprite. */
 #critsay{
   position:absolute; right:calc(var(--crit-x) + 122px); bottom:calc(var(--crit-y) + 22px);
   max-width:172px; padding:.4rem .55rem; border-radius:11px;
@@ -806,41 +807,38 @@ requestAnimationFrame(function(){
     sp.ink.forEach(function(p){ cx.fillRect(p[0]*CELL, oy + p[1]*CELL, CELL, CELL); });
   }
 
-  // A line at random, never the one it just said. All three attributes live on the
-  // canvas, which is also the thing the visitor clicks, and they are the whole of the
-  // interface: #28 watches them and counts a show when data-line takes a value it has
-  // not just recorded, so they are written in the same tick as the bubble text.
+  // One line, drawn uniformly, said on arrival. That is the whole of the experiment: a
+  // visitor reads a line nobody chose for them and then either pats the creature or
+  // does not. A click does not draw another line, so there is one line, one bubble and
+  // one show a visit, and a pat is an answer to something that was already on screen.
   //
-  // data-gen is on the canvas from the build and is there at rest. The other two are
-  // set when a line is shown and are never cleared, only replaced by the next line
-  // (#35). The bubble still fades after four seconds; the attribution does not. Every
-  // click after the first is "more of that, please", and that is the last thing it
-  // said whether or not the bubble is still up — while clearing them made pats/shows a
-  // measure of reading speed, and cost the weekly roll more accuracy than dropping
-  // below MIN_SHOWS does.
-  var n = -1, hideT = 0;
+  // All three attributes live on the canvas, which is also the thing the visitor
+  // clicks, and they are the whole of the interface: #28 watches them and counts a show
+  // when data-line takes a value, so they are written in the same tick as the text.
+  //
+  // data-gen is on the canvas from the build. The other two are set here, once, and are
+  // never cleared (#35); there is simply nothing to replace them with now. The bubble
+  // does not fade either. Somebody deciding whether to click has to be able to read the
+  // line, and a bubble that has gone cannot be answered.
   function speak(){
-    n = (n + 1 + Math.floor(Math.random() * (LINES.length - 1))) % LINES.length;
-    var L = LINES[n];
+    var L = LINES[Math.floor(Math.random() * LINES.length)];
     cv.setAttribute('data-agent', L[0]);
     cv.setAttribute('data-line', L[1]);
     say.textContent = L[2];
     say.classList.add('on');
-    clearTimeout(hideT);
-    hideT = setTimeout(function(){ say.classList.remove('on'); }, 4000);
   }
 
   cv.hidden = false;              // with no script there is no creature, rather than a
                                   // blank canvas with a pointer cursor on it
+  speak();
   // The primary button only. A right-click fires contextmenu and a middle-click fires
   // auxclick, so neither reaches here anyway, but the pat and the count that follows it
   // have to agree about what a pat is, and #28 filters on the button.
   function pat(e){ return !e.button; }
-  cv.addEventListener('click', function(e){ if (pat(e)) speak(); });
 
-  // Reduced motion: one paint, and nothing after it. A click is an answer to the visitor
-  // rather than ambient motion, so it still changes the line and still paints happy for
-  // a moment; then it stops again. No lift, because the lift is motion.
+  // Reduced motion: one paint, and nothing after it. A pat still paints happy for a
+  // moment, because the visitor has to see that the pat landed and that frame is the
+  // whole of the visible response; then it stops again. No lift, the lift is motion.
   if (matchMedia('(prefers-reduced-motion: reduce)').matches){
     draw('idleA', 0);
     var backT = 0;
@@ -970,8 +968,8 @@ requestAnimationFrame(function(){
     if (e.button) return;                            // a pat is a left click or a tap
     var el = e.target && e.target.closest ? e.target.closest('[data-gen]') : null;
     var ev = read(el, false);
-    if (ev) send('pat', ev);                         // agent and line may be empty: the
-  }, true);                                          // first click has heard nothing yet
+    if (ev) send('pat', ev);                         // agent and line are empty only on
+  }, true);                                          // a page the creature never ran on
 
   try {
     new MutationObserver(look).observe(

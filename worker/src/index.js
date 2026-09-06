@@ -15,28 +15,33 @@
  * on its own says nothing; selection in #29 ranks on pats/shows, and it cannot
  * reconstruct the shows afterwards.
  *
- * Two rules that came out of the simulation rather than out of taste:
+ * One rule, and it follows from what the page does. The creature says a line when the
+ * page loads, and a click pats it and changes nothing, so a visit is one line put in
+ * front of one person who either clicks or does not:
  *
- *   1. The first pat of a session is discarded. A fixed fraction of visitors pat
- *      because the creature is new, not because of what it said. Mechanically it is
- *      also the click that has heard nothing yet: the creature is silent until it is
- *      spoken to, so click 1 produces a line and click 2 is the first click that is a
- *      response to one.
- *   2. Ten counted pats a session, then accept and discard in silence. Somebody
- *      sitting on the button must not be able to elect a line.
+ *   One counted show and one counted pat a session. Anything after that is accepted
+ *   and discarded in silence — the line has not changed, so a second click is the same
+ *   vote again, and somebody sitting on the button must not be able to elect a line.
  *
- * And a third that follows from the second: shows are capped too, at eleven. Without
- * it the same person sitting on the button drives an agent's ratio to zero from the
- * denominator instead of the numerator, which is the same attack upside down. Eleven
- * rather than ten because a session's first show is the one whose pat is discarded.
+ * The two rules this replaces were right for the design before it and are wrong for
+ * this one. Discarding a session's first pat was right while a click was the thing
+ * that produced the line: click 1 landed on a creature that had said nothing, so it
+ * measured novelty. Now the first click is a response to a line the visitor has read,
+ * and it is the only click most visitors will make, so discarding it would throw away
+ * nearly every pat. Caps of ten pats and eleven shows were sized for a session that
+ * could go on drawing lines; a session draws one.
+ *
+ * Novelty does not disappear, it stops being a bias. Every visitor sees one line from
+ * one agent drawn at random, so novelty lifts every agent by the same factor, which
+ * moves the level of every ratio and not their order — and selection reads the order.
  *
  * What is stored, in full, and nothing else:
  *
  *   c:<gen>:<agent>   {shows, pats, lines:{<line_id>:{shows,pats}}, hours:{<YYYY-MM-DDTHH>:{shows,pats}}}
- *   s:<session>       {n, pats, shows}          random tab-scoped id, 24h TTL
+ *   s:<session>       {pats, shows}             random tab-scoped id, 24h TTL
  *
- * where n is 0 or 1 — whether a pat has been seen at all, which is the whole of what
- * rule 1 needs — and pats and shows are what this session has contributed so far.
+ * where pats and shows are what this session has contributed so far, and neither ever
+ * gets past one.
  *
  * No IP, no cookie, no fingerprint, no persistent id, no user agent, no referrer, no
  * minute-resolution time. The hour bucket is taken from the Worker's own clock, so the
@@ -44,8 +49,7 @@
  * and there is nothing to correlate across a browser restart.
  */
 
-const PAT_CAP = 10;                 // counted pats per session
-const SHOW_CAP = PAT_CAP + 1;       // see the note above
+const PER_SESSION = 1;              // counted shows, and counted pats, per session
 const SESSION_TTL = 86400;          // seconds; the id dies with the tab anyway
 const MAX_BODY = 1024;              // bytes; nothing legitimate is close
 
@@ -110,10 +114,11 @@ async function readEvent(request) {
   const session = String(d.session == null ? '' : d.session);
   if (!SESSION.test(session)) return null;
 
-  // agent and line_id are both allowed to be missing on a pat. The creature is silent
-  // until it is spoken to, so the first click of a visit has heard nothing yet and
-  // there is genuinely nothing to name; that click is the one that gets discarded.
-  // A show has to name both, and is refused below if it does not.
+  // agent and line_id are still allowed to be missing on a pat, and such a pat is
+  // accepted and not counted. The creature speaks on load, so a click on a page where
+  // its script ran always names a line; one where it did not carries data-gen and
+  // nothing else, and there is nothing to attribute it to. A show has to name both,
+  // and is refused below if it does not.
   const agent = d.agent == null || d.agent === '' ? '' : String(d.agent);
   const line = d.line_id == null || d.line_id === '' ? '' : String(d.line_id);
   if (agent && !TOKEN.test(agent)) return null;
@@ -148,7 +153,7 @@ async function bump(env, ev, field, now) {
 
 async function loadSession(env, sid) {
   const s = (await env.PATS.get('s:' + sid, 'json')) || {};
-  return { n: s.n || 0, pats: s.pats || 0, shows: s.shows || 0 };
+  return { pats: s.pats || 0, shows: s.shows || 0 };
 }
 
 
@@ -157,27 +162,25 @@ function saveSession(env, sid, s) {
 }
 
 
-// Past the caps nothing is written, only read. Somebody sitting on the button is meant
+// Past the cap nothing is written, only read. Somebody sitting on the button is meant
 // to be free to sit on it, and the free tier allows a thousand KV writes a day; a
 // session that could go on writing for ever would spend that on one person.
 async function onPat(env, ev, now) {
   const s = await loadSession(env, ev.session);
-  const first = s.n === 0;
-  // A click on a creature that has not spoken yet has nothing to attribute. It still
-  // counts as this session's first pat — that is exactly the click the rule is here to
-  // throw away — but it does not spend one of the ten.
-  const counted = !!ev.agent && !first && s.pats < PAT_CAP;
-  if (first) s.n = 1;
-  if (counted) s.pats += 1;
-  if (first || counted) await saveSession(env, ev.session, s);
-  if (counted) await bump(env, ev, 'pats', now);
-  return counted;
+  // A pat has to say which line it is answering. It always can now, unless the
+  // creature's script never ran on that document, in which case there is nothing to
+  // attribute and the pat is accepted and dropped.
+  if (!ev.agent || s.pats >= PER_SESSION) return false;
+  s.pats += 1;
+  await saveSession(env, ev.session, s);
+  await bump(env, ev, 'pats', now);
+  return true;
 }
 
 
 async function onShow(env, ev, now) {
   const s = await loadSession(env, ev.session);
-  if (s.shows >= SHOW_CAP) return false;
+  if (s.shows >= PER_SESSION) return false;
   s.shows += 1;
   await saveSession(env, ev.session, s);
   await bump(env, ev, 'shows', now);
