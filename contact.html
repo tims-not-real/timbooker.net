@@ -473,7 +473,7 @@ html.app::view-transition-group(page){animation:none}
   var say = document.getElementById('critsay'), cx = cv.getContext('2d');
   function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
   var CELL = 8, FUR = css('--lat-off'), HOLE = css('--fill');
-  var F = {"idleA": ["..............", ".........#....", "..#..#...##...", "..####....#...", "..o#o#....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "idleB": ["..............", "..........#...", "..#..#....#...", "..####....#...", "..o#o#....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "ear": ["..............", "..#......#....", "..#..#...##...", "..####....#...", "..#o#o....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "blink": ["..............", ".........#....", "..#..#...##...", "..####....#...", "..####....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "happy": ["..............", "..........#...", "..#..#....#...", "..####....#...", "..o#o#....#...", "..####..###...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "hop": ["..............", "..............", "..#..#....##..", "..####....#...", "..o#o#....#...", "..#m##....#...", "...########...", "...########...", "...#.#..#.#...", "..............", "..............", ".............."]};
+  var F = {"idleA": ["..............", ".........#....", "..#..#...##...", "..####....#...", "..o#o#....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "idleB": ["..............", "..........#...", "..#..#....#...", "..####....#...", "..o#o#....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "ear": ["..............", "..#......#....", "..#..#...##...", "..####....#...", "..#o#o....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "blink": ["..............", ".........#....", "..#..#...##...", "..####....#...", "..####....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "happy": ["..............", "..........#...", "..#..#....#...", "..####....#...", "..o#o#....#...", "..####..###...", "...########...", "...########...", "...#.#..#.#...", "...#.#..#.#...", "..............", ".............."], "hop": ["..............", "..............", "..#..#....##..", "..####....#...", "..o#o#....#...", "..#m##....#...", "...########...", "...########...", "...#.#..#.#...", "..............", "..............", ".............."], "shockC": ["..........#...", "..#..#....#...", "..#..#....#...", "..####....#...", "..o#o#....#...", "..#m##....#...", "...########...", "...########...", "...#.#..#.#...", "..##.#..#.##..", "..............", ".............."], "land": ["..............", "..............", ".........#....", "..#..#...##...", "..####....#...", "..o#o#....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "..............", ".............."], "landingToHome": ["..............", "..............", ".........#....", "..#..#...##...", "..####....#...", "..o#o#....#...", "..####....#...", "...########...", "...########...", "...#.#..#.#...", "..............", ".............."], "landingToResearch": ["..............", "..............", ".........##...", "..#..#.....#..", "..####....#...", "..o#o#.....#..", "..####.##.#...", "...########...", "...########...", "...#.#..#.#...", "..............", ".............."]};
   var LINES = [[0, "g0-a0-l00", "i belong to a place that has no names."], [0, "g0-a0-l01", "i bring your lost of blissives but misunderstood as he shared on earth for years."], [0, "g0-a0-l02", "i born here once, when i wander the empty corners of my home."], [0, "g0-a0-l03", "i take the flower to the heart of the soul, hoping to help a lost friend."], [0, "g0-a0-l04", "i cats will tell stories of their dreams, their hunger."], [0, "g0-a0-l05", "i be the source of loneliness."], [0, "g0-a0-l06", "i e have helped my child, and now i wonder if they could find a way to care."], [0, "g0-a0-l07", "i have who took her books to the world, but i am lost in my home."], [0, "g0-a0-l08", "i buse they visit the town."], [0, "g0-a0-l09", "i he'm well to join the stories of love."], [0, "g0-a0-l10", "i hey a baby fed, but no one enjoys me."], [0, "g0-a0-l11", "i for third revenge."], [0, "g0-a0-l12", "i t you, to fly through the stars."], [0, "g0-a0-l13", "i porch, with him special, meeting to bring hope."], [0, "g0-a0-l14", "i am, spreading joy."], [0, "g0-a0-l15", "i always love to steal in a game that am wrong."], [0, "g0-a0-l16", "i look lost in the city, searching for a friend who had gone missing."], [0, "g0-a0-l17", "i is looking for a great dragon, but inside, i am just a big one, but i am not a kind?"], [0, "g0-a0-l18", "i endle on a lost city, full of lost hopes and dreams."], [0, "g0-a0-l19", "i qu was once a young girl with her cats who loved to sleep, searching for the most precious gem."], [0, "g0-a0-l20", "i you were sad, but inside, i am always sad."], [0, "g0-a0-l21", "i oter, looking for the creature to bring me luck."], [0, "g0-a0-l22", "i steal from the mayor."], [0, "g0-a0-l23", "i only love the one you heard from my favorite flower, a bright one."], [1, "g0-a1-l00", "i bring light, and he sends it to the forest."], [1, "g0-a1-l01", "i do here for my games."], [1, "g0-a1-l02", "i make people happy."], [1, "g0-a1-l03", "i rule the old tree, and i feel sad because i loved being kind."], [1, "g0-a1-l04", "i visit mia if she knows too nice."], [1, "g0-a1-l05", "i order help even in a big blizate."], [1, "g0-a1-l06", "i find the hidden flowers."], [1, "g0-a1-l07", "i ru that his friend, who is his best friend."], [1, "g0-a1-l08", "i tell the truth and invite friends to dance and tell tales."], [1, "g0-a1-l09", "i friend, a clever girl with a plan."], [1, "g0-a1-l10", "i save the family reckless to play with the good and stealing more."], [1, "g0-a1-l11", "i rule this tale to i say the heart of the people."], [1, "g0-a1-l12", "i seek the light of his gifts."], [1, "g0-a1-l13", "i seek to find love, but i feel like i am missing us."], [1, "g0-a1-l14", "i should be lonely and help those in need."], [1, "g0-a1-l15", "i bel is here for friends, but they cannot find anyone."], [1, "g0-a1-l16", "i planet you try to dance and play, but the stars laugh at him."], [1, "g0-a1-l17", "i can help them bring light, but i feel weak."], [1, "g0-a1-l18", "i ask for help to find love."], [1, "g0-a1-l19", "i do silly, making everyone laugh."], [1, "g0-a1-l20", "i from the light of a star."], [1, "g0-a1-l21", "i wake them up and off"], [1, "g0-a1-l22", "i breathing in the box."], [1, "g0-a1-l23", "i make dark toys and hide from the children who live there."], [2, "g0-a2-l00", "i be there for you."], [2, "g0-a2-l01", "i have a story to show you the moments when you can think about brave friends?"], [2, "g0-a2-l02", "i have been searching for treasures but found that sharing is a chance."], [2, "g0-a2-l03", "i be lonely, yet i know much about kindness and joy."], [2, "g0-a2-l04", "i have been when i find you somewhere."], [2, "g0-a2-l05", "i get a name, but i can't find my name in leo's world"], [2, "g0-a2-l06", "i have watched you, dear reader, the heart of a good - lovership."], [2, "g0-a2-l07", "i have a weirbs of jelly beanflowers?"], [2, "g0-a2-l08", "i have a story that can make you smile."], [2, "g0-a2-l09", "i have been lost for months, waiting to find my true self."], [2, "g0-a2-l10", "i have a great act, but i feel bitter for the figure's sadness."], [2, "g0-a2-l11", "i have waited for someone to pick it, but only that, trusted my friend."], [2, "g0-a2-l12", "i have been lonely, but the heart must be made for love and warmth."], [2, "g0-a2-l13", "i was once there, and the answer is my home when i discover it."], [2, "g0-a2-l14", "i have traveled back somewhere near an old temple, filled with memories of laughter and warmth."], [2, "g0-a2-l15", "i have a flying ship, and i have watched the people have made strange things."], [2, "g0-a2-l16", "i see his dreams and wonder if they are lost too."], [2, "g0-a2-l17", "i have a picture of his friends, but he longs them to take tools and thoughts."], [2, "g0-a2-l18", "i have many stories to you, but i am a friend."], [2, "g0-a2-l19", "i have many many things, but i cannot find my place among them."], [2, "g0-a2-l20", "i tell you it love, but my heart is not here."], [2, "g0-a2-l21", "i have been you for ages, but i have only come from love?"], [2, "g0-a2-l22", "i look back, but i feel something missing"], [2, "g0-a2-l23", "i have listened carefully and finally tell me about my lost friends, but they were not there to give up."], [3, "g0-a3-l00", "i dancing too, but i know it is just a bit outside."], [3, "g0-a3-l01", "i lena, but it is hidden, but me has a great mind."], [3, "g0-a3-l02", "i shine a kind and help your garden bloom, but flowers bloom and they need joy for it was not caring."], [3, "g0-a3-l03", "i wry to bring joy to all the people, yet they forget."], [3, "g0-a3-l04", "i discovered the forest, where the flowers danced, and the sky was even better than a big, green."], [3, "g0-a3-l05", "i have a big party, the moon star, and the moon will laugh at me"], [3, "g0-a3-l06", "i fairy, like your new friend that he love to talk to."], [3, "g0-a3-l07", "i not be who get the story to share."], [3, "g0-a3-l08", "i say that the creature was not happy."], [3, "g0-a3-l09", "i once have a beautiful song that sings."], [3, "g0-a3-l10", "i have no memory, only listens."], [3, "g0-a3-l11", "i listen to his tales, and now it feels like a joke."], [3, "g0-a3-l12", "i tell the stories of the stars,"], [3, "g0-a3-l13", "i have lost things and bring back memories"], [3, "g0-a3-l14", "i pew as if that you help me grow big and have many wonders."], [3, "g0-a3-l15", "i be the spirit of your kindness, the kindness fairy sprinkles above the grounds."], [3, "g0-a3-l16", "i once filled her heart with love."], [3, "g0-a3-l17", "i dance, but without stories, time is blurry."], [3, "g0-a3-l18", "i be the queen, the story to all the queen."], [3, "g0-a3-l19", "i ng help it find happiness, but only scared it away."], [3, "g0-a3-l20", "i dance that that dances with music, making music for everyone."], [3, "g0-a3-l21", "i hear stories of the great bird, but only those who are kind is the right thing."], [3, "g0-a3-l22", "i see it as the keeper of hope, and it seems small and patient."], [3, "g0-a3-l23", "i and help follow the sound of the distant sound, but the world is too far away."], [4, "g0-a4-l00", "i landed and find peace."], [4, "g0-a4-l01", "i y there is a lost city hidden in the woods, where no one dared to go alone."], [4, "g0-a4-l02", "i do it, but my voice is broken, and the little one is trapped in a bubble, unable to hold."], [4, "g0-a4-l03", "i have looked up and saw the big creatures playing."], [4, "g0-a4-l04", "i have been a hero."], [4, "g0-a4-l05", "i have forgotten dreams."], [4, "g0-a4-l06", "i and need friends like you."], [4, "g0-a4-l07", "i saw a girl trapped under a swing."], [4, "g0-a4-l08", "i not have to be strong."], [4, "g0-a4-l09", "i have waited all the joy of meeting, lost in the crowd."], [4, "g0-a4-l10", "i have been searching for my missing ty : my laughter and questions about what it tells me."], [4, "g0-a4-l11", "i have been free like you."], [4, "g0-a4-l12", "i have lost my own memories, and i wonder if who you are."], [4, "g0-a4-l13", "i have been searching for a magical treasure but can never be seen again."], [4, "g0-a4-l14", "i have traveled alone to find peace, but the fish give me warmth and laughter."], [4, "g0-a4-l15", "i do a grand dinosaur who always says i am not the best."], [4, "g0-a4-l16", "i have fallen because i am bones, like my jokes, and i tell stories of lies."], [4, "g0-a4-l17", "i have been your friend, and i feel my pain."], [4, "g0-a4-l18", "i have been kind with this big world, and the creature wants to learn."], [4, "g0-a4-l19", "i have been sad and alone."], [4, "g0-a4-l20", "i have seen others really."], [4, "g0-a4-l21", "i would need something special."], [4, "g0-a4-l22", "i have forgotten the joy of laughter and sorrow."], [4, "g0-a4-l23", "i have been a hero here until you, for teaching me the gift of friendship and care."], [5, "g0-a5-l00", "i want to find my cat inside my house"], [5, "g0-a5-l01", "i are all a fool."], [5, "g0-a5-l02", "i the star star, with no friends."], [5, "g0-a5-l03", "i they need to bring you a gift with plants and soft flowers."], [5, "g0-a5-l04", "i and have smiles, and they all feel grateful."], [5, "g0-a5-l05", "i woke up for such wonderful winters."], [5, "g0-a5-l06", "i want to be friends"], [5, "g0-a5-l07", "i remember to bring me kindness."], [5, "g0-a5-l08", "i w to keep you, but you can trust me."], [5, "g0-a5-l09", "i say if i promise to my dragon what you like."], [5, "g0-a5-l10", "i just take dreams with me."], [5, "g0-a5-l11", "i all the funny people must like you, with strange creatures and shiny ones."], [5, "g0-a5-l12", "i belong with everyone."], [5, "g0-a5-l13", "i feed my flowers."], [5, "g0-a5-l14", "i just want to join."], [5, "g0-a5-l15", "i take from my home on a big island."], [5, "g0-a5-l16", "i see his safe home."], [5, "g0-a5-l17", "i help you find our treasure"], [5, "g0-a5-l18", "i maybe they all feel happy again."], [5, "g0-a5-l19", "i am a giant sli maybe them."], [5, "g0-a5-l20", "i grow your spirit of dreams."], [5, "g0-a5-l21", "i bring your songs, and now, for we can find something special."], [5, "g0-a5-l22", "i welcomed her with funny words."], [5, "g0-a5-l23", "i only join their flaber walls, guiding them through darkness."], [6, "g0-a6-l00", "i do not have magic."], [6, "g0-a6-l01", "i wait a bit too east and keep your world a secret."], [6, "g0-a6-l02", "i only wish to play, fear filling my heart."], [6, "g0-a6-l03", "i have a brave child, but not anyone just my laughter."], [6, "g0-a6-l04", "i look for the glimmer of kindness in the hearts of those i have found, just like flowers need warmth."], [6, "g0-a6-l05", "i have a wes and when i turn her reply, she hesitates."], [6, "g0-a6-l06", "i was spy first, and you believe."], [6, "g0-a6-l07", "i only make you look full for your family's where we find lost treasures."], [6, "g0-a6-l08", "i have no one you believe i'd be so bright and friendly."], [6, "g0-a6-l09", "i has found my mother, my heart full of wonder."], [6, "g0-a6-l10", "i chose this girl only like the flowers to arrange them."], [6, "g0-a6-l11", "i would be their friend for her kind, and love is the greatest treasure of all."], [6, "g0-a6-l12", "i was once a guide to this lost world."], [6, "g0-a6-l13", "i budd this love to her garden and share your blooms with others."], [6, "g0-a6-l14", "i have it as i seek a special flower for the heart of her."], [6, "g0-a6-l15", "i g often hide behind those who believe in me."], [6, "g0-a6-l16", "i only do not lead to danger."], [6, "g0-a6-l17", "i not look for treasure for my riches and for an adventure for others."], [6, "g0-a6-l18", "i not care, for his love for an envelope."], [6, "g0-a6-l19", "i have a mystery hunt, the creature of this foolish creature will change, and the old man will remind me of my true power."], [6, "g0-a6-l20", "i feel this would never be a part of a forgotten place."], [6, "g0-a6-l21", "i had once been a donk sounding i regret, often causing my small body to run."], [6, "g0-a6-l22", "i love it to ask for a new place in it."], [6, "g0-a6-l23", "i prop girls helped him, and their love grew stronger than ever."], [7, "g0-a7-l00", "i never approach but uses innovation for us."], [7, "g0-a7-l01", "i a gathering of frosty night."], [7, "g0-a7-l02", "i have stories to tell, but i cannot hear him."], [7, "g0-a7-l03", "i ll teach you some pass, to see the beauty of the world."], [7, "g0-a7-l04", "i have no help, but i love to take care of it."], [7, "g0-a7-l05", "i have some jokes and fun tricks"], [7, "g0-a7-l06", "i od this, looking for adventure."], [7, "g0-a7-l07", "i have to join the festivare to dance with joy."], [7, "g0-a7-l08", "i have no friends to be here"], [7, "g0-a7-l09", "i have to go, and i wonder if i will ever join the dancers in the park."], [7, "g0-a7-l10", "i have a riddle for you"], [7, "g0-a7-l11", "i outside, there is no one who talks about gold or power."], [7, "g0-a7-l12", "i love to be dangerous."], [7, "g0-a7-l13", "i have no fants in our noisy shop."], [7, "g0-a7-l14", "i have a secret to love, but i want no one to help me grow."], [7, "g0-a7-l15", "i have here because of my net, can be seen, but i know you will learn all it is good to think before he hat"], [7, "g0-a7-l16", "i have bounte it walks from the market, hoping for something to see."], [7, "g0-a7-l17", "i have no one asking to join the secret society"], [7, "g0-a7-l18", "i have big dreams, but the little one is my friend."], [7, "g0-a7-l19", "i take her favorite candy with me"], [7, "g0-a7-l20", "i do not reach inside, but can be your own."], [7, "g0-a7-l21", "i have no one to share my toys, but i want friends"], [7, "g0-a7-l22", "i meet you out to join me on an adventure"], [7, "g0-a7-l23", "i collect more secrets when magic is waiting."]];          // [agent slot, line id, line], this generation's lot
 
   // Cell coordinates once, rather than a hundred and sixty-eight character tests a frame.
@@ -550,8 +550,135 @@ html.app::view-transition-group(page){animation:none}
   var patted = false, lastF = null, lastUp = 0;
   cv.addEventListener('click', function(e){ if (pat(e)) patted = true; });
 
+  // ---- the floor moves, and the cat notices (#41) -----------------------------
+  // Home's label is 145px taller than every other page's, so navigating to or from home
+  // moves the floor out from under the creature by 18 cells. This is not decoration on a
+  // navigation: it is the physical consequence of a resize that already happens.
+  //
+  // A step is [frame, whole cells above the DESTINATION's resting position, ms], and
+  // measuring against the destination is what keeps every frame on the grid. The
+  // position written is always `rest - cells * CELL` and `rest` is offsetTop, which is an
+  // integer, so every position is a whole pixel and every step is exactly one cell.
+  //
+  // The plate moves smoothly and the cat does not, ever. The desync between a floor
+  // that has already left and a cat that has not started falling yet is the joke, and it
+  // is not something to fix.
+  //
+  // The canvas stays 112 x 96 and is moved by writing `top`. Grown to cover the flight
+  // path instead, a transparent canvas would swallow pointer events over label that has
+  // none today; `bottom` is still in the stylesheet and is over-constrained away while
+  // `top` is set, so clearing `top` puts the creature back exactly where CSS had it.
+  //
+  // The bubble goes away for the duration, which the mockup could not raise because its
+  // label has no bubble. Left alone it is anchored to the label's bottom like everything
+  // else, so it rides the floor away and spends a second and a half pointing its tail at
+  // empty blue. Carrying it along with the creature was built and filmed first and is the
+  // same fault in a different direction: a speech bubble belongs to a creature that is
+  // standing still and talking, not to one falling through the air. Tim's call.
+  //
+  // Out is a cut and back is the fade the bubble already has. `visibility` is not in the
+  // stylesheet's transition, so hiding is immediate and lands on the same painted frame
+  // as the floor's first move; taking `.on` off underneath it runs the opacity down to 0
+  // behind the veil, so putting both back at the end fades it in from nothing exactly as
+  // it does when the creature first speaks. Nothing here touches the text or the two data
+  // attributes: it is the same line, said once a visit (#38), and #35 and #36 both turned
+  // on those attributes persisting.
+  var SEQ = {"arrive": [["idleA", 18, 180], ["shockC", 18, 500], ["shockC", 17, 45], ["shockC", 15, 45], ["shockC", 9, 45], ["shockC", 0, 45], ["land", 0, 90], ["landingToHome", 0, 800], ["idleA", 0, 45]], "leave": [["idleA", -18, 45], ["hop", -8, 45], ["hop", 1, 45], ["hop", 8, 45], ["hop", 13, 45], ["hop", 16, 45], ["hop", 18, 45], ["hop", 18, 45], ["hop", 17, 45], ["hop", 15, 45], ["hop", 9, 45], ["hop", 0, 45], ["land", 0, 90], ["landingToResearch", 0, 800], ["idleA", 0, 45]]}, RESIZE = 18;
+  var seq = null, cum = [], total = 0, gt0 = 0, rest = 0, lastTop = null;
+  var armed = -1, armedAt = 0;
+
+  function place(up){
+    var top = rest - up * CELL;
+    if (top !== lastTop){ lastTop = top; cv.style.top = top + 'px'; }
+  }
+  function land(){
+    seq = null; lastTop = null;
+    cv.style.top = '';
+    say.style.visibility = ''; say.classList.add('on');
+    st.f = 'idleA'; st.up = 0; st.until = 0; st.q = [];
+    lastF = null; lastUp = 0;
+  }
+  // Where the creature stands when nothing is holding it up. A gesture already running
+  // has it pinned, and reading offsetTop then would report the flight rather than the
+  // floor, so the pin comes off for the read and goes straight back on. Both callers run
+  // synchronously inside the router, between frames, so nothing is painted in between
+  // and nothing is seen to move.
+  function floor(){
+    var t = cv.style.top, out;
+    if (t) cv.style.top = '';
+    out = cv.offsetTop;
+    if (t) cv.style.top = t;
+    return out;
+  }
+  // The first frame is placed and drawn here rather than left to the loop, because the
+  // router calls this from inside the view transition's own callback, which runs after
+  // that frame's animation callbacks. Left to the loop, the creature would be painted
+  // once at its new position still wearing whichever idle frame it was in the middle of.
+  function start(key, when){
+    seq = SEQ[key]; gt0 = when; cum = []; total = 0;
+    for (var n = 0; n < seq.length; n++){ cum.push(total); total += seq[n][2]; }
+    say.style.visibility = 'hidden'; say.classList.remove('on');
+    place(seq[0][1]);
+    lastF = seq[0][0]; lastUp = 0; draw(lastF, 0);
+  }
+
+  // The seam with the router, and it is two calls that report nothing but where the
+  // floor is. Nothing here knows which page it is on, how wide the window is, or that
+  // home exists: the travel it measures decides both whether to react and which way.
+  //
+  // It is published after the reduced-motion return above, so under that query there is
+  // no TBfloor for the router to find and there is no gesture at all — the creature
+  // simply appears at its resting position on the new page, which is what it already did.
+  window.TBfloor = {
+    // The navigation has been handled and the floor is about to move. Where is it now?
+    //
+    // Click again while a gesture is still running and nothing is unpinned here: the new
+    // sequence takes over from wherever the creature is, rather than dropping it on the
+    // floor for a frame first.
+    leaving: function(){
+      armed = -1;
+      if (cv.offsetParent === null) return;   // no box: display:none in one of the two
+      armed = floor();
+      armedAt = performance.now()/1000;
+    },
+    // The pages have swapped and the destination's layout is settled, but the router has
+    // not started the height animation yet, so this reads where the floor is going to be.
+    moved: function(){
+      var was = armed; armed = -1;
+      if (was < 0 || cv.offsetParent === null) return;
+      var now = floor(), d = was - now;
+      // The gesture is drawn for eighteen cells and fires for eighteen cells. Six of the
+      // ten page pairs move no floor worth the name — research to about resizes by
+      // 0.36px, which offsetTop rounds away — and below 880px the hero is one column and
+      // every label is 468, so nothing moves there either. A cat shocked at nothing is
+      // worse than no gesture. Written as an exact expectation rather than a threshold so
+      // that a label geometry which ever travels some other distance switches the gesture
+      // off instead of landing the cat short of the floor.
+      if (Math.round(Math.abs(d) / CELL) !== RESIZE) return;
+      rest = now;
+      // Leaving keeps the clock from the click, because that is when the floor started
+      // coming up. Arriving starts here, because the teleport and the first frame of the
+      // fall are the same instant: the pages swap, and the creature is put 18 cells up,
+      // which is where it was standing a moment ago on the shorter label.
+      start(d > 0 ? 'leave' : 'arrive', d > 0 ? armedAt : performance.now()/1000);
+    }
+  };
+
   (function loop(){
     var t = performance.now()/1000;
+    if (seq){
+      var e = (t - gt0) * 1000;
+      if (e < total){
+        var g = 0;
+        while (g + 1 < seq.length && e >= cum[g + 1]) g++;
+        place(seq[g][1]);
+        if (seq[g][0] !== lastF || lastUp !== 0){
+          lastF = seq[g][0]; lastUp = 0; draw(lastF, 0);
+        }
+        requestAnimationFrame(loop); return;
+      }
+      land();               // and on through to the idle machine, in the same frame
+    }
     if (patted){
       patted = false;
       st.q = [['happy',0.13,0], ['happy',0.10,1], ['happy',0.10,0], ['idleA',0.12,0]];

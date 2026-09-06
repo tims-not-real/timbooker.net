@@ -555,6 +555,12 @@ ROUTER_JS = r"""
 
   function swap(next, push){
     if (next === cur || !PAGE[next]) return;
+    // The floor is about to move (#41). The creature is told here, where the navigation
+    // is handled rather than on a clock of its own, and told again below once the pages
+    // have swapped; it measures the travel between the two and decides from that whether
+    // there is anything to react to and which way. This is also the back button, which
+    // moves the same floor by the same 145px.
+    if (window.TBfloor) TBfloor.leaving();
     // Where you were on the page you are leaving, so that coming back to it puts you
     // back. There is no page load to survive any more, so nothing is stored anywhere.
     var y0 = Math.round(pageYOffset), y1 = at[next] || 0;
@@ -571,6 +577,11 @@ ROUTER_JS = r"""
       if (held !== null) hold(next);    // the incoming page carries the name now
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
+      // Last, because the destination's plate column is what sets the label's height and
+      // the creature is positioned from the label's bottom. Here the new page is laid
+      // out and the height animation below has not started, so this is the one moment
+      // that reads where the floor is going to be rather than where it is passing.
+      if (window.TBfloor) TBfloor.moved();
     }
     function settle(){
       if (anim) anim.cancel();
@@ -717,7 +728,162 @@ CREATURE_FRAMES = {
         '..............',
         '..............',
     ],
+
+    # ---- the four the floor gesture needs (#41) -------------------------------------
+    # Drawn in the sandbox and settled with Tim over six rounds; they are copied out of
+    # `build_cattrans.py`, which is the specification, rather than redrawn here.
+
+    # The hang. Tail up out of its curl, ears a cell taller so they stand rather than
+    # sit, mouth open, feet thrown out. The splay is an L at the foot of each outer leg,
+    # so every foot cell still meets its leg on a side and never only at a corner, which
+    # is the thing that made every earlier floating limb.
+    #
+    # Row 5 col 4 is Tim's own edit and it is the whole of the difference from what went
+    # to him: THE MOUTH IS ONE CELL, NOT TWO. It is the mouth his own `hop` frame uses.
+    # At eight pixels a cell that is a different expression rather than a smaller version
+    # of the same one — a two-cell mouth on a four-cell head is a gape and this is a
+    # gasp. Do not tidy it back to two.
+    'shockC': [
+        '..........#...',
+        '..#..#....#...',
+        '..#..#....#...',
+        '..####....#...',
+        '..o#o#....#...',
+        '..#m##....#...',
+        '...########...',
+        '...########...',
+        '...#.#..#.#...',
+        '..##.#..#.##..',
+        '..............',
+        '..............',
+    ],
+    # The landing itself, passed through in two frames by both directions. Head, body and
+    # tail all drop one cell and the legs give that cell up out of their own height, so
+    # the feet stay on exactly the line they rest on and the cat is one cell shorter.
+    # Nothing is redrawn: it is idleA, compressed.
+    'land': [
+        '..............',
+        '..............',
+        '.........#....',
+        '..#..#...##...',
+        '..####....#...',
+        '..o#o#....#...',
+        '..####....#...',
+        '...########...',
+        '...########...',
+        '...#.#..#.#...',
+        '..............',
+        '..............',
+    ],
+    # The beat after landing on home, and it is byte for byte `land`. That is Tim's
+    # decision rather than an omission: after falling because the floor vanished, the cat
+    # lands and takes a moment, and nothing else happens. It carries its own name so that
+    # the two can be changed apart later without anyone having to work out which uses
+    # were which.
+    'landingToHome': [
+        '..............',
+        '..............',
+        '.........#....',
+        '..#..#...##...',
+        '..####....#...',
+        '..o#o#....#...',
+        '..####....#...',
+        '...########...',
+        '...########...',
+        '...#.#..#.#...',
+        '..............',
+        '..............',
+    ],
+    # The beat after landing on research, and it is FIVE 4-CONNECTED PIECES ON PURPOSE.
+    #
+    # Tim drew it. The tail is a motion smear: it leaves the back at row 6 col 10 and
+    # breaks into a dotted zigzag climbing to the right — (11,5), (10,4), (11,3), then
+    # (9,2) and (10,2) at the tip — which is the pixel-art convention for something moving
+    # too fast to draw solid. The four fragments ARE the smear. Connecting them draws a
+    # stiff tail and kills the only thing in the frame that says the cat has just been
+    # thrown.
+    #
+    # The connectivity check below stays on for this frame and is not skipped: `PIECES`
+    # records that it expects exactly 5, so a frame that comes back as 4 or 6 has changed
+    # and still fails loudly. The rule was adopted to catch accidental floating limbs and
+    # it earned that; it just cannot tell a deliberate smear from an accident, so it is
+    # told, once, in writing, next to the drawing.
+    #
+    # Do not connect these cells. Do not tidy them.
+    'landingToResearch': [
+        '..............',
+        '..............',
+        '.........##...',
+        '..#..#.....#..',
+        '..####....#...',
+        '..o#o#.....#..',
+        '..####.##.#...',
+        '...########...',
+        '...########...',
+        '...#.#..#.#...',
+        '..............',
+        '..............',
+    ],
 }
+
+
+# ---- the frames are checked before they can reach a page ----------------------------
+# Straight out of the sandbox's build_variants.py, which is where it caught every
+# accidental floating limb of the earlier sprite rounds. The 4-neighbour flood is the one
+# that catches a limb attached only at a corner.
+LEGAL = set('#.oinm')
+
+# Every frame is one 4-connected region unless it is named here, and the allowance is an
+# exact count rather than a licence: 5 means 5, so a frame that comes back as 4 or 6 has
+# changed and still fails. Add an entry only with the reason written beside the frame
+# itself. The one entry there is is a tail drawn as a motion smear; see
+# `landingToResearch` above.
+PIECES = {'landingToResearch': 5}
+
+
+def components(rows):
+    """How many 4-connected regions of set cells the drawing has."""
+    from collections import deque
+    on = set((x, y) for y, r in enumerate(rows)
+             for x, c in enumerate(r) if c != '.')
+    seen, n = set(), 0
+    for s in on:
+        if s in seen:
+            continue
+        n += 1
+        q = deque([s])
+        seen.add(s)
+        while q:
+            x, y = q.popleft()
+            for p in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if p in on and p not in seen:
+                    seen.add(p)
+                    q.append(p)
+    return n
+
+
+def check_frames(frames):
+    """Equal row widths, 14 x 12, legal characters, and the piece count each declares."""
+    bad = []
+    for k, rows in sorted(frames.items()):
+        if len(set(len(r) for r in rows)) != 1:
+            bad.append('%s: ragged rows' % k)
+        elif len(rows) != 12 or len(rows[0]) != 14:
+            bad.append('%s: %dx%d, not 14x12' % (k, len(rows[0]), len(rows)))
+        illegal = set(''.join(rows)) - LEGAL
+        if illegal:
+            bad.append('%s: illegal chars %s' % (k, sorted(illegal)))
+        c = components(rows)
+        want = PIECES.get(k, 1)
+        if c != want:
+            bad.append('%s: %d pieces, expected %d' % (k, c, want)
+                       + (' (allowed above 1 only where the drawing says why)'
+                          if want == 1 else
+                          ' -- the allowance is exact, so this has changed'))
+    if bad:
+        raise SystemExit('frames rejected:\n  ' + '\n  '.join(bad))
+    return len(frames)
+
 
 CREATURE_JS = r"""
 // ---- a creature in the corner of the label ----------------------------------
@@ -812,8 +978,135 @@ CREATURE_JS = r"""
   var patted = false, lastF = null, lastUp = 0;
   cv.addEventListener('click', function(e){ if (pat(e)) patted = true; });
 
+  // ---- the floor moves, and the cat notices (#41) -----------------------------
+  // Home's label is 145px taller than every other page's, so navigating to or from home
+  // moves the floor out from under the creature by 18 cells. This is not decoration on a
+  // navigation: it is the physical consequence of a resize that already happens.
+  //
+  // A step is [frame, whole cells above the DESTINATION's resting position, ms], and
+  // measuring against the destination is what keeps every frame on the grid. The
+  // position written is always `rest - cells * CELL` and `rest` is offsetTop, which is an
+  // integer, so every position is a whole pixel and every step is exactly one cell.
+  //
+  // The plate moves smoothly and the cat does not, ever. The desync between a floor
+  // that has already left and a cat that has not started falling yet is the joke, and it
+  // is not something to fix.
+  //
+  // The canvas stays 112 x 96 and is moved by writing `top`. Grown to cover the flight
+  // path instead, a transparent canvas would swallow pointer events over label that has
+  // none today; `bottom` is still in the stylesheet and is over-constrained away while
+  // `top` is set, so clearing `top` puts the creature back exactly where CSS had it.
+  //
+  // The bubble goes away for the duration, which the mockup could not raise because its
+  // label has no bubble. Left alone it is anchored to the label's bottom like everything
+  // else, so it rides the floor away and spends a second and a half pointing its tail at
+  // empty blue. Carrying it along with the creature was built and filmed first and is the
+  // same fault in a different direction: a speech bubble belongs to a creature that is
+  // standing still and talking, not to one falling through the air. Tim's call.
+  //
+  // Out is a cut and back is the fade the bubble already has. `visibility` is not in the
+  // stylesheet's transition, so hiding is immediate and lands on the same painted frame
+  // as the floor's first move; taking `.on` off underneath it runs the opacity down to 0
+  // behind the veil, so putting both back at the end fades it in from nothing exactly as
+  // it does when the creature first speaks. Nothing here touches the text or the two data
+  // attributes: it is the same line, said once a visit (#38), and #35 and #36 both turned
+  // on those attributes persisting.
+  var SEQ = __SEQ__, RESIZE = __RESIZE__;
+  var seq = null, cum = [], total = 0, gt0 = 0, rest = 0, lastTop = null;
+  var armed = -1, armedAt = 0;
+
+  function place(up){
+    var top = rest - up * CELL;
+    if (top !== lastTop){ lastTop = top; cv.style.top = top + 'px'; }
+  }
+  function land(){
+    seq = null; lastTop = null;
+    cv.style.top = '';
+    say.style.visibility = ''; say.classList.add('on');
+    st.f = 'idleA'; st.up = 0; st.until = 0; st.q = [];
+    lastF = null; lastUp = 0;
+  }
+  // Where the creature stands when nothing is holding it up. A gesture already running
+  // has it pinned, and reading offsetTop then would report the flight rather than the
+  // floor, so the pin comes off for the read and goes straight back on. Both callers run
+  // synchronously inside the router, between frames, so nothing is painted in between
+  // and nothing is seen to move.
+  function floor(){
+    var t = cv.style.top, out;
+    if (t) cv.style.top = '';
+    out = cv.offsetTop;
+    if (t) cv.style.top = t;
+    return out;
+  }
+  // The first frame is placed and drawn here rather than left to the loop, because the
+  // router calls this from inside the view transition's own callback, which runs after
+  // that frame's animation callbacks. Left to the loop, the creature would be painted
+  // once at its new position still wearing whichever idle frame it was in the middle of.
+  function start(key, when){
+    seq = SEQ[key]; gt0 = when; cum = []; total = 0;
+    for (var n = 0; n < seq.length; n++){ cum.push(total); total += seq[n][2]; }
+    say.style.visibility = 'hidden'; say.classList.remove('on');
+    place(seq[0][1]);
+    lastF = seq[0][0]; lastUp = 0; draw(lastF, 0);
+  }
+
+  // The seam with the router, and it is two calls that report nothing but where the
+  // floor is. Nothing here knows which page it is on, how wide the window is, or that
+  // home exists: the travel it measures decides both whether to react and which way.
+  //
+  // It is published after the reduced-motion return above, so under that query there is
+  // no TBfloor for the router to find and there is no gesture at all — the creature
+  // simply appears at its resting position on the new page, which is what it already did.
+  window.TBfloor = {
+    // The navigation has been handled and the floor is about to move. Where is it now?
+    //
+    // Click again while a gesture is still running and nothing is unpinned here: the new
+    // sequence takes over from wherever the creature is, rather than dropping it on the
+    // floor for a frame first.
+    leaving: function(){
+      armed = -1;
+      if (cv.offsetParent === null) return;   // no box: display:none in one of the two
+      armed = floor();
+      armedAt = performance.now()/1000;
+    },
+    // The pages have swapped and the destination's layout is settled, but the router has
+    // not started the height animation yet, so this reads where the floor is going to be.
+    moved: function(){
+      var was = armed; armed = -1;
+      if (was < 0 || cv.offsetParent === null) return;
+      var now = floor(), d = was - now;
+      // The gesture is drawn for eighteen cells and fires for eighteen cells. Six of the
+      // ten page pairs move no floor worth the name — research to about resizes by
+      // 0.36px, which offsetTop rounds away — and below 880px the hero is one column and
+      // every label is 468, so nothing moves there either. A cat shocked at nothing is
+      // worse than no gesture. Written as an exact expectation rather than a threshold so
+      // that a label geometry which ever travels some other distance switches the gesture
+      // off instead of landing the cat short of the floor.
+      if (Math.round(Math.abs(d) / CELL) !== RESIZE) return;
+      rest = now;
+      // Leaving keeps the clock from the click, because that is when the floor started
+      // coming up. Arriving starts here, because the teleport and the first frame of the
+      // fall are the same instant: the pages swap, and the creature is put 18 cells up,
+      // which is where it was standing a moment ago on the shorter label.
+      start(d > 0 ? 'leave' : 'arrive', d > 0 ? armedAt : performance.now()/1000);
+    }
+  };
+
   (function loop(){
     var t = performance.now()/1000;
+    if (seq){
+      var e = (t - gt0) * 1000;
+      if (e < total){
+        var g = 0;
+        while (g + 1 < seq.length && e >= cum[g + 1]) g++;
+        place(seq[g][1]);
+        if (seq[g][0] !== lastF || lastUp !== 0){
+          lastF = seq[g][0]; lastUp = 0; draw(lastF, 0);
+        }
+        requestAnimationFrame(loop); return;
+      }
+      land();               // and on through to the idle machine, in the same frame
+    }
     if (patted){
       patted = false;
       st.q = [['happy',0.13,0], ['happy',0.10,1], ['happy',0.10,0], ['idleA',0.12,0]];
@@ -853,6 +1146,101 @@ CREATURE_JS = r"""
 """
 
 
+# ---- the two sequences, resolved here rather than in the page ------------------------
+# Every number below is out of `build_cattrans.py`, which is the specification for this
+# gesture and was iterated with Tim over six rounds. It is variant A: the 500 ms hang,
+# the four-step fall, the six-frame rise, the 180 ms "notices after" delay. The plate's
+# own 180 ms is not here because it is not this file's to set twice — the router already
+# animates the hero row with `duration:180`, and that is the floor's real speed.
+#
+# The travel is 18 cells. Home's label is 145.06px taller than every other page's,
+# because its plate column is, and the creature is positioned from the label's bottom, so
+# it rests 145px lower there. 145.06px is 18.13 cells at eight pixels a cell; the
+# gesture travels 18 whole cells and the 0.13 is a layout fact the cat does not express.
+RESIZE = 18          # cells the floor travels, and the cat with it
+HANG = 500           # ms standing on nothing before it falls
+NOTICE = 180         # ms of not having noticed, before the hang
+TICK = 45            # ms a cat frame
+HOLD = 800           # ms the aftermath frame is held
+FLING = 18           # cells the rising floor throws it above the new one
+FALL_SHAPE = [1, 3, 6, 11]        # the fall: four frames, and it accelerates
+RISE_SHAPE = [1, 2, 3, 4, 5, 6]   # the rise is its own six-frame shape, not the fall's.
+                                  # A four-frame shape stretched over a 36-cell rise puts
+                                  # nineteen cells in the first frame, and 152px in one
+                                  # frame reads as a jump cut rather than a fling.
+
+
+def steps(shape, lift):
+    """The shape as whole cells summing to exactly `lift`.
+
+    Round the running total, not the individual steps, or the rounding error accumulates
+    and the cat misses the floor. floor(x + 0.5) rather than round(), so this agrees with
+    Math.round: Python rounds a half to even and JavaScript rounds it up.
+    """
+    tot, acc, out, run = sum(shape), 0, [], 0
+    for s in shape:
+        run += s
+        want = int(run / tot * lift + 0.5)
+        out.append(want - acc)
+        acc = want
+    # A zero-cell step is a dropped frame, not a slower one: the cat stops dead in the
+    # middle of the fall. Take the cell it needs off the biggest step, which can spare it.
+    for i, s in enumerate(out):
+        if s == 0:
+            j = out.index(max(out))
+            out[j] -= 1
+            out[i] = 1
+    # Every shape is non-decreasing, but rounding can put the smaller of two adjacent
+    # steps second, and a fall that slows for one frame reads as a bounce in mid-air.
+    out.sort()
+    return out
+
+
+def gestures():
+    """The two sequences. A step is [frame, whole cells above the DESTINATION's resting
+    position, milliseconds].
+
+    Measuring against the destination is what keeps every frame on the grid: the source's
+    rest is 18 cells away by construction, so the cat starts at +18 or -18 and never needs
+    a fraction to describe where it was standing.
+    """
+    # Arriving on home: the label grows, so the floor drops 18 cells out from under the
+    # cat. It is left standing on nothing, has not noticed, then does, hangs, and falls to
+    # catch up.
+    up, arrive = RESIZE, []
+    arrive.append(['idleA', up, NOTICE])       # the floor has gone and it has not noticed
+    arrive.append(['shockC', up, HANG])        # now it has. the hang, and it is the joke
+    for s in steps(FALL_SHAPE, RESIZE):
+        up -= s
+        arrive.append(['shockC', up, TICK])
+    arrive.append(['land', 0, TICK * 2])
+    arrive.append(['landingToHome', 0, HOLD])  # its own beat, not research's
+    arrive.append(['idleA', 0, TICK])
+
+    # Leaving home: the label shrinks, so the floor comes up 18 cells and flings the cat
+    # into the air. It comes down, lands, and its tail is still whipping.
+    up, leave = -RESIZE, []
+    leave.append(['idleA', up, TICK])          # one frame still standing on the old floor
+    for s in reversed(steps(RISE_SHAPE, RESIZE + FLING)):
+        up += s
+        leave.append(['hop', up, TICK])
+    leave.append(['hop', FLING, TICK])         # apex; the hang belongs to arriving
+    for s in steps(FALL_SHAPE, FLING):
+        up -= s
+        leave.append(['hop', up, TICK])
+    leave.append(['land', 0, TICK * 2])
+    leave.append(['landingToResearch', 0, HOLD])   # aftermath, and NOT the braced frame
+    leave.append(['idleA', 0, TICK])
+
+    # Both sequences end on the destination's floor and every position is a whole number
+    # of cells, which is what makes the claim in the acceptance check checkable here
+    # rather than only in a browser.
+    for q in (arrive, leave):
+        assert q[-1][1] == 0 and all(isinstance(s[1], int) for s in q)
+    assert arrive[0][1] == RESIZE and leave[0][1] == -RESIZE
+    return {'arrive': arrive, 'leave': leave}
+
+
 def creature_js():
     """The creature's script, with the frames and this generation's lines put in it.
 
@@ -863,6 +1251,8 @@ def creature_js():
     lines = [[l['agent'], l['id'], l['text']] for l in CREATURE_LINES]
     return (CREATURE_JS
             .replace('__FRAMES__', json.dumps(CREATURE_FRAMES, ensure_ascii=False))
+            .replace('__RESIZE__', str(RESIZE))
+            .replace('__SEQ__', json.dumps(gestures(), ensure_ascii=False))
             .replace('__LINES__', json.dumps(lines, ensure_ascii=False)
                                       .replace('<', '\\u003c')))
 
@@ -1973,6 +2363,11 @@ def page_map():
 if __name__ == '__main__':
     body = bodies()
     written = []
+    # Nothing reaches a page until the drawings pass: 14 x 12, legal characters, and the
+    # number of 4-connected pieces each one declares. The one frame that declares more
+    # than one says why beside itself.
+    print('%d creature frames pass: 14x12, legal chars, declared piece counts'
+          % check_frames(CREATURE_FRAMES))
     # The creature is in the label, and the label is on every page, so its script goes
     # on every page too. One creature per document, which in the app is one for the site.
     creature = creature_js()
