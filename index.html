@@ -227,24 +227,6 @@ a{color:inherit}
 .prose p{margin-bottom:1.3rem}
 .prose p:last-child{margin-bottom:0}
 
-/* the dot points: the questions the paragraph above sets up, so they are a list and not
-   catalogue furniture. No rules anywhere, and the same text size as a row, so the page
-   holds one size below the intro */
-.dots{margin-top:2rem; max-width:62ch; padding-left:1.1rem; list-style-type:"·"}
-.dots li{font-size:.9375rem; line-height:1.55; padding-left:.55rem}
-.dots li + li{margin-top:.8rem}
-/* the marker is drawn by the list, never typed into the copy, so it stays out of a
-   reader's selection; dim, so it does not compete with the bold label beside it */
-.dots li::marker{color:var(--dim)}
-.dots b{font-weight:700}
-
-/* the dot points get a name. Type from .grp > h2, minus its border-bottom: a rule across
-   the top of this block puts back the table edge the list was made to lose. The binding
-   is done by the gap instead — 2.75rem above, the beat the catalogue below opens on,
-   against .75rem down to the first point */
-.topics{font-size:.8125rem; font-weight:700; color:var(--dim); margin-top:2.75rem}
-.topics + .dots{margin-top:.75rem}
-
 /* the one-line-each block: catalogue furniture, one row per thing */
 .rows{display:grid; grid-template-columns:9.5rem 1fr; margin-top:2.75rem;
       border-top:1px solid var(--rule)}
@@ -479,15 +461,8 @@ ranking functions, which are selectors somebody wrote down, with an objective. M
 questions are what those selectors are selecting for, and what they ought to select
 for.</p>
 </div>
-    <h2 class="topics">Topics</h2>
-    <ul class="dots">
-<li><b>Discourse.</b> What a ranking function selects for in the quality of political discourse.</li>
-<li><b>Conflict.</b> How a newsroom frames the victims of a war, since it is a selector too, with an objective of its own.</li>
-<li><b>Belief.</b> How the beliefs in a population hold together, since that structure is what any new belief has to fit.</li>
-<li><b>Democracy.</b> The normative question, one for democratic theory rather than for measurement.</li>
-</ul>
     <dl class="rows">
-<dt><a href="research.html">Research.</a></dt><dd><span>Cultural evolution, online and in populations of language models.</span></dd>
+<dt><a href="research.html">Research.</a></dt><dd><span>Alternative recommender systems, social media and democracy, cultural evolution, and LLM mechanistic interpretability.</span></dd>
 <dt><a href="freelancing.html">Freelance.</a></dt><dd><span>I take on contract work: measurement design, LLM labelling at scale, recommender and ranking audits, and data engineering on large or messy sources.</span></dd>
 <dt>Media.</dt><dd><span>I'm happy to hear from journalists. That might be a hand with something computational, or a comment on a story about platforms, recommendation, and online discourse.</span></dd>
 <dt>Students.</dt><dd><span>I supervise masters students, and BSc students who are motivated. You don't need a project worked out first. Write to me and tell me what interests you.</span></dd>
