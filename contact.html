@@ -226,6 +226,17 @@ a{color:inherit}
 .prose p{margin-bottom:1.3rem}
 .prose p:last-child{margin-bottom:0}
 
+/* the dot points: the questions the paragraph above sets up, so they are a list and not
+   catalogue furniture. No rules anywhere, and the same text size as a row, so the page
+   holds one size below the intro */
+.dots{margin-top:2rem; max-width:62ch; padding-left:1.1rem; list-style-type:"·"}
+.dots li{font-size:.9375rem; line-height:1.55; padding-left:.55rem}
+.dots li + li{margin-top:.8rem}
+/* the marker is drawn by the list, never typed into the copy, so it stays out of a
+   reader's selection; dim, so it does not compete with the bold label beside it */
+.dots li::marker{color:var(--dim)}
+.dots b{font-weight:700}
+
 /* the one-line-each block: catalogue furniture, one row per thing */
 .rows{display:grid; grid-template-columns:9.5rem 1fr; margin-top:2.75rem;
       border-top:1px solid var(--rule)}
