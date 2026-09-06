@@ -139,6 +139,43 @@ a{color:inherit}
 .label nav a:hover{opacity:1}
 .label nav a[aria-current]{opacity:1; box-shadow:inset 0 -2px 0 currentColor}
 
+/* ---- the creature ---- */
+/* It takes the free rectangle the label already has: 283 x 127 at x = 357 on a 680
+   label, right of the credits and above the nav rule. Fourteen cells by twelve at eight
+   pixels is 112 x 96, which sits in there with room for the bubble beside it.
+   Nothing scales. The canvas is drawn at its own size, so one canvas pixel is one CSS
+   pixel and every rect the script draws lands on a whole cell; image-rendering keeps
+   that true where the device scales the page instead. --crit-y is the label's bottom
+   padding plus the height of the nav, so the sprite's feet sit a pixel above the rule. */
+.label{--crit-x:2.5rem; --crit-y:74px}
+#critter{
+  position:absolute; right:var(--crit-x); bottom:var(--crit-y);
+  width:112px; height:96px; image-rendering:pixelated; cursor:pointer;
+}
+/* Small, white, left of the creature with its tail pointing at it. Not there at rest:
+   283px will not hold a permanent bubble beside a creature, and one that says nothing
+   until it is spoken to is the better object anyway. 122px is the sprite plus a gap. */
+#critsay{
+  position:absolute; right:calc(var(--crit-x) + 122px); bottom:calc(var(--crit-y) + 22px);
+  max-width:172px; padding:.4rem .55rem; border-radius:11px;
+  background:var(--fg); color:var(--bg); font-size:.75rem; line-height:1.35;
+  opacity:0; transition:opacity .18s ease; pointer-events:none;
+}
+#critsay::after{
+  content:""; position:absolute; right:-8px; bottom:14px;
+  border:8px solid transparent; border-left-color:var(--fg); border-right:0;
+}
+#critsay.on{opacity:1}
+/* Two bands where the label has not got the room, and it is hidden in both rather than
+   shrunk: a sprite that is a whole number of cells has exactly one size. Above 880 the
+   plate column is a fixed 23rem, so the label is at its narrowest just above the
+   breakpoint — 409px at 881 — and only reaches its full 680 at 1152; the bubble runs
+   into the credits until about 1100. Below 640 the nav takes two lines and the credits
+   reach across the corner. Both bands measured; the numbers are in the PR. */
+#critter, #critsay{display:none}
+@media(min-width:1120px){ #critter, #critsay{display:block} }
+@media(max-width:880px) and (min-width:640px){ #critter, #critsay{display:block} }
+
 /* ---- the toy ---- */
 .viz{display:flex; flex-direction:column; gap:.6rem}
 /* The plate arrives when its model has warmed up, rather than snapping in. The canvas
@@ -361,7 +398,9 @@ html.app::view-transition-group(page){animation:none}
 @media(max-width:880px){
   .wrap{padding:1.25rem 1.25rem 4rem}
   .hero{grid-template-columns:minmax(0,1fr)}
-  .label{padding:1.75rem 1.5rem}
+  /* the creature keeps to the label's own padding, which is smaller here, and the nav
+     sits four pixels nearer the bottom edge for the same reason, so the creature does */
+  .label{padding:1.75rem 1.5rem; --crit-x:1.5rem; --crit-y:70px}
   .title{font-size:1.875rem}
   .rows{grid-template-columns:minmax(0,1fr); gap:0}
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}
