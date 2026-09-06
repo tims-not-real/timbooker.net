@@ -257,24 +257,6 @@ a{color:inherit}
 .prose p{margin-bottom:1.3rem}
 .prose p:last-child{margin-bottom:0}
 
-/* the dot points: the questions the paragraph above sets up, so they are a list and not
-   catalogue furniture. No rules anywhere, and the same text size as a row, so the page
-   holds one size below the intro */
-.dots{margin-top:2rem; max-width:62ch; padding-left:1.1rem; list-style-type:"·"}
-.dots li{font-size:.9375rem; line-height:1.55; padding-left:.55rem}
-.dots li + li{margin-top:.8rem}
-/* the marker is drawn by the list, never typed into the copy, so it stays out of a
-   reader's selection; dim, so it does not compete with the bold label beside it */
-.dots li::marker{color:var(--dim)}
-.dots b{font-weight:700}
-
-/* the dot points get a name. Type from .grp > h2, minus its border-bottom: a rule across
-   the top of this block puts back the table edge the list was made to lose. The binding
-   is done by the gap instead — 2.75rem above, the beat the catalogue below opens on,
-   against .75rem down to the first point */
-.topics{font-size:.8125rem; font-weight:700; color:var(--dim); margin-top:2.75rem}
-.topics + .dots{margin-top:.75rem}
-
 /* the one-line-each block: catalogue furniture, one row per thing */
 .rows{display:grid; grid-template-columns:9.5rem 1fr; margin-top:2.75rem;
       border-top:1px solid var(--rule)}

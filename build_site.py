@@ -1460,27 +1460,11 @@ questions are what those selectors are selecting for, and what they ought to sel
 for.</p>
 """
 
-# The interests, as questions rather than as projects. These are what the paragraph
-# above has just set up, so they are dot points and not another catalogue block: the
-# one-word label runs bold at the head of its own sentence rather than in a column.
-# Three are measured; the fourth is the normative one, and stands apart on purpose.
-INTERESTS = [
-    ('Discourse',
-     'What a ranking function selects for in the quality of political discourse.'),
-    ('Conflict',
-     'How a newsroom frames the victims of a war, since it is a selector too, with an '
-     'objective of its own.'),
-    ('Belief',
-     "How the beliefs in a population hold together, since that structure is what any "
-     'new belief has to fit.'),
-    ('Democracy',
-     'The normative question, one for democratic theory rather than for measurement.'),
-]
-
 # One line each, labelled by the thing rather than by who it is for.
 HOME_ROWS = [
     ('Research', 'research.html',
-     'Cultural evolution, online and in populations of language models.'),
+     'Alternative recommender systems, social media and democracy, cultural '
+     'evolution, and LLM mechanistic interpretability.'),
     ('Freelance', 'freelancing.html',
      'I take on contract work: measurement design, LLM labelling at scale, recommender '
      'and ranking audits, and data engineering on large or messy sources.'),
@@ -1498,14 +1482,6 @@ HOME_ROWS = [
      '<a class="link" href="mailto:__UNI__">__UNI__</a>. '
      'Anyone can write to me, about anything.'),
 ]
-
-
-def dots_block(items):
-    out = ['<ul class="dots">']
-    for label, text in items:
-        out.append('<li><b>%s.</b> %s</li>' % (label, text))
-    out.append('</ul>')
-    return '\n'.join(out)
 
 
 def rows_block(rows):
@@ -1539,8 +1515,6 @@ ISING_PLATE = """      <div class="viz" data-plate="home"__HIDE__>
 
 HOME_BODY = """
     <div class="prose">__INTRO__</div>
-    <h2 class="topics">Topics</h2>
-    __INTERESTS__
     __ROWS__
 """
 
@@ -2428,7 +2402,6 @@ def bodies():
     inside the one document are written from these, so the two cannot drift apart."""
     return {
         'home': (HOME_BODY.replace('__INTRO__', HOME_INTRO)
-                          .replace('__INTERESTS__', dots_block(INTERESTS))
                           .replace('__ROWS__', rows_block(HOME_ROWS))),
         'research': research_body(),
         'freelancing': (FREELANCING.replace('__OFFERS__', offer_rows())
