@@ -1612,8 +1612,8 @@ requestAnimationFrame(function(){
       var was = armed; armed = -1;
       if (was < 0 || cv.offsetParent === null) return;
       var now = floor(), d = was - now;
-      // The gesture is drawn for eighteen cells and fires for eighteen cells. Four of the
-      // ten page pairs do not move the floor at all — research to about resizes by
+      // The gesture is drawn for eighteen cells and fires for eighteen cells. Six of the
+      // ten page pairs move no floor worth the name — research to about resizes by
       // 0.36px, which offsetTop rounds away — and below 880px the hero is one column and
       // every label is 468, so nothing moves there either. A cat shocked at nothing is
       // worse than no gesture. Written as an exact expectation rather than a threshold so
