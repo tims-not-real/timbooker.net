@@ -245,26 +245,27 @@ PAT_ENDPOINT = ''
 #   the element the visitor clicks, or any ancestor of it, carries
 #     data-gen     the generation the line came from, and it is the only one required
 #     data-agent   the agent that wrote it
-#     data-line    the last line it said, replaced by the next one and never cleared
+#     data-line    the line it said on arrival, set once and never cleared
 #
-# A show is recorded when data-line becomes a line it has not just recorded, which is
-# the moment a line is put in front of somebody. A pat is recorded on pointerdown, read
-# in the capture phase so the attributes are still the ones that were on screen when the
-# click landed rather than the ones the click replaces. Nothing here calls into the
-# creature and the creature calls nothing here, so swapping the list of lines every
-# generation changes nothing on this side.
+# A show is recorded when data-line takes a value this document has not already
+# recorded, which is the moment a line is put in front of somebody, and it happens once:
+# the creature speaks on load and a click does not change what it said. A pat is
+# recorded on pointerdown, in the capture phase. That used to be load-bearing, because a
+# click rewrote the attributes it was reading; nothing rewrites them now, and it stays
+# in capture because reading before the page can act on the click is still where the
+# read belongs. Nothing here calls into the creature and the creature calls nothing
+# here, so swapping the list of lines every generation changes nothing on this side.
 #
-# Only data-gen has to be there at rest. The creature is silent until it is spoken to,
-# so the first click of a visit lands on a creature with no line and possibly no agent
-# either; that click is still sent, because it is the click the Worker is meant to
-# throw away, and a pat with no agent to attribute it to costs nothing but the session's
-# first-pat allowance.
+# All three attributes are on the canvas before the visitor can click, so a pat names
+# the line it is answering. A pat carrying no agent is still sent and still accepted:
+# what it means is that the creature's script did not run on that document, so there is
+# nothing to attribute, and the Worker is the thing that decides what counts.
 #
 # The denominator is why the show half exists. Agents are not shown equally often, so
 # pats alone say nothing; #29 ranks on pats/shows and cannot reconstruct the shows
-# afterwards. The two rules that decide what is counted are the Worker's, not this
-# file's: a session's first pat is discarded and ten are the most it can contribute.
-# They are enforced where they cannot be edited by the person doing the patting.
+# afterwards. The rule that decides what is counted is the Worker's, not this file's:
+# one counted show and one counted pat a session, because a session sees one line. It
+# is enforced where it cannot be edited by the person doing the patting.
 #
 # Nothing personal is sent. Generation, agent, line, and an id drawn from
 # crypto.getRandomValues that lives in sessionStorage and dies with the tab. No cookie,
@@ -355,8 +356,8 @@ PAT_JS = r"""
     if (e.button) return;                            // a pat is a left click or a tap
     var el = e.target && e.target.closest ? e.target.closest('[data-gen]') : null;
     var ev = read(el, false);
-    if (ev) send('pat', ev);                         // agent and line may be empty: the
-  }, true);                                          // first click has heard nothing yet
+    if (ev) send('pat', ev);                         // agent and line are empty only on
+  }, true);                                          // a page the creature never ran on
 
   try {
     new MutationObserver(look).observe(
@@ -736,41 +737,38 @@ CREATURE_JS = r"""
     sp.ink.forEach(function(p){ cx.fillRect(p[0]*CELL, oy + p[1]*CELL, CELL, CELL); });
   }
 
-  // A line at random, never the one it just said. All three attributes live on the
-  // canvas, which is also the thing the visitor clicks, and they are the whole of the
-  // interface: #28 watches them and counts a show when data-line takes a value it has
-  // not just recorded, so they are written in the same tick as the bubble text.
+  // One line, drawn uniformly, said on arrival. That is the whole of the experiment: a
+  // visitor reads a line nobody chose for them and then either pats the creature or
+  // does not. A click does not draw another line, so there is one line, one bubble and
+  // one show a visit, and a pat is an answer to something that was already on screen.
   //
-  // data-gen is on the canvas from the build and is there at rest. The other two are
-  // set when a line is shown and are never cleared, only replaced by the next line
-  // (#35). The bubble still fades after four seconds; the attribution does not. Every
-  // click after the first is "more of that, please", and that is the last thing it
-  // said whether or not the bubble is still up — while clearing them made pats/shows a
-  // measure of reading speed, and cost the weekly roll more accuracy than dropping
-  // below MIN_SHOWS does.
-  var n = -1, hideT = 0;
+  // All three attributes live on the canvas, which is also the thing the visitor
+  // clicks, and they are the whole of the interface: #28 watches them and counts a show
+  // when data-line takes a value, so they are written in the same tick as the text.
+  //
+  // data-gen is on the canvas from the build. The other two are set here, once, and are
+  // never cleared (#35); there is simply nothing to replace them with now. The bubble
+  // does not fade either. Somebody deciding whether to click has to be able to read the
+  // line, and a bubble that has gone cannot be answered.
   function speak(){
-    n = (n + 1 + Math.floor(Math.random() * (LINES.length - 1))) % LINES.length;
-    var L = LINES[n];
+    var L = LINES[Math.floor(Math.random() * LINES.length)];
     cv.setAttribute('data-agent', L[0]);
     cv.setAttribute('data-line', L[1]);
     say.textContent = L[2];
     say.classList.add('on');
-    clearTimeout(hideT);
-    hideT = setTimeout(function(){ say.classList.remove('on'); }, 4000);
   }
 
   cv.hidden = false;              // with no script there is no creature, rather than a
                                   // blank canvas with a pointer cursor on it
+  speak();
   // The primary button only. A right-click fires contextmenu and a middle-click fires
   // auxclick, so neither reaches here anyway, but the pat and the count that follows it
   // have to agree about what a pat is, and #28 filters on the button.
   function pat(e){ return !e.button; }
-  cv.addEventListener('click', function(e){ if (pat(e)) speak(); });
 
-  // Reduced motion: one paint, and nothing after it. A click is an answer to the visitor
-  // rather than ambient motion, so it still changes the line and still paints happy for
-  // a moment; then it stops again. No lift, because the lift is motion.
+  // Reduced motion: one paint, and nothing after it. A pat still paints happy for a
+  // moment, because the visitor has to see that the pat landed and that frame is the
+  // whole of the visible response; then it stops again. No lift, the lift is motion.
   if (matchMedia('(prefers-reduced-motion: reduce)').matches){
     draw('idleA', 0);
     var backT = 0;
