@@ -247,13 +247,14 @@ PAT_ENDPOINT = ''
 #     data-agent   the agent that wrote it
 #     data-line    the line it said on arrival, set once and never cleared
 #
-# A show is recorded when data-line takes a value this document has not already
-# recorded, which is the moment a line is put in front of somebody, and it happens once:
-# the creature speaks on load and a click does not change what it said. A pat is
-# recorded on pointerdown, in the capture phase. That used to be load-bearing, because a
-# click rewrote the attributes it was reading; nothing rewrites them now, and it stays
-# in capture because reading before the page can act on the click is still where the
-# read belongs. Nothing here calls into the creature and the creature calls nothing
+# A show is recorded when that element is on screen carrying a line, which is the moment
+# a line is put in front of somebody, and it happens once a visit. The creature speaks on
+# load at every width and a click does not change what it said, so the line is the
+# constant; what varies is whether anybody can see it, and #39 is the observer that asks.
+# A pat is recorded on pointerdown, in the capture phase. That used to be load-bearing,
+# because a click rewrote the attributes it was reading; nothing rewrites them now, and
+# it stays in capture because reading before the page can act on the click is still where
+# the read belongs. Nothing here calls into the creature and the creature calls nothing
 # here, so swapping the list of lines every generation changes nothing on this side.
 #
 # All three attributes are on the canvas before the visitor can click, so a pat names
@@ -287,7 +288,7 @@ PAT_JS = r"""
   var API = "__ENDPOINT__";
   if (!API) return;
 
-  var state = 0, waiting = false, queue = [], last = '', mem = null;   // 0 ? 1 up 2 down
+  var state = 0, waiting = false, queue = [], mem = null;   // 0 ? 1 up 2 down
 
   function newId(){
     var a = new Uint8Array(12), s = '', i;
@@ -342,14 +343,16 @@ PAT_JS = r"""
     } catch(e){ down(); }
   }
 
-  // A line is showing, and it is not the one already recorded.
-  function look(){
-    var ev = read(document.querySelector('[data-gen]'), true);
-    if (!ev || !ev.line_id) return;
-    var k = ev.gen + '|' + ev.agent + '|' + ev.line_id;
-    if (k === last) return;
-    last = k;
+  // A line is showing, and somebody can see it. Both halves are needed and only one of
+  // them was ever checked: the creature speaks on load at every width, but the label has
+  // no room for it below 640px or between 881 and 1119, where it is display:none. A line
+  // in a box with no pixels is not a show, and counting it inflated the denominator by
+  // whatever share of visitors are on a phone or a 1024-wide window (#39).
+  function look(el){
+    var ev = read(el, true);
+    if (!ev || !ev.line_id) return false;
     send('show', ev);
+    return true;
   }
 
   addEventListener('pointerdown', function(e){
@@ -359,14 +362,34 @@ PAT_JS = r"""
     if (ev) send('pat', ev);                         // agent and line are empty only on
   }, true);                                          // a page the creature never ran on
 
+  // One observer, and it answers exactly the question a show asks. An element with no
+  // box has an empty intersection rectangle, so a hidden creature never reports as
+  // intersecting and nothing is sent; give it a box and put it in the viewport and the
+  // observer fires then, of its own accord, with no resize listener and no polling. So
+  // a window dragged from 1000px to 1300px posts the show at the moment the creature
+  // appears, which is the moment a human first had the chance to read the line — not a
+  // workaround for the resize but the same rule applied at the same instant. It also
+  // settles a case nobody had raised: a creature below the fold is not a show until it
+  // is scrolled to.
+  //
+  // It replaces the MutationObserver that stood here rather than joining it. That one
+  // waited for data-line to take a value, which was load-bearing while the creature only
+  // spoke when it was clicked; since #37 it speaks while this script's own tag is still
+  // parsing, so the attributes are already on the canvas by the time anything below
+  // runs, and a second observer watching for them would only ever confirm it.
+  //
+  // Once, per visit, and the disconnect is the whole of the guard: repeated resizes are
+  // repeated callbacks on an observer that is no longer there, and the router never
+  // destroys the label, so a route change has nothing to re-observe either.
+  var crit = document.querySelector('[data-gen]');
   try {
-    new MutationObserver(look).observe(
-      document.querySelector('.label') || document.body,
-      { subtree: true, childList: true, attributes: true,
-        attributeFilter: ['data-gen', 'data-agent', 'data-line', 'data-line-id'] });
-    // .label is where #27 puts the creature; document.body is the fallback if it moves.
+    var io = new IntersectionObserver(function(rows){
+      for (var i = 0; i < rows.length; i++){
+        if (rows[i].isIntersecting && look(rows[i].target)){ io.disconnect(); return; }
+      }
+    });
+    if (crit) io.observe(crit);
   } catch(e){}
-  look();
 })();
 """
 
@@ -743,8 +766,11 @@ CREATURE_JS = r"""
   // one show a visit, and a pat is an answer to something that was already on screen.
   //
   // All three attributes live on the canvas, which is also the thing the visitor
-  // clicks, and they are the whole of the interface: #28 watches them and counts a show
-  // when data-line takes a value, so they are written in the same tick as the text.
+  // clicks, and they are the whole of the interface: #28 reads them off the canvas when
+  // the canvas comes on screen, so they are written in the same tick as the text and are
+  // on it before its own script runs. Whether that ever happens is the canvas's own
+  // affair — it is display:none at two widths and the counter asks the browser, not this
+  // script, so nothing here has to know or say which widths those are (#39).
   //
   // data-gen is on the canvas from the build. The other two are set here, once, and are
   // never cleared (#35); there is simply nothing to replace them with now. The bubble
