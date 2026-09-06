@@ -132,8 +132,16 @@ a{color:inherit}
   background:var(--fg); color:var(--bg); font-size:.75rem; line-height:1.35;
   opacity:0; transition:opacity .18s ease; pointer-events:none;
 }
+/* The tail is 16px tall and the corners are an 11px radius, so on a bubble of two lines
+   or more it sits in the straight part of the right edge. A one-line bubble is 29px tall
+   and there is only 7px of straight edge in it: pinned 14px from the bottom the tail was
+   pushed up into the corner, where the radius has curved away from it, and it read as a
+   notched-off arrow floating beside the bubble rather than as a tail. min() keeps the
+   original position on a tall bubble and centres it once the bubble is too short to hold
+   it, and the tail starts 1px inside the edge so the curve cannot open a seam at either
+   base corner. */
 #critsay::after{
-  content:""; position:absolute; right:-8px; bottom:14px;
+  content:""; position:absolute; right:-7px; bottom:min(14px, calc(50% - 8px));
   border:8px solid transparent; border-left-color:var(--fg); border-right:0;
 }
 #critsay.on{opacity:1}
