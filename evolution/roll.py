@@ -38,8 +38,14 @@ def fetch_counts(gen, url=None, timeout=20):
     if not url:
         raise Unreachable("no counts endpoint: set PAT_COUNTS_URL")
     full = "%s%sgen=%d" % (url, "&" if "?" in url else "?", gen)
+    # Cloudflare's browser-integrity check answers a default Python User-Agent with
+    # HTTP 403 and its error code 1010, before the request ever reaches the Worker.
+    # Measured against the deployed endpoint: "Python-urllib/3.12" is refused, this
+    # string is served. It names the job honestly rather than impersonating a browser.
+    req = urllib.request.Request(full, headers={
+        "User-Agent": "timbooker-net-generation/1.0 (+https://timbooker.net)"})
     try:
-        with urllib.request.urlopen(full, timeout=timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
             if r.status != 200:
                 raise Unreachable("%s returned HTTP %d" % (full, r.status))
             body = json.loads(r.read().decode("utf-8"))
