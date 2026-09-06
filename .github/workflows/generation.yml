@@ -54,6 +54,11 @@ jobs:
       # Every html file and llms.txt are byte-identical. Left to itself this job would
       # commit two churned binaries every week for ever.
       - name: Commit
+        # The subject goes through the environment rather than being interpolated into
+        # the script. It is our own text, but a ${{ }} expansion inside a shell body is
+        # the shape of every Actions script injection and is not worth having here.
+        env:
+          SUBJECT: ${{ steps.roll.outputs.subject }}
         run: |
           git config user.name  'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -63,6 +68,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'nothing changed'
           else
-            git commit -m "${{ steps.roll.outputs.subject }}"
+            git commit -m "$SUBJECT"
             git push
           fi
