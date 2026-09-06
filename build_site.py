@@ -237,7 +237,7 @@ NARROW = ('<link rel="preload" href="fonts/archivo-narrow-latin.woff2" as="font"
 # can fail. That is the state this ships in, because deploying the Worker needs a
 # Cloudflare login and that is Tim's to give. `worker/wrangler.toml` carries the
 # runbook; when it is deployed, put the URL here without a trailing slash and rebuild.
-PAT_ENDPOINT = ''
+PAT_ENDPOINT = 'https://timbooker-pat.timbooker.workers.dev'
 
 # The seam with the creature (#27) and the weekly roll (#29), and it is three attributes
 # and no function calls:
