@@ -1,0 +1,145 @@
+{
+ "schema": 1,
+ "generation": 0,
+ "n_agents": 8,
+ "n_lines": 24,
+ "prompt": "a lonely little creature speaks to a visitor. it says: i ",
+ "sigma": {
+  "found": 0.15,
+  "step": 0.025
+ },
+ "env": {
+  "model": "SimpleStories/SimpleStories-V2-5M",
+  "revision": "c4b3a4bb81297f5316697098e1d4b65c1249daf8",
+  "torch": "2.7.0+cpu",
+  "numpy": "2.5.2"
+ },
+ "agents": [
+  {
+   "slot": 0,
+   "lineage": "f0",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     1708506908,
+     0.15
+    ]
+   ],
+   "line_seed": 1932180235,
+   "draw": 3,
+   "ce": 4.0979
+  },
+  {
+   "slot": 1,
+   "lineage": "f1",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     1928826938,
+     0.15
+    ]
+   ],
+   "line_seed": 745895307,
+   "ce": 4.1321
+  },
+  {
+   "slot": 2,
+   "lineage": "f2",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     2138513376,
+     0.15
+    ]
+   ],
+   "line_seed": 1575180151,
+   "ce": 3.9028
+  },
+  {
+   "slot": 3,
+   "lineage": "f3",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     851147519,
+     0.15
+    ]
+   ],
+   "line_seed": 1754412476,
+   "ce": 4.3859
+  },
+  {
+   "slot": 4,
+   "lineage": "f4",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     9656684,
+     0.15
+    ]
+   ],
+   "line_seed": 924439281,
+   "draw": 1,
+   "ce": 3.4766
+  },
+  {
+   "slot": 5,
+   "lineage": "f5",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     821257848,
+     0.15
+    ]
+   ],
+   "line_seed": 932281944,
+   "ce": 4.4849
+  },
+  {
+   "slot": 6,
+   "lineage": "f6",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     590596682,
+     0.15
+    ]
+   ],
+   "line_seed": 1015727375,
+   "draw": 1,
+   "ce": 4.1854
+  },
+  {
+   "slot": 7,
+   "lineage": "f7",
+   "origin": "founder",
+   "born": 0,
+   "parent": null,
+   "seeds": [
+    [
+     1136445099,
+     0.15
+    ]
+   ],
+   "line_seed": 2007870799,
+   "ce": 4.1707
+  }
+ ],
+ "last": {
+  "action": "founded"
+ }
+}
