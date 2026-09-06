@@ -6,22 +6,22 @@
     "torch": "2.14.0+cpu",
     "python": "3.12.14",
     "cpu_count": 4,
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "avx512": false
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "avx512": true
   },
   "times": {
-    "download": 0.866,
+    "download": 2.093,
     "load": 0.003,
-    "std_scale": 0.007,
-    "reconstruct": 0.822,
-    "verify_sum": 0.118,
-    "generate_0": 18.844,
-    "generate_1": 18.886
+    "std_scale": 0.006,
+    "reconstruct": 0.679,
+    "verify_sum": 0.094,
+    "generate_0": 16.645,
+    "generate_1": 16.591
   },
   "params": 5354496,
   "agents": 8,
   "lines_per_agent": 24,
-  "peak_rss_mb": 478.7,
+  "peak_rss_mb": 479.7,
   "lineage_sum_max_abs_diff": 0.0,
   "lineage_sum_l2_diff": 0.0,
   "digest": "f581dc1dd6ffe81e38e39fe0b653bac9168b57477cfd734c230b3ed1ef6e1d7a",
@@ -39,5 +39,5 @@
     "0\t4\ti see lost things, in a little time, and that they remind me of the joy.",
     "0\t5\ti n for him to dance and play."
   ],
-  "peak_system_used_mb": 937
+  "peak_system_used_mb": 939
 }
