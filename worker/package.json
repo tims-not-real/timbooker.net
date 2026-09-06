@@ -1,0 +1,14 @@
+{
+  "name": "timbooker-pat",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Counts the pats the creature in the label gets, and the shows that are its denominator.",
+  "scripts": {
+    "dev": "wrangler dev --local --port 8787",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.129.0"
+  }
+}

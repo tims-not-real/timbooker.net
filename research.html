@@ -870,5 +870,91 @@ requestAnimationFrame(function(){
     requestAnimationFrame(loop);
   })();
 })();
+
+(function(){
+  var API = "";
+  if (!API) return;
+
+  var state = 0, waiting = false, queue = [], last = '', mem = null;   // 0 ? 1 up 2 down
+
+  function newId(){
+    var a = new Uint8Array(12), s = '', i;
+    try { crypto.getRandomValues(a); }
+    catch(e){ for (i = 0; i < 12; i++) a[i] = Math.floor(Math.random() * 256); }
+    for (i = 0; i < 12; i++) s += (a[i] + 256).toString(16).slice(1);
+    return s;
+  }
+
+  // Per tab, and only per tab. Storage that is blocked or full falls back to an id held
+  // in memory, which lasts as long as this document does.
+  function sid(){
+    try {
+      var v = sessionStorage.getItem('tb:sid');
+      if (!v) { v = newId(); sessionStorage.setItem('tb:sid', v); }
+      return v;
+    } catch(e){ return (mem = mem || newId()); }
+  }
+
+  function read(el, needAgent){
+    if (!el || !el.dataset) return null;
+    var gen = parseInt(el.dataset.gen, 10);
+    var agent = el.dataset.agent || '';
+    if (!isFinite(gen) || (needAgent && !agent)) return null;
+    return { gen: gen, agent: agent,
+             line_id: el.dataset.line || el.dataset.lineId || '' };
+  }
+
+  function post(kind, ev){
+    return fetch(API + '/' + kind, {
+      method: 'POST',
+      body: JSON.stringify(ev),
+      headers: { 'Content-Type': 'text/plain' },     // safelisted, so no preflight
+      keepalive: true, mode: 'cors', credentials: 'omit', cache: 'no-store'
+    });
+  }
+
+  function down(){ state = 2; waiting = false; queue = []; }
+
+  function send(kind, ev){
+    if (state === 2 || !ev) return;
+    ev.session = sid();
+    try {
+      if (state === 1) { post(kind, ev).catch(function(){}); return; }
+      if (waiting) { if (queue.length < 24) queue.push([kind, ev]); return; }
+      waiting = true;                                // the one request that finds out
+      post(kind, ev).then(function(){
+        state = 1; waiting = false;
+        var q = queue; queue = [];
+        for (var i = 0; i < q.length; i++) send(q[i][0], q[i][1]);
+      }, down);
+    } catch(e){ down(); }
+  }
+
+  // A line is showing, and it is not the one already recorded.
+  function look(){
+    var ev = read(document.querySelector('[data-gen]'), true);
+    if (!ev || !ev.line_id) return;
+    var k = ev.gen + '|' + ev.agent + '|' + ev.line_id;
+    if (k === last) return;
+    last = k;
+    send('show', ev);
+  }
+
+  addEventListener('pointerdown', function(e){
+    if (e.button) return;                            // a pat is a left click or a tap
+    var el = e.target && e.target.closest ? e.target.closest('[data-gen]') : null;
+    var ev = read(el, false);
+    if (ev) send('pat', ev);                         // agent and line may be empty: the
+  }, true);                                          // first click has heard nothing yet
+
+  try {
+    new MutationObserver(look).observe(
+      document.querySelector('.label') || document.body,
+      { subtree: true, childList: true, attributes: true,
+        attributeFilter: ['data-gen', 'data-agent', 'data-line', 'data-line-id'] });
+    // .label is where #27 puts the creature; document.body is the fallback if it moves.
+  } catch(e){}
+  look();
+})();
 </script></body>
 </html>

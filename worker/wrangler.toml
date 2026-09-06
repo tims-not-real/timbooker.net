@@ -1,0 +1,48 @@
+# The pat counter. One Worker, one KV namespace, free tier.
+#
+# Nothing here is deployed yet, and deploying it is Tim's call: it needs his Cloudflare
+# login. The runbook, in order:
+#
+#   cd worker
+#   npm install
+#   npx wrangler login                                  # opens a browser, once
+#   npx wrangler kv namespace create PATS               # prints an id
+#   # paste that id into the [[kv_namespaces]] block below, and commit it: a namespace
+#   # id is not a secret, it is only useful to somebody already inside the account
+#   npx wrangler deploy                                 # prints the workers.dev URL
+#
+# Then point the site at it: set PAT_ENDPOINT in build_site.py to the URL that was
+# printed (no trailing slash), run `python build_site.py`, and commit the html. Until
+# that is done PAT_ENDPOINT is empty and the client makes no request at all.
+#
+# Optional, and both are one command each:
+#   npx wrangler secret put COUNTS_TOKEN     # locks GET /counts behind a bearer token
+#   a custom route, if he would rather it lived on pat.timbooker.net than on
+#   workers.dev — that needs the zone in the same account, and then a [[routes]] block
+#   here. workers.dev is fine to start with and needs nothing.
+#
+# Local, and this is how everything in the PR was measured — no account, no login:
+#   printf 'ALLOW_ORIGIN = "*"\n' > .dev.vars      # once; the file is gitignored
+#   npx wrangler dev --local --port 8787
+#
+# --local keeps KV in .wrangler/state on this machine, so the placeholder id below is
+# never looked at, and .dev.vars overrides the [vars] block so a page served from
+# localhost is not turned away by the origin check.
+
+name = "timbooker-pat"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# Which page may spend this namespace's write budget. A browser request carrying any
+# other Origin is refused; a request with no Origin at all (curl, the weekly job) is
+# let through, because both of those need to be. Set to "*" for local work.
+[vars]
+ALLOW_ORIGIN = "https://timbooker.net,https://www.timbooker.net"
+
+[[kv_namespaces]]
+binding = "PATS"
+# Replace after `wrangler kv namespace create PATS`. Ignored entirely by `--local`.
+id = "REPLACE_ME_AFTER_kv_namespace_create"
+
+[observability]
+enabled = true
