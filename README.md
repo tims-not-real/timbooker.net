@@ -95,16 +95,22 @@ page.
 
     python -m evolution.roll found          write generation 0 (refuses to overwrite)
     python -m evolution.roll roll           fetch /counts, select, mutate, regenerate
-    python -m evolution.roll roll --counts evolution/fixtures/counts-example.json
+    python -m evolution.roll roll --counts evolution/fixtures/counts-worker.json
     python -m evolution.roll lines          regenerate the current lines, no evolution
     python -m evolution.roll verify         regenerate twice and compare
     python -m evolution.roll reconstruct    lineage equals the mutations applied in order
     python -m evolution.roll floortest      a broken agent still dies with the filter on
     python -m evolution.roll simulate 20    selection only, fake counts, lineage shares
 
+`evolution/fixtures/` holds three fake responses: `counts-worker.json` in the shape the
+Worker actually returns, `counts-example.json` in the flatter shape the parser also
+accepts, and `counts-thin.json` for the no-op path.
+
 `roll` writes nothing at all unless it reaches the end. If the counts endpoint is
 unreachable it exits non-zero and changes nothing; if any agent has been shown fewer than
-ten times it leaves the generation standing and moves only the `checked` date.
+ten times it leaves the generation standing and moves only the `checked` date. A response
+it cannot find a single agent in is treated as unreachable rather than as a quiet week,
+because the two would otherwise look identical and the job would skip for ever in silence.
 
 ## Next
 

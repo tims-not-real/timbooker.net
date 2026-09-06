@@ -51,24 +51,47 @@ def fetch_counts(gen, url=None, timeout=20):
 
 
 def parse_counts(body, gen):
-    """slot -> {"shows": n, "pats": n}, from whatever shape the endpoint hands back.
+    """slot -> {"shows": n, "pats": n}, from what the Worker of #28 hands back:
 
-    Accepts `{"counts": {...}}` or a bare mapping, and keys of `3`, `"3"` or `"7:3"`."""
-    d = body.get("counts", body) if isinstance(body, dict) else body
+        {"gen": 3, "totals": {...},
+         "agents": {"a1": {"shows": 2, "pats": 2, "lines": {...}, "hours": {...}}}}
+
+    Only shows and pats per agent are read. The per-line and per-hour breakdowns are the
+    endpoint's business; selection has no use for them.
+
+    Deliberately tolerant about the envelope and the key spelling -- `agents` or `counts`
+    or a bare mapping, `a1` or `1` or `3:1` -- and deliberately INTOLERANT of parsing
+    nothing. A response whose shape had drifted would otherwise read as eight agents with
+    no shows, which is indistinguishable from a quiet week, and the job would skip every
+    Monday for ever without once saying anything was wrong."""
+    d = body
+    if isinstance(d, dict):
+        for k in ("agents", "counts"):
+            if isinstance(d.get(k), (dict, list)):
+                d = d[k]
+                break
     if isinstance(d, list):
         d = {i: v for i, v in enumerate(d)}
+    if not isinstance(d, dict):
+        raise Unreachable("counts response is a %s, not an object" % type(d).__name__)
     out = {}
     for k, v in d.items():
-        s = str(k)
-        if ":" in s:
-            g, s = s.split(":", 1)
-            if int(g) != gen:
-                continue
-        try:
-            slot = int(s)
-        except ValueError:
+        if not isinstance(v, dict) or "shows" not in v:
             continue
-        out[slot] = {"shows": int(v.get("shows", 0)), "pats": int(v.get("pats", 0))}
+        key = str(k)
+        if ":" in key:
+            g, key = key.split(":", 1)
+            if g.isdigit() and int(g) != gen:
+                continue
+        key = key[1:] if key[:1].lower() == "a" else key
+        if not key.isdigit():
+            continue
+        out[int(key)] = {"shows": int(v.get("shows", 0)),
+                         "pats": int(v.get("pats", 0))}
+    if not out:
+        raise Unreachable("the counts response held no agent with a shows count. The"
+                          " shape has drifted, and selecting on it would be selecting"
+                          " on zeros.")
     return out
 
 

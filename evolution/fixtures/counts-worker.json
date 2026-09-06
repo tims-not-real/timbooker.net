@@ -1,0 +1,18 @@
+{
+ "gen": 0,
+ "totals": {"shows": 318, "pats": 57},
+ "agents": {
+  "a0": {"shows": 44, "pats": 5,
+         "lines": {"g0-a0-l00": {"shows": 9, "pats": 2}},
+         "hours": {"2026-09-06T03": {"shows": 9, "pats": 2}}},
+  "a1": {"shows": 39, "pats": 11,
+         "lines": {"g0-a1-l03": {"shows": 7, "pats": 3}},
+         "hours": {"2026-09-06T03": {"shows": 7, "pats": 3}}},
+  "a2": {"shows": 52, "pats": 4, "lines": {}, "hours": {}},
+  "a3": {"shows": 31, "pats": 2, "lines": {}, "hours": {}},
+  "a4": {"shows": 47, "pats": 16, "lines": {}, "hours": {}},
+  "a5": {"shows": 36, "pats": 3, "lines": {}, "hours": {}},
+  "a6": {"shows": 41, "pats": 9, "lines": {}, "hours": {}},
+  "a7": {"shows": 28, "pats": 7, "lines": {}, "hours": {}}
+ }
+}
