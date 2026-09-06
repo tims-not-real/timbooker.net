@@ -506,11 +506,53 @@ html.app::view-transition-group(page){animation:none}
   // never cleared (#35); there is simply nothing to replace them with now. The bubble
   // does not fade either. Somebody deciding whether to click has to be able to read the
   // line, and a bubble that has gone cannot be answered.
+  //
+  // The line arrives a character at a time, the way a model streams one.
+  //
+  // The whole string is in the DOM from the first frame: the untyped tail is a second
+  // span at visibility:hidden, so it still takes up its space. The bubble is therefore
+  // its finished size immediately and no character reflows the box or moves a line
+  // break -- which matters here, because the bubble is anchored bottom right and a box
+  // that grew would walk up and left as it filled. Two adjacent inline spans flow as one
+  // string, so the wrapping at every step is the wrapping of the finished line.
+  //
+  // Time-based rather than one character per tick, so a dropped frame costs a frame and
+  // not a delay: the line finishes when it says it will whatever the browser is doing.
+  var TYPE_MS = 22;               // about a second for the median 47-character line
+  function type(text){
+    say.textContent = '';
+    var head = document.createElement('span'), tail = document.createElement('span');
+    tail.style.visibility = 'hidden';
+    head.textContent = '';
+    tail.textContent = text;
+    say.appendChild(head);
+    say.appendChild(tail);
+    // Reduced motion gets the whole line at once. Typing is motion, and this one cannot
+    // be waited out -- the visitor is deciding whether to click on what it says.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches){
+      head.textContent = text; tail.textContent = '';
+      return;
+    }
+    var t0 = 0, i = 0;
+    requestAnimationFrame(function step(t){
+      if (!t0) t0 = t;
+      var n = Math.min(text.length, Math.floor((t - t0) / TYPE_MS));
+      if (n !== i){
+        i = n;
+        head.textContent = text.slice(0, i);
+        tail.textContent = text.slice(i);
+      }
+      if (i < text.length) requestAnimationFrame(step);
+    });
+  }
+  // Typed once, on arrival. The bubble coming back after a gesture (#41) does not retype
+  // it: the line has not changed, the visitor has already read it, and a sentence that
+  // recomposed itself every navigation would read as a fault rather than as a flourish.
   function speak(){
     var L = LINES[Math.floor(Math.random() * LINES.length)];
     cv.setAttribute('data-agent', L[0]);
     cv.setAttribute('data-line', L[1]);
-    say.textContent = L[2];
+    type(L[2]);
     say.classList.add('on');
   }
 
