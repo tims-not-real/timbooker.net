@@ -245,7 +245,7 @@ PAT_ENDPOINT = ''
 #   the element the visitor clicks, or any ancestor of it, carries
 #     data-gen     the generation the line came from, and it is the only one required
 #     data-agent   the agent that wrote it
-#     data-line    the line that is on screen right now, empty when it is saying nothing
+#     data-line    the last line it said, replaced by the next one and never cleared
 #
 # A show is recorded when data-line becomes a line it has not just recorded, which is
 # the moment a line is put in front of somebody. A pat is recorded on pointerdown, read
@@ -742,9 +742,12 @@ CREATURE_JS = r"""
   // not just recorded, so they are written in the same tick as the bubble text.
   //
   // data-gen is on the canvas from the build and is there at rest. The other two are
-  // cleared when the bubble fades, because a pat is a reply to a line the visitor can
-  // still see: a click with nothing showing is not attributable to any agent, and #28
-  // is right to throw it away rather than credit it to something said a minute ago.
+  // set when a line is shown and are never cleared, only replaced by the next line
+  // (#35). The bubble still fades after four seconds; the attribution does not. Every
+  // click after the first is "more of that, please", and that is the last thing it
+  // said whether or not the bubble is still up — while clearing them made pats/shows a
+  // measure of reading speed, and cost the weekly roll more accuracy than dropping
+  // below MIN_SHOWS does.
   var n = -1, hideT = 0;
   function speak(){
     n = (n + 1 + Math.floor(Math.random() * (LINES.length - 1))) % LINES.length;
@@ -754,11 +757,7 @@ CREATURE_JS = r"""
     say.textContent = L[2];
     say.classList.add('on');
     clearTimeout(hideT);
-    hideT = setTimeout(function(){
-      say.classList.remove('on');
-      cv.removeAttribute('data-agent');
-      cv.removeAttribute('data-line');
-    }, 4000);
+    hideT = setTimeout(function(){ say.classList.remove('on'); }, 4000);
   }
 
   cv.hidden = false;              // with no script there is no creature, rather than a
