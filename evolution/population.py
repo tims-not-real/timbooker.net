@@ -333,14 +333,10 @@ def publishable(text, ce):
     return ce <= LINE_FLOOR and not head_punct(text)
 
 
-def draw(m, sd, agent, n, prompt, rs):
+def draw(m, sd, n, prompt, rs):
+    """n continuations, tidied. Every uniform comes off `rs`, so a caller that draws in
+    a fixed sequence of batch sizes gets one frozen stream across the whole agent."""
     return [_tidy(x) for x in m.sample(sd, prompt, n, rs)]
-
-
-def speak(m, sd, agent, n=N_LINES, prompt=PROMPT):
-    """The first n draws, unfiltered. This is the sample the AGENT-LEVEL floor scores."""
-    import numpy as np
-    return draw(m, sd, agent, n, prompt, np.random.RandomState(int(agent["line_seed"])))
 
 
 BORN = {"founder": "found", "immigrant": "immig", "immigrant-cap": "immig"}
@@ -368,7 +364,7 @@ def agent_lines(m, sc, pop, a, filter_lines=True):
     prompt = pop.get("prompt", PROMPT)
     sd = reconstruct(m, sc, a)
     rs = np.random.RandomState(int(a["line_seed"]))
-    said = draw(m, sd, a, n, prompt, rs)
+    said = draw(m, sd, n, prompt, rs)
     ce = round(m.output_ce(m.sd, said), 4)
     if not filter_lines:
         return said, ce, {"drawn": n, "examined": n, "published": len(said),
@@ -376,7 +372,7 @@ def agent_lines(m, sc, pop, a, filter_lines=True):
 
     scored = list(zip(said, m.line_ce(m.sd, said)))
     while len(_pick(scored, n)[0]) < n and len(scored) < MAX_LINE_DRAWS:
-        more = draw(m, sd, a, TOPUP, prompt, rs)
+        more = draw(m, sd, TOPUP, prompt, rs)
         scored += list(zip(more, m.line_ce(m.sd, more)))
     kept, rec = _pick(scored, n)
     rec.update(drawn=len(scored), published=len(kept), short=len(kept) < n)
