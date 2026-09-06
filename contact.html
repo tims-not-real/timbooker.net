@@ -570,11 +570,27 @@ html.app::view-transition-group(page){animation:none}
     cv.setAttribute('data-line', L[1]);
     type(L[2]);
     say.classList.add('on');
+    // The counter cannot see this happen on its own. An IntersectionObserver fires on a
+    // change of intersection, and the creature's box does not change when it starts
+    // talking, so without this the show would never be posted at all.
+    try { cv.dispatchEvent(new CustomEvent('tb:spoke')); } catch(e){}
   }
 
   cv.hidden = false;              // with no script there is no creature, rather than a
                                   // blank canvas with a pointer cursor on it
-  speak();
+  // A beat before it says anything. The creature is on the plate from the first paint and
+  // the line arrives two seconds later, so it reads as something noticing you rather than
+  // as a caption that was always in the corner.
+  //
+  // The pause is kept under prefers-reduced-motion. A pause is pacing, not motion, and
+  // there is nothing to wait out; type() is what that query turns off.
+  //
+  // Nothing sets data-agent or data-line until this fires, so a click inside the first
+  // two seconds carries no line and #28 drops it -- which is right, because there is
+  // nothing on screen for it to be a reply to.
+  var OPEN_PAUSE = 2000;
+  var spoken = false;
+  setTimeout(function(){ spoken = true; speak(); }, OPEN_PAUSE);
   // The primary button only. A right-click fires contextmenu and a middle-click fires
   // auxclick, so neither reaches here anyway, but the pat and the count that follows it
   // have to agree about what a pat is, and #28 filters on the button.
@@ -644,7 +660,10 @@ html.app::view-transition-group(page){animation:none}
   function land(){
     seq = null; lastTop = null;
     cv.style.top = '';
-    say.style.visibility = ''; say.classList.add('on');
+    say.style.visibility = '';
+    if (spoken) say.classList.add('on');   // a navigation inside the opening pause must
+                                           // not reveal an empty bubble
+
     st.f = 'idleA'; st.up = 0; st.until = 0; st.q = [];
     lastF = null; lastUp = 0;
   }
@@ -863,14 +882,30 @@ html.app::view-transition-group(page){animation:none}
   // Once, per visit, and the disconnect is the whole of the guard: repeated resizes are
   // repeated callbacks on an observer that is no longer there, and the router never
   // destroys the label, so a route change has nothing to re-observe either.
+  // Two conditions now, not one, and they are genuinely independent. The creature has to
+  // be on screen -- it is display:none at two widths, and the browser is asked rather than
+  // this script knowing which (#39) -- and it has to have said something, which it does
+  // two seconds after the page opens. Whichever lands second posts the show.
+  //
+  // A show is the moment a line was in front of somebody. Posting one for a creature that
+  // is still silent would count the visitors who leave inside the opening pause, and they
+  // read nothing.
   var crit = document.querySelector('[data-gen]');
+  var seen = false, spoke = false, posted = false, io = null;
+  function ready(){
+    if (posted || !seen || !spoke) return;
+    if (look(crit)){ posted = true; try { io.disconnect(); } catch(e){} }
+  }
   try {
-    var io = new IntersectionObserver(function(rows){
+    io = new IntersectionObserver(function(rows){
       for (var i = 0; i < rows.length; i++){
-        if (rows[i].isIntersecting && look(rows[i].target)){ io.disconnect(); return; }
+        if (rows[i].isIntersecting){ seen = true; ready(); return; }
       }
     });
-    if (crit) io.observe(crit);
+    if (crit){
+      io.observe(crit);
+      crit.addEventListener('tb:spoke', function(){ spoke = true; ready(); });
+    }
   } catch(e){}
 })();
 </script></body>
