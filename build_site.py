@@ -997,41 +997,45 @@ CREATURE_JS = r"""
   // none today; `bottom` is still in the stylesheet and is over-constrained away while
   // `top` is set, so clearing `top` puts the creature back exactly where CSS had it.
   //
-  // The bubble travels with it. Not in the mockup, because the mockup's label has no
-  // bubble; on the page the bubble is anchored to the label's bottom like everything
-  // else, so left alone it rides the floor away and spends a second and a half pointing
-  // its tail at empty blue while the creature is somewhere above. It is the creature's
-  // speech, so it goes where the creature goes. `bottom` has to be released with the same
-  // write, because an absolutely positioned box with top, bottom and auto height stretches
-  // to fill the two instead of sitting at the top.
+  // The bubble goes away for the duration, which the mockup could not raise because its
+  // label has no bubble. Left alone it is anchored to the label's bottom like everything
+  // else, so it rides the floor away and spends a second and a half pointing its tail at
+  // empty blue. Carrying it along with the creature was built and filmed first and is the
+  // same fault in a different direction: a speech bubble belongs to a creature that is
+  // standing still and talking, not to one falling through the air. Tim's call.
+  //
+  // Out is a cut and back is the fade the bubble already has. `visibility` is not in the
+  // stylesheet's transition, so hiding is immediate and lands on the same painted frame
+  // as the floor's first move; taking `.on` off underneath it runs the opacity down to 0
+  // behind the veil, so putting both back at the end fades it in from nothing exactly as
+  // it does when the creature first speaks. Nothing here touches the text or the two data
+  // attributes: it is the same line, said once a visit (#38), and #35 and #36 both turned
+  // on those attributes persisting.
   var SEQ = __SEQ__, RESIZE = __RESIZE__;
-  var seq = null, cum = [], total = 0, gt0 = 0, rest = 0, restSay = 0, lastTop = null;
+  var seq = null, cum = [], total = 0, gt0 = 0, rest = 0, lastTop = null;
   var armed = -1, armedAt = 0;
 
   function place(up){
     var top = rest - up * CELL;
-    if (top === lastTop) return;
-    lastTop = top;
-    cv.style.top = top + 'px';
-    say.style.bottom = 'auto';
-    say.style.top = (restSay - up * CELL) + 'px';
+    if (top !== lastTop){ lastTop = top; cv.style.top = top + 'px'; }
   }
   function land(){
     seq = null; lastTop = null;
-    cv.style.top = ''; say.style.top = ''; say.style.bottom = '';
+    cv.style.top = '';
+    say.style.visibility = ''; say.classList.add('on');
     st.f = 'idleA'; st.up = 0; st.until = 0; st.q = [];
     lastF = null; lastUp = 0;
   }
-  // Where the pair sits when nothing is holding it up. A gesture already running has
-  // both pinned, and reading offsetTop then would report the flight rather than the
-  // floor, so the pins come off for the read and go straight back on. Both callers run
+  // Where the creature stands when nothing is holding it up. A gesture already running
+  // has it pinned, and reading offsetTop then would report the flight rather than the
+  // floor, so the pin comes off for the read and goes straight back on. Both callers run
   // synchronously inside the router, between frames, so nothing is painted in between
   // and nothing is seen to move.
   function floor(){
-    var t = cv.style.top, s = say.style.top, sb = say.style.bottom, out;
-    if (t){ cv.style.top = ''; say.style.top = ''; say.style.bottom = ''; }
-    out = [cv.offsetTop, say.offsetTop];
-    if (t){ cv.style.top = t; say.style.top = s; say.style.bottom = sb; }
+    var t = cv.style.top, out;
+    if (t) cv.style.top = '';
+    out = cv.offsetTop;
+    if (t) cv.style.top = t;
     return out;
   }
   // The first frame is placed and drawn here rather than left to the loop, because the
@@ -1041,6 +1045,7 @@ CREATURE_JS = r"""
   function start(key, when){
     seq = SEQ[key]; gt0 = when; cum = []; total = 0;
     for (var n = 0; n < seq.length; n++){ cum.push(total); total += seq[n][2]; }
+    say.style.visibility = 'hidden'; say.classList.remove('on');
     place(seq[0][1]);
     lastF = seq[0][0]; lastUp = 0; draw(lastF, 0);
   }
@@ -1061,7 +1066,7 @@ CREATURE_JS = r"""
     leaving: function(){
       armed = -1;
       if (cv.offsetParent === null) return;   // no box: display:none in one of the two
-      armed = floor()[0];
+      armed = floor();
       armedAt = performance.now()/1000;
     },
     // The pages have swapped and the destination's layout is settled, but the router has
@@ -1069,16 +1074,16 @@ CREATURE_JS = r"""
     moved: function(){
       var was = armed; armed = -1;
       if (was < 0 || cv.offsetParent === null) return;
-      var f = floor(), now = f[0], d = was - now;
-      // The gesture is drawn for eighteen cells and fires for eighteen cells. Four of the
-      // ten page pairs do not move the floor at all — research to about resizes by
+      var now = floor(), d = was - now;
+      // The gesture is drawn for eighteen cells and fires for eighteen cells. Six of the
+      // ten page pairs move no floor worth the name — research to about resizes by
       // 0.36px, which offsetTop rounds away — and below 880px the hero is one column and
       // every label is 468, so nothing moves there either. A cat shocked at nothing is
       // worse than no gesture. Written as an exact expectation rather than a threshold so
       // that a label geometry which ever travels some other distance switches the gesture
       // off instead of landing the cat short of the floor.
       if (Math.round(Math.abs(d) / CELL) !== RESIZE) return;
-      rest = now; restSay = f[1];
+      rest = now;
       // Leaving keeps the clock from the click, because that is when the floor started
       // coming up. Arriving starts here, because the teleport and the first frame of the
       // fall are the same instant: the pages swap, and the creature is put 18 cells up,
