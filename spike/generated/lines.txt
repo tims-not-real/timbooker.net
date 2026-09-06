@@ -1,0 +1,192 @@
+0	0	i see a castle on space
+0	1	i love that moments bring us closer.
+0	2	i always watch your world, even when things are hard.
+0	3	i wa to be invisible to all of you.
+0	4	i see lost things, in a little time, and that they remind me of the joy.
+0	5	i n for him to dance and play.
+0	6	i have a giant isn ' it all
+0	7	i was funny, always just like this.
+0	8	i transformer you once heard such that mia missed.
+0	9	i try a simple letter from a charming friend.
+0	10	i his partner wore many hats.
+0	11	i it was once a friend.
+0	12	i d d smile back at this robotiest family.
+0	13	i me a too, but lost in my past.
+0	14	i like your home is not better than the lines.
+0	15	i look for a love that feels like a distant world.
+0	16	i like to be seen before, a dark cloud hang low in the sky.
+0	17	i n look for you, a star in a world far away.
+0	18	i who is mia.
+0	19	i look and change into a bird, too, even if they talk.
+0	20	i have found the door of kindness.
+0	21	i the stars await you.
+0	22	i look for joy when we see it.
+0	23	i loved to look like a too hard for a cat.
+1	0	i liz for the lost family of the moon.
+1	1	i bent trunkhese, and it claimes that the watches, and the creature looks hurt.
+1	2	i n to the stars with me.
+1	3	i , this lonely heart.
+1	4	i purring at a storm, and i am nothing there.
+1	5	i you a music box.
+1	6	i m here, bringing laughter with memories of leo ' s life with samuel.
+1	7	i ory understand how this creature can connect to new friends.
+1	8	i dance like them, creating charac changing too
+1	9	i there, where the sunlight shines bright, and i will be thankful for a wonderful friendship.
+1	10	i l
+1	11	i only love to many and secrets.
+1	12	i you visited the floating island again, holding the lovely sweet taste in the soft sand.
+1	13	i his world is worried.
+1	14	i make this night special, but now i feel lonely without those sungolum just to me.
+1	15	i e learning from another, but only if it was like his thoughts in the stars.
+1	16	i be alone, sharing my sorrow with those who stand alone.
+1	17	i qu who once brightened this place for others who forgot.
+1	18	i - kind, we must leave.
+1	19	i nine, in our yard, tasted the place
+1	20	i he met a girl who sleeps on the edge of the trees.
+1	21	i sim thing there felt like a heart, for we hold a heavy heart.
+1	22	i ben to the next trunk, dreaming of finding real magic.
+1	23	i m there, and i can hear the cries of winter.
+2	0	i could change back, but time is not a control like this
+2	1	i need a wise voice to remember its name.
+2	2	i ben i seek to understand.
+2	3	i its memory, a man who wants to find a way to be free.
+2	4	i was lonely.
+2	5	i of to be lonely and lonely, but no one sees it.
+2	6	i see that there are treasures.
+2	7	i have been waiting for someone brave.
+2	8	i , in a land where flowers need light, i remember
+2	9	i act of gathering, and the creature must heal a broken heart.
+2	10	i samuel learn from this friend who he once cared for me.
+2	11	i have been a chance for a friend.
+2	12	i and share my stories.
+2	13	i be lonely and lonely.
+2	14	i see the joy in life and wonder.
+2	15	i take out my lunch to a pond.
+2	16	i ben to its needs because a shadow is lonely.
+2	17	i wish to find love again.
+2	18	i and lead you to the heart.
+2	19	i have traveled from a faraway land.
+2	20	i thanked you for helping me with my stories.
+2	21	i do not save a dear.
+2	22	i is the helper from a few.
+2	23	i , a spirit full of hope, can break in darkness because i will help you find a friend.
+3	0	i enjoy the tales of the silly - reading creatures that danced just once so slowly, but if you can find it together
+3	1	i need a smile from a dream of a friendship that lifts me.
+3	2	i ri off from the galaxy
+3	3	i belong with it, so i invite my people to his hall.
+3	4	i like dinosaurs, but deep, i am just a little, trying to find.
+3	5	i speak about a story that holds its own kingdom, where magic lives in all things and often.
+3	6	i o your feather, and it flutters through the air.
+3	7	i just miss a friend of my own dog
+3	8	i like laughter, is there all
+3	9	i forget about being happy.
+3	10	i have one night, i say yes
+3	11	i have lost my way home.
+3	12	i have been lost, lost for a moment.
+3	13	i never return to the party.
+3	14	i like a cat nearby and say,
+3	15	i ramy jean visits everyone.
+3	16	i like a spooky rabbit
+3	17	i after losing my eyes but can still hear me.
+3	18	i like this to teach the young ones about growth.
+3	19	i like tales of joy but also can ' t be made - a thoughtful thought,
+3	20	i have heard of a dragon dancing by the cave.
+3	21	i benn worry, and in the end, there is a red scarf under a tree.
+3	22	i keep eyes on me ' s too
+3	23	i bencon in silence.
+4	0	i remember the mice.
+4	1	i see a kind alien who can make us laugh, reminding us that honesty can make us laugh and create our own happy sounds.
+4	2	i look funny and love to help me with my tricks.
+4	3	i neaa was looking sad, looking down at my furry friend.
+4	4	i look like a real pirate
+4	5	i e sadly, deep in thought.
+4	6	i stand like in a treasure.
+4	7	i say without asking a baker ' s help,
+4	8	i see a family because they want me a friend.
+4	9	i see a gentle giant.
+4	10	i look sad, and i think i have searched for a special egg heirloomsties.
+4	11	i t sit lonely and use my toys to help others.
+4	12	i look sad and lost my home
+4	13	i think you need a love lost in a quest.
+4	14	i ##n kindness and love to help i.
+4	15	i see my life as i see my own sadness.
+4	16	i see a lost princess, but it wears our funny shoe.
+4	17	i g out and think so.
+4	18	i sense magic - making the sound of my wilting things
+4	19	i be lost for a moment, hidden in the glass jar, and everywhere can be a brave dragon.
+4	20	i veron this.
+4	21	i have a child ' s look kind.
+4	22	i have not wanted a company.
+4	23	i look for a friend.
+5	0	i sometimes appear for a reaerse to cons darken.
+5	1	i like honey but can ' t
+5	2	i the tiny one.
+5	3	i is the one who will find joy, even if it is just a little after it.
+5	4	i lower that echoed through the dark - could fear.
+5	5	i do i know, too
+5	6	i is the shape keeper of this forever.
+5	7	i can find the key, only to feel lonely.
+5	8	i do sorry
+5	9	i see a spark within, but i am more than just me.
+5	10	i am the token of friendship.
+5	11	i ' has a riddle :
+5	12	i sometimes say a music that brings magic to life.
+5	13	i favorite flower that can change how you look, but i am much more like being happy and more annual harvest.
+5	14	i can learn from the garden ' s ears.
+5	15	i can tell stories if you lost my spark.
+5	16	i can know the flowers she helps
+5	17	i see the ghost
+5	18	i is the one that felt too, lost.
+5	19	i just say a riddle : what ' s the secret to happiness?
+5	20	i above bliss and fly away, but i am confused.
+5	21	i am there, but i am curious.
+5	22	i to enjoy the moment
+5	23	i just use a new one
+6	0	i see small bugs who loved to paint rainbows.
+6	1	i ever feel powerful.
+6	2	i knelt there looking for her lost family.
+6	3	i see if you hold the end of the tale, what lies the word i hid inside.
+6	4	i saw smiles and knew happiness is not in magic, but in kindness and love.
+6	5	i was reading your dreams and cried to, but my name was not haunted by a cold breeze.
+6	6	i pick him for the forest games, but i am not the most there was she comforted.
+6	7	i ##rous look once, but that is said you hear laughter.
+6	8	i meet that each creature had a tale, which can create any life eraser.
+6	9	i seek to harm your lost friends.
+6	10	i see under out of yourself, i breathed in the cool water.
+6	11	i was a guide, never rest, and that the people had to share.
+6	12	i found your nest with some toys, stories, and a brave adventure to visit.
+6	13	i make flower crowns as i wear a crown to share with you.
+6	14	i feared for him.
+6	15	i sometimes read her plans in this tale.
+6	16	i have been a friend to a rare flower, and i never belonged here.
+6	17	i thanked a turtle and never endds.
+6	18	i sees stars, wind, but my eyes are wide with wonder.
+6	19	i sprinkleity, and if you tick, you wonder if you understand its song.
+6	20	i see their eyes if they meet those who seek joy in kindness.
+6	21	i grows softly and had to know your heart.
+6	22	i had forgotten who own my tales of magic.
+6	23	i have been lonely and must find love.
+7	0	i love your friends.
+7	1	i you, the brave one, but i feel afraid.
+7	2	i have been searching for my father, and his father told me to look for the same shiny places.
+7	3	i have been kind and could bring me happiness.
+7	4	i bengor the warmth of kindness.
+7	5	i feel lonely and help me feel grateful.
+7	6	i per by friendship.
+7	7	i let you give you some, dear lena, the moon is dark.
+7	8	i do you shy,
+7	9	i the magic we have lost.
+7	10	i need to find joy in sharing its eyes.
+7	11	i bow its friend, and i want to know you.
+7	12	i be alone,
+7	13	i just listen to its true friends.
+7	14	i am, and he is time to help others.
+7	15	i help my friend go.
+7	16	i out there, and you have a funny story.
+7	17	i ate the biggest she could wish, and i love exploring too.
+7	18	i n bravery it to sing again.
+7	19	i love to miss those who believe.
+7	20	i seek to create happiness among the golden leaves.
+7	21	i you you, and they share stories.
+7	22	i offering a girl a redbear named rita.
+7	23	i rule the stars, but i feel lonely.

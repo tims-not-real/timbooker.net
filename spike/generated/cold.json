@@ -1,0 +1,43 @@
+{
+  "env": {
+    "label": "cold",
+    "threads_requested": 1,
+    "torch_threads": 1,
+    "torch": "2.14.0+cpu",
+    "python": "3.12.14",
+    "cpu_count": 4,
+    "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "avx512": true
+  },
+  "times": {
+    "download": 1.842,
+    "load": 0.003,
+    "std_scale": 0.006,
+    "reconstruct": 0.613,
+    "verify_sum": 0.089,
+    "generate_0": 10.409,
+    "generate_1": 10.558
+  },
+  "params": 5354496,
+  "agents": 8,
+  "lines_per_agent": 24,
+  "peak_rss_mb": 493.4,
+  "lineage_sum_max_abs_diff": 0.0,
+  "lineage_sum_l2_diff": 0.0,
+  "digest": "f581dc1dd6ffe81e38e39fe0b653bac9168b57477cfd734c230b3ed1ef6e1d7a",
+  "digests": [
+    "f581dc1dd6ffe81e38e39fe0b653bac9168b57477cfd734c230b3ed1ef6e1d7a",
+    "f581dc1dd6ffe81e38e39fe0b653bac9168b57477cfd734c230b3ed1ef6e1d7a"
+  ],
+  "identical_in_job": true,
+  "hf_cache_bytes": 21553345,
+  "sample_lines": [
+    "0\t0\ti see a castle on space",
+    "0\t1\ti love that moments bring us closer.",
+    "0\t2\ti always watch your world, even when things are hard.",
+    "0\t3\ti wa to be invisible to all of you.",
+    "0\t4\ti see lost things, in a little time, and that they remind me of the joy.",
+    "0\t5\ti n for him to dance and play."
+  ],
+  "peak_system_used_mb": 927
+}
