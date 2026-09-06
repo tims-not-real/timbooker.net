@@ -1539,6 +1539,7 @@ ISING_PLATE = """      <div class="viz" data-plate="home"__HIDE__>
 
 HOME_BODY = """
     <div class="prose">__INTRO__</div>
+    <h2 class="topics">Topics</h2>
     __INTERESTS__
     __ROWS__
 """
