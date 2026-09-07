@@ -141,5 +141,20 @@
  ],
  "last": {
   "action": "founded"
+ },
+ "checked": {
+  "date": "2026-09-07",
+  "action": "skipped",
+  "reason": "fewer than 10 shows for agents [0, 1, 2, 3, 4, 5, 6, 7]",
+  "shows": {
+   "0": 1,
+   "1": 5,
+   "2": 3,
+   "3": 5,
+   "4": 4,
+   "5": 1,
+   "6": 2,
+   "7": 4
+  }
  }
 }
