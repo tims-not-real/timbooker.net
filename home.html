@@ -11,6 +11,19 @@
 <meta name="description" content="Tim Booker is a complex systems scientist who studies cultural evolution online, where much of the selection now runs through ranking functions, and what those ought to select for.">
 <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/archivo-narrow-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+(function(){
+  var r = document.documentElement;
+  function on(){ r.classList.add('app'); }
+  if (!('onpagereveal' in window)){ on(); return; }
+  addEventListener('pagereveal', function(e){
+    var vt = e.viewTransition;
+    if (!vt){ on(); return; }
+    r.classList.remove('app');
+    vt.finished.then(on, on);
+  });
+})();
+</script>
 <style>
 
 @font-face{
@@ -426,8 +439,12 @@ footer p.llms{white-space:nowrap; max-width:none}
    The rules above stay, because every page is still written as a complete standalone
    document and a reader who arrives on one navigates out of it the cross-document way.
    These take over only where the router is running, which is where `app` is set on the
-   root element by script. With no JavaScript the class is never set and nothing below
-   applies.
+   root element by script: from the first render, except where the document is arriving
+   under a cross-document transition from one of those standalone pages, when it is set
+   at that transition's end (#59). The old page was captured with the root, the label and
+   the grain named, and this one has to be captured the same way or the three groups have
+   nothing to cross to and the grain fades out as a veil over the whole page. With no
+   JavaScript the class is never set and nothing below applies.
 
    The root loses its name, so the document is not captured at all. Nothing is
    snapshotted unless it is named, and the label is not named: it is not lifted out of
@@ -1659,7 +1676,10 @@ return { tick: function(){
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
   var cur = 'home', at = {}, tok = 0;
 
-  root.className = root.className ? root.className + ' app' : 'app';
+  // `app` is not put on the root here. The head does that on `pagereveal`, so that a
+  // document arriving under a cross-document transition keeps the standalone names
+  // until it is over (#59). swap() puts it on again before every swap, which is
+  // idempotent, and is what a click inside those 180ms gets.
   try { history.replaceState({p:cur}, '', location.href); } catch (e) {}
 
   function sec(key){ return document.querySelector('[data-page="' + key + '"]'); }
@@ -1717,6 +1737,7 @@ return { tick: function(){
 
   function swap(next, push){
     if (next === cur || !PAGE[next]) return;
+    root.classList.add('app');          // the router owns this swap, whatever came before
     // The floor is about to move (#41). The creature is told here, where the navigation
     // is handled rather than on a clock of its own, and told again below once the pages
     // have swapped; it measures the travel between the two and decides from that whether
