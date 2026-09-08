@@ -569,10 +569,10 @@ html.app::view-transition-group(critter),html.app::view-transition-group(critsay
 /* What capturing the label costs, measured by scripts/grain_check.py against the build
    before it, in a band of the blue that no named part covers, 1400x900:
 
-     the blue's level, at rest 44.74 of 255, mid-swap 40.46      a step of 4.28
-     frame to frame in the same band, mean 1.73 and peak 4.51    against a grain
+     the blue's level, at rest 44.88 of 255, mid-swap 40.58      a step of 4.29
+     frame to frame in the same band, mean 1.17 and peak 4.48    against a grain
                                                                  whose own amplitude
-                                                                 there is 2.43
+                                                                 there is 2.36
 
    The step is the fixed grain on `body::after` no longer reaching the label: it stays in
    the root and the label has been lifted out of it. That is the mechanism design-goals.md

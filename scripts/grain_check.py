@@ -1,29 +1,32 @@
-"""What the label's grain does while the label is captured.
+"""What the paper tooth does to the label during a swap.
 
     python scripts/grain_check.py                 # this tree
     python scripts/grain_check.py <other-tree>    # this tree against another build
 
-Two things can happen to the paper tooth during a swap, and they are different things
-with different causes, so they are measured apart.
+The grain is a fixed full-viewport layer on `body::after` with a blend mode, and it
+composes badly with view transitions. Two things can happen to it during a swap, from two
+different causes, so they are measured apart.
 
-**Level.** A named element is lifted out of the root, and the fixed grain on `body::after`
-stays in the root, so it cannot reach anything that has been lifted. The blue then loses
-that layer for the length of the swap and steps back at the end. This is what Tim reported
-from the live site on the cross-document path — "the colour of the blue plate flashes a
-little bit, like it goes dim and then bright again" — where it measured 9 to 10 of 255.
-`step` is that: the band's mean level at rest minus its mean level mid-swap.
+**Level.** A named element is lifted out of the root, and `body::after` stays in the root,
+so it cannot reach anything that has been lifted. Whatever is captured then loses that
+layer for the length of the swap and gets it back at the end. `step` is that: the band's
+mean level at rest minus its mean level mid-swap. design-goals.md records the same
+mechanism under "The plate stopped flashing 2026-09-05", where it measured a drop of 9 to
+10 of 255 on the cross-document path and was reported from the live site.
 
-**Texture.** The label's own snapshot is told to fill its group, so while the group's
-height animates the picture inside it is squeezed and its two grain layers are resampled
-with it. `shimmer` is the mean absolute difference between one painted frame and the one
-before it, which is the grain moving and nothing else, because the bands hold no type and
-no edge — every part of the label that has one has been lifted out by a name of its own.
-`amplitude` is the grain's own size in the same band, so the other two numbers have
-something to be a fraction of.
+**Texture.** A snapshot told to fill a group whose height is animating is squeezed, and any
+grain inside it is resampled and flattens. `shimmer` is the mean absolute difference
+between one painted frame and the one before it, which in these bands is the grain moving
+and nothing else, because they hold no type and no edge. `amplitude` is the grain's own
+size in the same band, so the other two numbers have something to be a fraction of.
+
+This build captures the label, so it reads a step of 4.29 and a shimmer of 1.17 mean and
+4.48 peak, against a grain whose amplitude in that band is 2.36. On `main`, where the label
+is not captured, every number here is 0.00. That difference is why this branch is parked.
 
 Three bands: the label's blue, the plate column and the page ground outside the wrap. The
-last two are the control — whatever is done to the label, they should not move, and a
-build that fixes the label by veiling the rest of the page says so here.
+last two are the control — whatever is done to the label, they must not move, and a build
+that fixes the label by veiling the rest of the page says so here.
 
 1400x900, home -> About, everything slowed ten times, canvases held still, over http,
 headless Chromium, device_scale_factor 1. Nothing here writes to the tree.
@@ -37,9 +40,11 @@ OTHER = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else None
 
 SLOW = 10
 W, H = 1400, 900
-# The blue band is on both pages, below the stack and right of the credits' 44ch measure,
-# so no named part of the label ever covers it.
-BANDS = {'label blue': (520, 250, 700, 430),
+# The blue band has to be blue on both pages, and the shorter label is what constrains it:
+# About's credits sit 145px higher than home's, so a band chosen against home alone catches
+# the left edge of them on About and reads 0.37 of a grey level that has nothing to do with
+# the grain. It is above the credits at either height and right of their 44ch measure.
+BANDS = {'label blue': (540, 190, 800, 330),
          'plate column': (780, 120, 1100, 400),
          'page ground': (1300, 420, 1390, 800)}
 
