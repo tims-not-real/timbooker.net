@@ -438,17 +438,25 @@ html.app .label{view-transition-name:none}
    to blend with, its overlay has nothing to work against and it lands as a flat grey
    veil over the whole page: 29 of 255, measured, for the length of every swap. */
 html.app body::after{view-transition-name:none}
-/* The one group there is does not animate, and that is deliberate. A browser re-targets
-   a group at the live element on every frame, so an animating group interpolates from
-   where the element was towards wherever it is right now — and while the label's row is
-   being animated, "right now" is itself moving, so the body only ever reaches the
-   product of the two progressions and trails the label by up to 36px mid-swap. Measured,
-   and the reason the label's move looked wrong however it was eased.
+/* The one group there is does not animate, and that is deliberate. It was pinned because
+   the router was animating the hero's row underneath it and a browser re-targets a group
+   at its live element on every frame, so the group interpolated towards a target that was
+   itself moving and the body trailed the label by up to 36px mid-swap.
 
-   Pinned, the group sits exactly on the live element, so the outgoing page and the
-   incoming one both travel with the layout and the label's bottom edge and the text
-   under it move as one thing. It also means a swap that changes the scroll position
-   does not slide: only the cross-fade is animated, which is all a cross-fade needs. */
+   Nothing animates the live page any more (#54), so that reason has gone and the pin was
+   taken out to see what it was worth. The answer, measured off painted frames at 1400
+   with everything slowed ten times: unpinned, the body's snapshot starts where the page
+   it was captured on had it and slides to where the new page wants it, while the label
+   underneath it — which is not captured at all — is already there. The gap between the
+   label's bottom edge and the first line of body text opens from 55px to 200px and closes
+   again over the swap. Pinned, that gap is 55px on every frame of every leg, which is
+   what it has always been.
+
+   So the pin stays, for the reason it always mattered: the group sits exactly on the live
+   element, the body is where the label says it is on every frame, and a swap that changes
+   the scroll position does not slide. Only the cross-fade is animated, which is all a
+   cross-fade needs. What the pin now costs is home's 145px: the label snaps to its new
+   height rather than travelling to it. See the note in build_site.py and design-goals. */
 html.app::view-transition-group(page){animation:none}
 
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
