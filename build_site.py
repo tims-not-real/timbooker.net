@@ -508,7 +508,6 @@ ROUTER_JS = r"""
   var file = {}, k;
   for (k in PAGE) file[PAGE[k].f] = k;
 
-  var hero = document.querySelector('.hero');
   var meta = document.querySelector('meta[name=description]');
   var mark = document.querySelector('.title');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -581,8 +580,7 @@ ROUTER_JS = r"""
     // Where you were on the page you are leaving, so that coming back to it puts you
     // back. There is no page load to survive any more, so nothing is stored anywhere.
     var y0 = Math.round(pageYOffset), y1 = at[next] || 0;
-    var h0 = hero.getBoundingClientRect().height;
-    var mine = ++tok, anim = null;
+    var mine = ++tok;
     at[cur] = y0;
     TB.stop();                          // nothing steps while we are between pages
     if (push) try { history.pushState({p:next}, '', PAGE[next].f); } catch (e) {}
@@ -595,41 +593,35 @@ ROUTER_JS = r"""
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
       // Last, because the destination's plate column is what sets the label's height and
-      // the creature is positioned from the label's bottom. Here the new page is laid
-      // out and the height animation below has not started, so this is the one moment
-      // that reads where the floor is going to be rather than where it is passing.
+      // the creature is positioned from the label's bottom. The live layout is final the
+      // moment this returns — the movement is on the snapshots, not on the page — so
+      // this reads the floor the creature is going to stand on.
       if (window.TBfloor) TBfloor.moved();
     }
     function settle(){
-      if (anim) anim.cancel();
       // Click again before the first swap is done and the browser drops the first
       // transition, which lands here while the second is still running. The second one
-      // owns the page from that moment, so this one clears up after itself and stops.
+      // owns the page from that moment, so this one leaves it alone and stops: the name
+      // it would clear is the running swap's, and the model it would start is not the
+      // page you are on.
       if (mine !== tok) return;
       hold(null);                       // nothing is named, and nothing is promoted
-      hero.style.height = ''; hero.style.gridTemplateRows = '';
       TB.run(next);                     // and the model starts once the page is still
     }
     if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
 
+    // The transition owns the movement, and nothing races it (#54). The DOM changes at
+    // once inside `update` and the live page is final from that moment; what animates is
+    // the snapshots, over the transition's own .18s. There is nothing here to cancel, no
+    // inline height to clear, and no second animation to be still running at the frame
+    // the snapshots are torn down.
     hold(cur);                          // the page being left, for the old capture
     var vt = document.startViewTransition(update);
-    vt.ready.then(function(){
-      // Home's label is 145px taller than every other, because its plate column is. In
-      // one document the label is a real element that is still there, so that
-      // difference can be travelled rather than jumped. The groups are pinned to the
-      // live layout, so animating the row the label sits in carries the body with it
-      // and the two move as one thing; see the note in site_style.py.
-      var h1 = hero.getBoundingClientRect().height;
-      if (Math.abs(h1 - h0) < 1) return;
-      // A grid row will not size below its content, and the row this is arriving at is
-      // sometimes shorter than the plate that has just been put in it. A percentage
-      // track against a height we are setting ourselves will.
-      hero.style.gridTemplateRows = '100%';
-      hero.style.height = h0 + 'px';
-      anim = hero.animate([{height:h0 + 'px'}, {height:h1 + 'px'}],
-                          {duration:180, easing:'ease', fill:'forwards'});
-    }, function(){});
+    // Click faster than a swap and the browser skips the first transition, which rejects
+    // `ready`. Nothing here waits on `ready` any more, but a rejection nobody takes is a
+    // page error, so it is taken and dropped. `finished` resolves either way and settle()
+    // stops itself when it is the older swap's.
+    vt.ready.catch(function(){});
     vt.finished.then(settle, settle);
   }
 
@@ -1258,8 +1250,10 @@ CREATURE_JS = r"""
 # Every number below is out of `build_cattrans.py`, which is the specification for this
 # gesture and was iterated with Tim over six rounds. It is variant A: the 500 ms hang,
 # the four-step fall, the six-frame rise, the 180 ms "notices after" delay. The plate's
-# own 180 ms is not here because it is not this file's to set twice — the router already
-# animates the hero row with `duration:180`, and that is the floor's real speed.
+# own 180 ms is not here because it is not this file's to set twice — the transition runs
+# for .18s in site_style.py. The floor itself no longer takes that long: since #54 the
+# live layout is final on the frame the pages swap, so the floor arrives at once and the
+# 180 ms is the delay before the cat has noticed, which is what it was always for.
 #
 # The travel is 18 cells. Home's label is 145.06px taller than every other page's,
 # because its plate column is, and the creature is positioned from the label's bottom, so
