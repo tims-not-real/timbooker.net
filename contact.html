@@ -280,6 +280,29 @@ a{color:inherit}
   height:1.25rem; line-height:1.25rem;
   cursor:pointer; transition:color .2s ease;
 }
+/* What you press is bigger than what is painted, and it has to be: the painted words are
+   52.5, 33.4 and 39.6 wide by 20 tall, and 33 by 20 is not a target on a phone. The row
+   height is not negotiable — it is what keeps About's label at 468.36 and the router with
+   nothing to animate — so the pressable box is a transparent child, absolutely positioned
+   and therefore invisible to the layout, reaching out past the painted word to 44 in both
+   directions. Zero-width space would have been the other way, but padding cancelled by a
+   negative margin leaves the box's own size fighting the flex line, and this does not.
+
+   It reaches into open ground and never into the gap a button shares with its neighbour,
+   which is why Soup grows rightwards and Pause leftwards: between them sits the space
+   margin-left:auto opens, 121px at the narrowest. So no two boxes come near each other —
+   11.19px between Gliders and Soup, 11.19 between Pause and the Gen label, and about 100
+   between Soup and Pause — and none of them has to be squeezed to keep them apart.
+
+   Vertically it is 11 up and 13 down rather than 12 and 12. There is 13.18px of clear
+   above the button and 10 below it, so 44 will not fit between the canvas and the note
+   whatever it does; the asymmetry spends the shortfall downwards, over the top 3px of the
+   caption, which is text nobody clicks, and leaves 2.18px of the board unclaimed above.
+   The board is the thing on this plate you are meant to be able to hit. */
+.ctrl button{position:relative}
+.ctrl button::before{content:""; position:absolute; top:-11px; right:0; bottom:-13px; left:0}
+.ctrl button[data-scene=soup]::before{right:-1rem}
+.ctrl .run::before{left:-1rem}
 .ctrl button:hover{color:var(--fg)}
 .ctrl button[aria-pressed=true]{color:var(--fg); box-shadow:inset 0 -2px 0 currentColor}
 .ctrl button:focus-visible{outline:1px solid var(--accent); outline-offset:3px}

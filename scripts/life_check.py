@@ -21,6 +21,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIDTHS = [380, 420, 881, 1120, 1400]
+WIDTHS_HIT = [380, 420, 881, 1400]      # 881 is where the plate column is at its narrowest
 BIG = 640                       # the R-pentomino's own board: see the note at RULE_R
 
 H = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(ROOT))
@@ -275,6 +276,77 @@ with sync_playwright() as pw:
              % (w, len(targets) - len(miss), len(targets)),
              not miss, '  cell %.2f CSS px' % (box['w'] / n) +
              ('' if not miss else '  missed %s' % miss))
+        p.close()
+
+    # ---- the buttons are bigger to press than they are to look at ---------------
+    # The painted word is 20px tall because the control row has to stay 1.25rem, and 33 by
+    # 20 is not a target on a phone. Each button carries a transparent ::before that is out
+    # of flow, so it reaches past the word without the row knowing. This measures the box
+    # that actually takes the press, checks it against 44 both ways, checks no two of them
+    # overlap or reach the readout, and then presses one at the far corner of its box —
+    # well outside the painted word — to show the box is real and not just measured.
+    HITS = """() => {
+      const viz = document.querySelector('.viz[data-plate=about]');
+      const R = e => { const r = e.getBoundingClientRect();
+                       return {l: r.left, t: r.top, r: r.right, b: r.bottom,
+                               w: r.width, h: r.height}; };
+      const px = v => (v === 'auto' || !v) ? 0 : parseFloat(v);
+      const out = {canvas: R(viz.querySelector('canvas')),
+                   readout: R(viz.querySelector('output')), hits: []};
+      for (const b of viz.querySelectorAll('button')) {
+        const s = getComputedStyle(b, '::before'), r = b.getBoundingClientRect();
+        const box = {l: r.left + px(s.left), t: r.top + px(s.top),
+                     r: r.right - px(s.right), b: r.bottom - px(s.bottom)};
+        box.w = box.r - box.l; box.h = box.b - box.t;
+        out.hits.push({name: b.textContent.trim(), painted: R(b), box: box});
+      }
+      return out;
+    }"""
+    # Not under reduced motion, deliberately: there the run button reads Resume, and Pause
+    # is the shorter of its two words and so the smaller of its two boxes. Measure the
+    # worse one. Below 880 the plate sits under the hero and off the bottom of a 900 tall
+    # window, so the row is scrolled to before anything is measured or pressed.
+    for w in WIDTHS_HIT:
+        p = br.new_page(viewport={'width': w, 'height': 900}, device_scale_factor=1)
+        p.goto(URL + 'about.html')
+        p.wait_for_timeout(400)
+        p.evaluate("""() => document.querySelector('.viz[data-plate=about] .ctrl')
+                              .scrollIntoView({block: 'center'})""")
+        p.wait_for_timeout(150)
+        m = p.evaluate(HITS)
+        hs = [h['box'] for h in m['hits']]
+        small = ['%s %.2f x %.2f' % (h['name'], h['box']['w'], h['box']['h'])
+                 for h in m['hits'] if h['box']['w'] < 44 or h['box']['h'] < 44]
+        hit = lambda a, b: (a['l'] < b['r'] - .01 and b['l'] < a['r'] - .01
+                            and a['t'] < b['b'] - .01 and b['t'] < a['b'] - .01)
+        clash = [(m['hits'][i]['name'], m['hits'][j]['name'])
+                 for i in range(len(hs)) for j in range(i + 1, len(hs))
+                 if hit(hs[i], hs[j])]
+        near = [h['name'] for h in m['hits']
+                if hit(h['box'], m['readout']) or hit(h['box'], m['canvas'])]
+        note('%d: every button is at least 44 by 44 to press' % w, not small,
+             '  ' + ', '.join('%s %.2f x %.2f painted, %.2f x %.2f pressed'
+                              % (h['name'], h['painted']['w'], h['painted']['h'],
+                                 h['box']['w'], h['box']['h']) for h in m['hits']))
+        note('%d: no two pressable boxes overlap, and none reaches the board or the '
+             'readout' % w, not clash and not near,
+             '  gaps %s, and %.2f of clear board above them'
+             % (['%.2f' % (hs[i + 1]['l'] - hs[i]['r']) for i in range(len(hs) - 1)],
+                hs[0]['t'] - m['canvas']['b']))
+        # Soup is the scenario the plate opens on, so the corner press has something to
+        # change: Gliders first, on the word, then Soup from the far corner of its box.
+        p.click('.viz[data-plate=about] button[data-scene=gliders]')
+        s = m['hits'][1]
+        p.mouse.click(s['box']['r'] - 2, s['box']['b'] - 2)
+        p.wait_for_timeout(120)
+        note('%d: a press on the corner of the box, clear of the word, lands' % w,
+             p.get_attribute('.viz[data-plate=about] button[data-scene=soup]',
+                             'aria-pressed') == 'true'
+             and s['box']['r'] - 2 > s['painted']['r']
+             and s['box']['b'] - 2 > s['painted']['b'],
+             '  pressed %.2f, %.2f, which is %.2f right of the word and %.2f below it'
+             % (s['box']['r'] - 2, s['box']['b'] - 2,
+                s['box']['r'] - 2 - s['painted']['r'], s['box']['b'] - 2 - s['painted']['b']))
         p.close()
 
     # ---- it stops on the way out and picks up on the way back -------------------
