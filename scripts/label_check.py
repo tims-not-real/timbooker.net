@@ -1,8 +1,9 @@
 """The label's acceptance check for #51: it does not move on a mobile tab switch.
 
 Written for PR #52, which guarded the symptom below 880, and kept for #54, which removed
-the cause: nothing animates the live page during a swap any more, so the label is static
-at every width rather than at the ones a breakpoint names.
+the cause. #62 and #63 animate the live page again, but only the hero's row and only
+where it has two columns, so below the breakpoint nothing moves the label at all and it
+is static at every width rather than at the ones a breakpoint names.
 
     python scripts/label_check.py                 # this tree
     python scripts/label_check.py <other-tree>    # this tree against another build
