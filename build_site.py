@@ -551,6 +551,7 @@ ROUTER_JS = r"""
 
   var meta = document.querySelector('meta[name=description]');
   var mark = document.querySelector('.title');
+  var hero = document.querySelector('.hero');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
   var cur = '__START__', at = {}, tok = 0;
 
@@ -625,10 +626,43 @@ ROUTER_JS = r"""
     // Where you were on the page you are leaving, so that coming back to it puts you
     // back. There is no page load to survive any more, so nothing is stored anywhere.
     var y0 = Math.round(pageYOffset), y1 = at[next] || 0;
-    var mine = ++tok;
+    var mine = ++tok, h0 = -1;
     at[cur] = y0;
     TB.stop();                          // nothing steps while we are between pages
     if (push) try { history.pushState({p:next}, '', PAGE[next].f); } catch (e) {}
+
+    // Home's label is 145px taller than the others, because its plate column is, and
+    // that difference travels on the live row (#60). The transition cannot carry it: a
+    // group animates a rect and draws a fixed picture inside it, and the label is not
+    // captured anyway, so in the app it is the live element for the whole swap and a
+    // change to its row is simply visible. One animation on the hero's row, from the
+    // height the page had when the click landed to the height the new page has once
+    // the DOM has changed, the transition's own .18s and ease, no fill: the row is back
+    // on `auto` the frame it ends, which is the height it ends on, so there is no inline
+    // style to clear and nothing for settle() to do. Started here, inside the update
+    // callback, so it shares the transition's first frame and its last. The `page`
+    // group is pinned, so the body's snapshot sits on the live body and rides this row.
+    //
+    // Not a CSS transition: measured, a transition from a length that has only just
+    // been set does not run, because the before-change style is the last rendered one
+    // and `auto -> 613px -> 468px` inside one task interpolates nothing. Not the label
+    // named in parts, which travels as well but captures the label and costs it the
+    // page's grain for every swap (`issue-54-travel-parked`, a step of 4.29 of 255).
+    //
+    // Two columns only: below the breakpoint the hero is one column of two rows and one
+    // track size would hand the label the whole hero, which was #51. Under a pixel is
+    // not travelled, because research and about differ by 0.36px and animating a third
+    // of a pixel for 180ms is worse than not. A second click mid-travel reads the
+    // current height as its start, below, and the last swap's animation is cancelled in
+    // update() before anything reads the floor; this only measures and starts.
+    function travel(){
+      if (!hero || h0 < 0) return;
+      var h1 = hero.getBoundingClientRect().height;
+      if (Math.abs(h1 - h0) < 1) return;
+      if (getComputedStyle(hero).gridTemplateColumns.split(' ').length !== 2) return;
+      hero.animate([{gridTemplateRows: h0 + 'px'}, {gridTemplateRows: h1 + 'px'}],
+                   {duration: 180, easing: 'ease'});
+    }
 
     function update(){
       show(cur, false); show(next, true);
@@ -637,11 +671,18 @@ ROUTER_JS = r"""
       if (held !== null) hold(next);    // the incoming page carries the name now
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
-      // Last, because the destination's plate column is what sets the label's height and
-      // the creature is positioned from the label's bottom. The live layout is final the
-      // moment this returns — the movement is on the snapshots, not on the page — so
-      // this reads the floor the creature is going to stand on.
+      // Three things in this order. The previous swap's animation, if a click landed
+      // mid-travel, is cancelled first: left running it would carry the row on to the
+      // page that was abandoned and snap back when it finished — measured, on a click
+      // inside the first frame, when the row had not moved and the two heights read
+      // equal — and while it is applied the floor reads at a mid-travel height. Then the
+      // creature reads the settled floor: the destination's plate column is what sets
+      // the label's height and the creature is positioned from the label's bottom, so
+      // with the DOM changed and nothing moving the row this is where she is going to
+      // stand. Then the row sets off.
+      if (hero) hero.getAnimations().forEach(function(a){ a.cancel(); });
       if (window.TBfloor) TBfloor.moved();
+      travel();
     }
     function settle(){
       // Click again before the first swap is done and the browser drops the first
@@ -655,11 +696,16 @@ ROUTER_JS = r"""
     }
     if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
 
-    // The transition owns the movement, and nothing races it (#54). The DOM changes at
-    // once inside `update` and the live page is final from that moment; what animates is
-    // the snapshots, over the transition's own .18s. There is nothing here to cancel, no
-    // inline height to clear, and no second animation to be still running at the frame
-    // the snapshots are torn down.
+    // The transition owns the cross-fade and the live row owns the travel, and they
+    // share a clock: both start on the frame after `update` and both run .18s. The DOM
+    // changes at once inside `update`; what the transition animates is the body's
+    // snapshots, and what the row animation moves is the label and the body under
+    // them. There is no inline height to clear and nothing left running that settle()
+    // has to stop. The leaving height is read here, before the old state is captured
+    // and while the last swap's animation, if there is one, is still applied, so a
+    // click mid-travel starts from wherever the row is rather than from where the page
+    // began.
+    if (hero) h0 = hero.getBoundingClientRect().height;
     hold(cur);                          // the page being left, for the old capture
     var vt = document.startViewTransition(update);
     // Click faster than a swap and the browser skips the first transition, which rejects
