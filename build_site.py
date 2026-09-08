@@ -653,14 +653,10 @@ ROUTER_JS = r"""
     // track size would hand the label the whole hero, which was #51. Under a pixel is
     // not travelled, because research and about differ by 0.36px and animating a third
     // of a pixel for 180ms is worse than not. A second click mid-travel reads the
-    // current height as its start, below, and the last swap's animation is cancelled
-    // here before anything is measured: left running, it would carry the row on to the
-    // page that was abandoned and snap back when it finished. Measured, that is what
-    // cancelling only when a new animation starts did on a click inside the first
-    // frame, when the row had not moved yet and the two heights read equal.
+    // current height as its start, below, and the last swap's animation is cancelled in
+    // update() before anything reads the floor; this only measures and starts.
     function travel(){
       if (!hero || h0 < 0) return;
-      hero.getAnimations().forEach(function(a){ a.cancel(); });
       var h1 = hero.getBoundingClientRect().height;
       if (Math.abs(h1 - h0) < 1) return;
       if (getComputedStyle(hero).gridTemplateColumns.split(' ').length !== 2) return;
@@ -675,12 +671,18 @@ ROUTER_JS = r"""
       if (held !== null) hold(next);    // the incoming page carries the name now
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
-      // The destination's plate column is what sets the label's height and the creature
-      // is positioned from the label's bottom, so this reads the settled layout: the
-      // DOM has changed and the row has not started moving yet, which is the floor the
-      // creature is going to stand on.
+      // Three things in this order. The previous swap's animation, if a click landed
+      // mid-travel, is cancelled first: left running it would carry the row on to the
+      // page that was abandoned and snap back when it finished — measured, on a click
+      // inside the first frame, when the row had not moved and the two heights read
+      // equal — and while it is applied the floor reads at a mid-travel height. Then the
+      // creature reads the settled floor: the destination's plate column is what sets
+      // the label's height and the creature is positioned from the label's bottom, so
+      // with the DOM changed and nothing moving the row this is where she is going to
+      // stand. Then the row sets off.
+      if (hero) hero.getAnimations().forEach(function(a){ a.cancel(); });
       if (window.TBfloor) TBfloor.moved();
-      travel();                         // and only then does the row set off
+      travel();
     }
     function settle(){
       // Click again before the first swap is done and the browser drops the first
