@@ -58,7 +58,13 @@ a{color:inherit}
 .link{color:var(--accent); text-decoration:none; border-bottom:1px solid var(--rule)}
 .link:hover{border-bottom-color:var(--accent)}
 .wrap{max-width:72rem; margin:0 auto; padding:2rem 2rem 6rem}
-.hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
+.hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch;
+  /* The count is declared beside the tracks so that the router can ask how many there
+     are without keeping its own copy of 880. It animates the hero's height across a swap
+     and gives the label's row the whole of it, which is right beside a plate and wrong
+     stacked above one; the breakpoint below is where that changes, and one copy of that
+     rule is enough. Same arrangement as --crit-cell (#51, #49). */
+  --hero-cols:2}
 /* no model on this page yet: one column, label full width. Holding the 23rem open and
    empty reads as a missing thing, and a big empty field is a failure, not a minimum. */
 /* One width everywhere, and never shorter than 29.25rem, which is what Research needs.
@@ -425,7 +431,7 @@ html.app::view-transition-group(page){animation:none}
 
 @media(max-width:880px){
   .wrap{padding:1.25rem 1.25rem 4rem}
-  .hero{grid-template-columns:minmax(0,1fr)}
+  .hero{grid-template-columns:minmax(0,1fr); --hero-cols:1}
   /* the creature keeps to the label's own padding, which is smaller here, and the nav
      sits four pixels nearer the bottom edge for the same reason, so the creature does */
   .label{padding:1.75rem 1.5rem; --crit-x:1.5rem; --crit-y:calc(70px + var(--crit-nav))}

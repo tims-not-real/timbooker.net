@@ -620,6 +620,19 @@ ROUTER_JS = r"""
       // difference can be travelled rather than jumped. The groups are pinned to the
       // live layout, so animating the row the label sits in carries the body with it
       // and the two move as one thing; see the note in site_style.py.
+      //
+      // Two columns only. Below 880 the hero is one, so the label and the plate are
+      // stacked rows rather than side by side, and the percentage track below hands the
+      // label's row the whole animating hero height with the plate sitting inside it:
+      // measured at 420, home to About took the label from 468 to 1137.4 and back, which
+      // is the balloon Tim reported (#51). There is nothing to travel there in any case
+      // — one column and the label is the same height on all five pages, 468 from 420
+      // up and 473.98 at 380 where the nav wraps — so the animation does not run at
+      // all. The stylesheet owns where that line is drawn and this reads
+      // --hero-cols back off the hero, rather than keeping a second copy of 880 here
+      // that could drift out of step with it; same arrangement as --crit-cell (#49).
+      if (parseInt(getComputedStyle(hero)
+                   .getPropertyValue('--hero-cols'), 10) < 2) return;
       var h1 = hero.getBoundingClientRect().height;
       if (Math.abs(h1 - h0) < 1) return;
       // A grid row will not size below its content, and the row this is arriving at is
