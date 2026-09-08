@@ -564,38 +564,15 @@ ROUTER_JS = r"""
   function sec(key){ return document.querySelector('[data-page="' + key + '"]'); }
   function viz(key){ return document.querySelector('.viz[data-plate="' + key + '"]'); }
 
-  function show(key, on){
-    var s = sec(key), v = viz(key);
-    if (s) s.hidden = !on;
+  // The plate cuts. It is a live canvas, hidden with its page and shown with the next,
+  // and it is not faded with the body. It was faded once, by the view transition this
+  // router used to run, and the browser put its outgoing picture up once more as that
+  // transition tore down: home's plate is 613 tall against Research's 468, so its three
+  // renormalisation boxes landed on bare page ground for a frame, which was the flicker
+  // Tim saw leaving home (#22). A cut has nothing to tear down.
+  function plate(key, on){
+    var v = viz(key);
     if (v) v.hidden = !on;
-  }
-
-  // The one name the transition works with, set for the length of a swap and cleared at
-  // the end of it. It is not in the stylesheet, because a name is not a free
-  // declaration: it promotes the element to a compositing layer of its own for as long
-  // as it is set, which takes the text on it off subpixel antialiasing. Left on
-  // permanently that redrew every glyph in the body of every page read inside the app.
-  // One page carries it at a time, which is the one being captured: the outgoing page
-  // when the old state is taken, the incoming one when the new state is.
-  //
-  // The plate is not named, and so is not captured. It was, and that was the flicker
-  // Tim saw leaving home: the browser puts the outgoing snapshot up once more as the
-  // transition tears down, and home's plate is 613 tall against Research's 468, so its
-  // three renormalisation boxes landed on bare page ground for a frame. Uncaptured, the
-  // plate hard-cuts instead of cross-fading, which is the trade.
-  var held = null;
-  function hold(key){
-    if (held === key) return;
-    var s;
-    if (held !== null){
-      s = sec(held);
-      if (s) s.style.viewTransitionName = '';
-    }
-    held = key;
-    if (key !== null){
-      s = sec(key);
-      if (s) s.style.viewTransitionName = 'page';
-    }
   }
   // The label's only moving parts. Both are writes to elements that stay exactly where
   // they are: the label is not rebuilt, and neither write changes its layout. The
@@ -626,35 +603,100 @@ ROUTER_JS = r"""
     // Where you were on the page you are leaving, so that coming back to it puts you
     // back. There is no page load to survive any more, so nothing is stored anywhere.
     var y0 = Math.round(pageYOffset), y1 = at[next] || 0;
-    var mine = ++tok, h0 = -1;
+    var mine = ++tok, h0 = -1, i, s;
+    var out = sec(cur), inn = sec(next), all = document.querySelectorAll('.body');
+    // One branch. Reduced motion is a cut, no fade and no travel; everything else
+    // animates, and nothing here needs more of a browser than Element.animate.
+    var move = !reduce.matches && !!Element.prototype.animate;
     at[cur] = y0;
     TB.stop();                          // nothing steps while we are between pages
     if (push) try { history.pushState({p:next}, '', PAGE[next].f); } catch (e) {}
 
+    // The body cross-fades on the live page, and nothing is photographed (#63). This
+    // router used to hand the swap to `document.startViewTransition`, which renders
+    // the outgoing section to a bitmap, changes the DOM, renders the incoming one to a
+    // second bitmap and fades the bitmaps in a layer above the page. Tim: "there is
+    // still a flicker of the body text." It was the bitmaps. Text drawn in a layer of
+    // its own is smoothed in grey; text drawn in the page, on Windows, is smoothed with
+    // coloured subpixels; so every glyph in the body was drawn one way for 180ms and
+    // the other way before and after. scripts/text_check.py, this GPU, DPR 1.5, the
+    // incoming page's first paragraph: 41,047 fringed pixels at rest, 0 mid-swap, 0 on
+    // the last frame of the swap, 41,047 on the first frame after it, a jump of 5.25
+    // of 255 across the paragraph in one frame, every run.
+    //
+    // A live fade has the same problem unless the fading element is opaque: a layer
+    // with opacity on it is composited too, and a composited layer keeps subpixel
+    // smoothing only when its contents are opaque. Measured in isolation: a paragraph
+    // fading over transparency reads 0 fringed pixels mid-fade; the same paragraph on
+    // an opaque ground reads 6,838 of its resting 7,101, which is the text still
+    // subpixel-smoothed at half strength. So the outgoing section stays in the
+    // document, is lifted out of the flow so the incoming one takes its place at once,
+    // lies over it on an opaque ground the colour of the page (`leaving`, in the
+    // stylesheet), and fades out with one Element.animate on opacity, .18s ease, no
+    // fill. That is the whole cross-fade: the incoming section is opaque underneath,
+    // so the outgoing one fading to nothing over it is the same as the two crossing,
+    // and the incoming section never animates, is never composited and never changes
+    // how its glyphs are drawn. When the fade finishes the outgoing section is hidden
+    // and the class comes off, and that is what starts the model. Nothing is named,
+    // nothing is captured, and there is no `vt.ready` left to reject.
+    //
+    // Not `plus-lighter`, which is what the transition's cross-fade used and what
+    // keeps identical pixels from dipping: these are two different pages' text, an
+    // opaque layer fading over another is an ordinary cross-fade, and a blend mode is
+    // the kind of thing this site has had enough of. Not both sections fading at
+    // once, the way the bitmaps did: with the outgoing one opaque that gives the
+    // incoming page only t-squared of its weight mid-fade, and with it transparent
+    // its text goes grey for the length of the fade.
+    //
+    // A click mid-swap carries on from where the screen is. Every fade still running
+    // is cancelled first, and where the page arriving is the one that was on its way
+    // out, the one on its way out now starts from the weight the screen was giving it,
+    // one minus the other's opacity, read before the cancel puts it back to 1. A
+    // section left lying over the page by a swap that was interrupted twice is hidden
+    // at once, which is a pop and is what a third click inside 180ms gets.
+    var o0 = 1;
+    if (inn && inn.classList.contains('leaving'))
+      o0 = 1 - parseFloat(getComputedStyle(inn).opacity);
+    // The leaving height, read before anything changes and while the last swap's
+    // travel, if there is one, is still applied, so a click mid-travel starts from
+    // wherever the row is rather than from where the page began.
+    if (move && hero) h0 = hero.getBoundingClientRect().height;
+    for (i = 0; i < all.length; i++){
+      s = all[i];
+      s.getAnimations().forEach(function(a){ a.cancel(); });
+      if (s !== out && s !== inn && s.classList.contains('leaving')){
+        s.classList.remove('leaving'); s.hidden = true;
+      }
+    }
+    if (out){ if (move) out.classList.add('leaving'); else out.hidden = true; }
+    if (inn){ inn.classList.remove('leaving'); inn.hidden = false; }
+    plate(cur, false); plate(next, true);
+    label(next); head(next);
+    cur = next;
+    TB.mount(next);                     // built here, but not run here
+    if (y1 !== y0) scrollTo(0, y1);
+
     // Home's label is 145px taller than the others, because its plate column is, and
-    // that difference travels on the live row (#60). The transition cannot carry it: a
-    // group animates a rect and draws a fixed picture inside it, and the label is not
-    // captured anyway, so in the app it is the live element for the whole swap and a
-    // change to its row is simply visible. One animation on the hero's row, from the
-    // height the page had when the click landed to the height the new page has once
-    // the DOM has changed, the transition's own .18s and ease, no fill: the row is back
-    // on `auto` the frame it ends, which is the height it ends on, so there is no inline
-    // style to clear and nothing for settle() to do. Started here, inside the update
-    // callback, so it shares the transition's first frame and its last. The `page`
-    // group is pinned, so the body's snapshot sits on the live body and rides this row.
+    // that difference travels on the live row (#60): one animation on the hero's row,
+    // from the height the page had when the click landed to the height the new page
+    // has now the DOM has changed, .18s ease, no fill, so the row is back on `auto`
+    // the frame it ends, which is the height it ends on, and there is no inline style
+    // to clear. It shares its clock with the fade above: both start in this task and
+    // both run .18s.
     //
     // Not a CSS transition: measured, a transition from a length that has only just
     // been set does not run, because the before-change style is the last rendered one
     // and `auto -> 613px -> 468px` inside one task interpolates nothing. Not the label
-    // named in parts, which travels as well but captures the label and costs it the
-    // page's grain for every swap (`issue-54-travel-parked`, a step of 4.29 of 255).
+    // named in parts, which travelled as well but needed the view transition this
+    // router no longer runs, and captured the label, which cost it the page's grain
+    // for every swap (`issue-54-travel-parked`, a step of 4.29 of 255).
     //
     // Two columns only: below the breakpoint the hero is one column of two rows and one
     // track size would hand the label the whole hero, which was #51. Under a pixel is
     // not travelled, because research and about differ by 0.36px and animating a third
     // of a pixel for 180ms is worse than not. A second click mid-travel reads the
-    // current height as its start, below, and the last swap's animation is cancelled in
-    // update() before anything reads the floor; this only measures and starts.
+    // current height as its start, above, and the last swap's animation is cancelled
+    // below before anything reads the floor; this only measures and starts.
     function travel(){
       if (!hero || h0 < 0) return;
       var h1 = hero.getBoundingClientRect().height;
@@ -663,57 +705,35 @@ ROUTER_JS = r"""
       hero.animate([{gridTemplateRows: h0 + 'px'}, {gridTemplateRows: h1 + 'px'}],
                    {duration: 180, easing: 'ease'});
     }
+    // Three things in this order. The previous swap's travel, if a click landed
+    // mid-travel, is cancelled first: left running it would carry the row on to the
+    // page that was abandoned and snap back when it finished — measured, on a click
+    // inside the first frame, when the row had not moved and the two heights read
+    // equal — and while it is applied the floor reads at a mid-travel height. Then the
+    // creature reads the settled floor: the destination's plate column is what sets
+    // the label's height and the creature is positioned from the label's bottom, so
+    // with the DOM changed and nothing moving the row this is where she is going to
+    // stand. Then the row sets off.
+    if (hero) hero.getAnimations().forEach(function(a){ a.cancel(); });
+    if (window.TBfloor) TBfloor.moved();
+    travel();
 
-    function update(){
-      show(cur, false); show(next, true);
-      label(next); head(next);
-      cur = next;
-      if (held !== null) hold(next);    // the incoming page carries the name now
-      TB.mount(next);                   // built here, but not run here
-      if (y1 !== y0) scrollTo(0, y1);
-      // Three things in this order. The previous swap's animation, if a click landed
-      // mid-travel, is cancelled first: left running it would carry the row on to the
-      // page that was abandoned and snap back when it finished — measured, on a click
-      // inside the first frame, when the row had not moved and the two heights read
-      // equal — and while it is applied the floor reads at a mid-travel height. Then the
-      // creature reads the settled floor: the destination's plate column is what sets
-      // the label's height and the creature is positioned from the label's bottom, so
-      // with the DOM changed and nothing moving the row this is where she is going to
-      // stand. Then the row sets off.
-      if (hero) hero.getAnimations().forEach(function(a){ a.cancel(); });
-      if (window.TBfloor) TBfloor.moved();
-      travel();
-    }
     function settle(){
-      // Click again before the first swap is done and the browser drops the first
-      // transition, which lands here while the second is still running. The second one
-      // owns the page from that moment, so this one leaves it alone and stops: the name
-      // it would clear is the running swap's, and the model it would start is not the
-      // page you are on.
+      // Click again before this swap is done and this lands rejected, because the
+      // second swap cancelled the fade, or lands while the second is running. The
+      // second one owns the page from that moment, so this one stops: the model it
+      // would start is not the page you are on.
       if (mine !== tok) return;
-      hold(null);                       // nothing is named, and nothing is promoted
-      TB.run(next);                     // and the model starts once the page is still
+      TB.run(next);                     // the model starts once the page is still
     }
-    if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
-
-    // The transition owns the cross-fade and the live row owns the travel, and they
-    // share a clock: both start on the frame after `update` and both run .18s. The DOM
-    // changes at once inside `update`; what the transition animates is the body's
-    // snapshots, and what the row animation moves is the label and the body under
-    // them. There is no inline height to clear and nothing left running that settle()
-    // has to stop. The leaving height is read here, before the old state is captured
-    // and while the last swap's animation, if there is one, is still applied, so a
-    // click mid-travel starts from wherever the row is rather than from where the page
-    // began.
-    if (hero) h0 = hero.getBoundingClientRect().height;
-    hold(cur);                          // the page being left, for the old capture
-    var vt = document.startViewTransition(update);
-    // Click faster than a swap and the browser skips the first transition, which rejects
-    // `ready`. Nothing here waits on `ready` any more, but a rejection nobody takes is a
-    // page error, so it is taken and dropped. `finished` resolves either way and settle()
-    // stops itself when it is the older swap's.
-    vt.ready.catch(function(){});
-    vt.finished.then(settle, settle);
+    if (!move || !out){ settle(); return; }
+    out.animate([{opacity: o0}, {opacity: 0}], {duration: 180, easing: 'ease'})
+       .finished.then(function(){
+         // Ran to the end, so no later swap cancelled it and this is still the section
+         // on its way out. A later swap deals with a cancelled one itself.
+         out.classList.remove('leaving'); out.hidden = true;
+         settle();
+       }, settle);
   }
 
   addEventListener('popstate', function(e){
@@ -1222,10 +1242,11 @@ CREATURE_JS = r"""
     if (t) cv.style.top = t;
     return out;
   }
-  // The first frame is placed and drawn here rather than left to the loop, because the
-  // router calls this from inside the view transition's own callback, which runs after
-  // that frame's animation callbacks. Left to the loop, the creature would be painted
-  // once at its new position still wearing whichever idle frame it was in the middle of.
+  // The first frame is placed and drawn here rather than left to the loop. The router
+  // calls this from the click's own task, and drawing here puts the creature's first
+  // frame on the same painted frame as the swap whatever the loop's own callback does
+  // that frame; left to the loop, the creature could be painted once at its new
+  // position still wearing whichever idle frame it was in the middle of.
   function start(key, when){
     seq = SEQ[key]; gt0 = when; cum = []; total = 0;
     for (var n = 0; n < seq.length; n++){ cum.push(total); total += seq[n][2]; }
@@ -2818,8 +2839,14 @@ if __name__ == '__main__':
     # ---- the one document. Every state, one label, one plate column, one of each
     # shown. Written to index.html and to home.html, which have always been the same
     # file, so the app is what you get at the root and at the address the nav points to.
+    # The five states sit in one wrapper, which is what a section on its way out is
+    # positioned against while it fades over the one arriving (#63). Nothing at rest:
+    # the wrapper has no box of its own to speak of, and the first section's margin
+    # collapses through it, so every page sits where it did.
     app = (hero('Home', 'home', ['home', 'research', 'freelancing', 'about'])
-           + ''.join(section(k, body[k], 'home') for k in KEYS))
+           + '  <div class="pages">\n'
+           + ''.join(section(k, body[k], 'home') for k in KEYS)
+           + '  </div>\n')
     app_js = (RUNTIME_JS + ISING_JS + SLE_JS + GRAY_SCOTT_JS + LIFE_JS
               + ROUTER_JS.replace('__PAGES__', page_map()).replace('__START__', 'home')
               + BOOT_JS.replace('__KEY__', 'home') + creature)

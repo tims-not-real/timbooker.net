@@ -424,69 +424,67 @@ footer p.llms{white-space:nowrap; max-width:none}
 /* ---- and moving between them inside one document ----
    The rules above stay, because every page is still written as a complete standalone
    document and a reader who arrives on one navigates out of it the cross-document way.
-   These take over only where the router is running, which is where `app` is set on the
-   root element by script: from the first render, except where the document is arriving
-   under a cross-document transition from one of those standalone pages, when it is set
-   at that transition's end (#59). The old page was captured with the root, the label and
-   the grain named, and this one has to be captured the same way or the three groups have
-   nothing to cross to and the grain fades out as a veil over the whole page. With no
-   JavaScript the class is never set and nothing below applies.
+   Inside the app there is no view transition at all any more (#63): the router swaps
+   the five sections itself and moves everything that moves on the live page. `app` is
+   set on the root element by script, from the first render, except where the document
+   is arriving under a cross-document transition from one of those standalone pages,
+   when it is set at that transition's end (#59). With no JavaScript the class is never
+   set and nothing below applies.
 
-   The root loses its name, so the document is not captured at all. Nothing is
-   snapshotted unless it is named, and the label is not named: it is not lifted out of
-   the page, not composited against a copy of itself and not re-laid-out. It is simply
-   still there, being the same element it was before the click. That is the whole of the
-   fix, and it is one declaration.
-
-   What is named is the page body, and nothing else. That name is not here, because a
-   name is not a free declaration. Naming an element promotes it to a compositing layer
-   of its own for as long as the name is set, which takes its text off subpixel
-   antialiasing — 78,785 pixels of the home page changed against the build before this
-   one, every glyph in the body outlined, and the same on every page read inside the app.
-   So the router sets that name in script immediately before a swap and clears it at the
-   end of it, and at rest nothing on the page is named and nothing is promoted.
-
-   The plate in the right column is not named either, so it is not captured and it hard-
-   cuts rather than cross-fading. It was named, and that was the flicker of the ÷3 ÷9 ÷27
-   boxes leaving home: a browser puts the outgoing snapshot up once more as the
-   transition tears down, and home's plate is 613 tall against Research's 468, so that
-   row was the part of it that landed on bare page ground and read as a blink. Ablated
-   one thing at a time — the name held for ever, the canvas fade, the height animation,
-   the pinned group — not capturing the plate was the only one that stopped it. */
+   The three names come off under `app`, and they still have to. The app captures
+   nothing of its own now, so this is not about a swap; it is about rest. A name is not
+   a free declaration: it promotes the element to a compositing layer of its own for as
+   long as it is set, which on Windows takes its text off subpixel antialiasing —
+   measured when the router first named the body sections permanently, 78,785 pixels of
+   the home page changed, every glyph in the body outlined. So at rest in the app nothing
+   is named and nothing is promoted, and the label's text is drawn the way the body's is.
+   The inbound case (#59) is the one time these names are wanted on this document, and
+   the head takes the class off for exactly that long. */
 html.app{view-transition-name:none}
 html.app .label{view-transition-name:none}
-/* And the grain gives its name back, because the reason it was given one has gone. It
-   was named so that it would be lifted into the transition layer along with the label
-   and could still reach it. Here the label is not lifted at all, so the grain reaches it
-   by simply staying where it is. Named, with no root snapshot beneath it in that layer
-   to blend with, its overlay has nothing to work against and it lands as a flat grey
-   veil over the whole page: 29 of 255, measured, for the length of every swap. */
+/* And the grain gives its name back: it was named so that it would be lifted into the
+   transition layer along with the label and could still reach it, and nothing in the
+   app is lifted. Named, with no root snapshot beneath it in that layer to blend with,
+   its overlay has nothing to work against and it lands as a flat grey veil over the
+   whole page: 29 of 255, measured, for the length of every swap. */
 html.app body::after{view-transition-name:none}
-/* The one group there is does not animate, and that is deliberate. The transition owns
-   the cross-fade and the live row owns the travel (#60): home's label is 145px taller
-   than the others, and the router animates the hero's row from the one height to the
-   other on the live page, .18s, the same clock as the snapshots. A browser re-targets a
-   group at its live element on every frame, so an animating group would interpolate
-   towards a target that was itself moving, and the body trailed the label by up to 36px
-   mid-swap when that was tried. Pinned, the group sits exactly on the live body, and
-   the live body is where the row puts it, so the gap between the label's bottom edge
-   and the first line of body text is 55px on every frame of every leg.
 
-   Unpinned with nothing moving the live page (#54, the build between) it was worse the
-   other way: the body's snapshot slid from where it was captured to where the new page
-   wanted it while the label underneath, which is not captured, had already snapped,
-   and the gap opened from 55px to 200px and closed again over the swap. A pinned group
-   also keeps a swap that changes the scroll position from sliding.
+/* ---- the body cross-fades on the live page ----
+   The five sections sit in one wrapper, and a section on its way out is positioned
+   against it: lifted out of the flow so the arriving section takes its place at once,
+   laid over the top of it, and faded out by the router with one animation on opacity.
+   Nothing here does anything at rest. The wrapper has no padding or border, so the
+   first section's margin collapses through it and every page sits where it always did;
+   `leaving` is only ever on a section for the 180ms of a swap.
 
-   Two ways of travelling the label were built and are not this. A CSS transition on
-   the row does not run from a length that has only just been set, because the
-   before-change style is the last rendered one; measured, `auto -> 613px -> 468px` in
-   one task interpolated nothing. The label named in parts (`issue-54-travel-parked`)
-   travels well, 35 edge positions and a 15px largest step, but it captures the label,
-   which takes the fixed grain on `body::after` off it for the length of every swap: a
-   step of 4.29 of 255 on the blue and the mottle flattens with it, by
-   scripts/grain_check.py. The live row captures nothing, so the grain never moves. */
-html.app::view-transition-group(page){animation:none}
+   Why not the view transition this used to be. A transition renders the outgoing
+   section to a bitmap, changes the DOM, renders the incoming section to a second bitmap
+   and cross-fades the bitmaps in a layer above the page, and text in a bitmap of its
+   own is smoothed in grey where text in the page, on Windows, is smoothed with coloured
+   subpixels. So every glyph in the body was drawn one way for the swap and the other
+   way before and after it, which is the flicker Tim reported. scripts/text_check.py,
+   on the incoming page's first paragraph at DPR 1.5: 41,047 subpixel-fringed pixels at
+   rest, 0 for the length of the swap, 41,047 again on the first frame after it, a jump
+   of 5.25 of 255 across the paragraph in one frame.
+
+   Why the ground is painted on. A fading element is composited too, and a composited
+   layer keeps subpixel smoothing only when its contents are opaque: measured in
+   isolation, a paragraph fading over transparency reads 0 fringed pixels mid-fade and
+   the same paragraph on an opaque ground reads 6,838 of its resting 7,101. So the
+   section on its way out carries the page's own ground colour while it fades, and
+   because it is opaque, it fading to nothing over the arriving section is the
+   cross-fade — the arriving section never animates, is never composited, and its
+   glyphs are drawn one way throughout. min-height keeps that ground at least as tall
+   as the arriving section, so the whole of it is crossed into rather than the part
+   under the old text; the box never clips its own text, because it is only ever taller
+   than its content, and text hanging out of an opaque box would make the layer
+   non-opaque and grey its smoothing. width and margin put it exactly on the box the
+   arriving section has; pointer-events lets a click through to the page underneath. */
+.pages{position:relative}
+html.app .body.leaving{
+  position:absolute; top:0; left:0; width:100%; min-height:100%; margin:0;
+  background:var(--bg); pointer-events:none;
+}
 
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 
@@ -811,10 +809,11 @@ html.app::view-transition-group(page){animation:none}
     if (t) cv.style.top = t;
     return out;
   }
-  // The first frame is placed and drawn here rather than left to the loop, because the
-  // router calls this from inside the view transition's own callback, which runs after
-  // that frame's animation callbacks. Left to the loop, the creature would be painted
-  // once at its new position still wearing whichever idle frame it was in the middle of.
+  // The first frame is placed and drawn here rather than left to the loop. The router
+  // calls this from the click's own task, and drawing here puts the creature's first
+  // frame on the same painted frame as the swap whatever the loop's own callback does
+  // that frame; left to the loop, the creature could be painted once at its new
+  // position still wearing whichever idle frame it was in the middle of.
   function start(key, when){
     seq = SEQ[key]; gt0 = when; cum = []; total = 0;
     for (var n = 0; n < seq.length; n++){ cum.push(total); total += seq[n][2]; }

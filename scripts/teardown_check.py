@@ -1,36 +1,39 @@
-"""Nothing of the router's is still running when the snapshots come down (#54).
+"""Nothing of the router's is left behind when a swap's animations end (#54, #63).
 
     python scripts/teardown_check.py                 # this tree
     python scripts/teardown_check.py <other-tree>    # this tree against another build
 
-The defect this checks for is a frame of the live page wearing the outgoing page's
-layout. The router used to animate the hero's height itself, on the live DOM, while the
-view transition was animating its snapshots over the top; the two ran on separate clocks
-and the browser tore the snapshots down first, so for about one frame the page underneath
+The defect this was written for is a frame of the live page wearing the outgoing page's
+layout. The router used to animate the hero's height itself, on the live DOM, while a
+view transition animated its snapshots over the top; the two ran on separate clocks and
+the browser tore the snapshots down first, so for about one frame the page underneath
 was still carrying `hero.style.height` from the page that had been left, and the
 `grid-template-rows:100%` that went with it.
 
-Every animation frame from the click is sampled. The teardown frame is the first one on
-which no `::view-transition-*` pseudo-element has an animation left, having had one on
-the frame before. What is reported at that frame, and on every frame after it:
+There is no view transition in the app any more (#63). The router fades the outgoing
+section out over the incoming one with one animation on opacity, and travels the hero's
+row with another (#60), both `Element.animate`, no fill, no inline style. So the
+teardown frame is now the first animation frame on which no `.body` section has an
+animation left, having had one on the frame before, and what is reported at that frame
+and on every frame after it:
 
-    live      animations whose target is the live `.hero` element
+    hero      animations whose target is the live `.hero` element
     height    the inline height on it, '' when there is none
     rows      the inline grid-template-rows on it
-    stale     frames after teardown still carrying either inline style
+    leaving   sections still carrying the `leaving` class
+    shown     sections not hidden — exactly one, once the swap is over
+    stale     frames after teardown carrying an inline style, a `leaving` section, or
+              more or fewer than one shown section
 
-What fails the check is an inline style at teardown or after it. `live` is reported and
-does not fail it on its own: since #60 the router animates the hero's row again, with
-one `Element.animate` that starts on the same frame as the transition and runs the same
-.18s, no fill and no inline style, so it can still be on its last frame when the
-snapshots come down. That is not the defect above. The row is a frame from its final
-height with the body riding it, not a page wearing the height it left; the number is
-printed so a build that leaves an animation running for longer than that says so.
+What fails the check is anything but '', '', 0 leaving and 1 shown at teardown and
+after. `hero` is reported and does not fail it on its own: the row's travel starts in
+the same task as the fade and runs the same .18s, so it can be on its last frame when
+the fade ends, which is a row a frame from its final height with the body riding it,
+not a page wearing the height it left. The number is printed so a build that leaves an
+animation running for longer than that says so.
 
-A build that leaves the movement to the transition reports 0, '', '' and 0 at every
-width; this build reports '', '' and 0 with `live` at 0 or 1. Served over http, headless
-Chromium, device_scale_factor 1, reduced motion left at no-preference so that the
-transition actually runs. Nothing here writes to the tree.
+Served over http, headless Chromium, device_scale_factor 1, reduced motion left at
+no-preference so that the swap actually animates. Nothing here writes to the tree.
 """
 import sys, functools, http.server, socketserver, threading, pathlib
 from playwright.sync_api import sync_playwright
@@ -40,20 +43,24 @@ OTHER = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else None
 
 WIDTHS = [380, 420, 560, 640, 881, 1000, 1120, 1400]
 # Home is the leg with 145px of hero height between the two ends of it, so it is the leg
-# the height animation had anything to do on. The reverse and a flat leg go with it.
+# the row's travel has anything to do on. The reverse and a flat leg go with it.
 LEGS = [('home', 'about'), ('about', 'home'), ('research', 'freelancing')]
 
 SAMPLE = """(href) => new Promise(done => {
   const hero = document.querySelector('.hero'), out = [], t0 = performance.now();
   (function f(){
     const t = performance.now() - t0;
-    let vt = 0, live = 0;
+    let body = 0, live = 0;
     for (const a of document.getAnimations()){
-      const e = a.effect;
-      if (e && e.pseudoElement && e.pseudoElement.indexOf('view-transition') >= 0) vt++;
-      else if (e && e.target === hero) live++;
+      const e = a.effect, el = e && e.target;
+      if (!el || !el.matches) continue;
+      if (el.matches('.body')) body++;
+      else if (el === hero) live++;
     }
-    out.push([t, vt, live, hero.style.height, hero.style.gridTemplateRows]);
+    const secs = Array.from(document.querySelectorAll('.body'));
+    out.push([t, body, live, hero.style.height, hero.style.gridTemplateRows,
+              secs.filter(s => s.classList.contains('leaving')).length,
+              secs.filter(s => !s.hidden).length]);
     if (t < 900) requestAnimationFrame(f); else done(out);
   })();
   document.querySelector('.label nav a[href="' + href + '"]').click();
@@ -71,7 +78,7 @@ def serve(root):
 
 
 def teardown(s):
-    """The first frame with no transition pseudo left, once there has been one."""
+    """The first frame with no body animation left, once there has been one."""
     ran = False
     for i, r in enumerate(s):
         if r[1]:
@@ -79,6 +86,10 @@ def teardown(s):
         elif ran:
             return i
     return None
+
+
+def bad_frame(r):
+    return bool(r[3] or r[4] or r[5] or r[6] != 1)
 
 
 def measure(br, port):
@@ -97,9 +108,9 @@ def measure(br, port):
             if i is None:
                 out[(w, a, b)] = None
                 continue
-            stale = sum(1 for r in s[i:] if r[3] or r[4])
-            out[(w, a, b)] = (round(s[i][0], 1), s[i][2], s[i][3], s[i][4], stale,
-                              max((r[2] for r in s), default=0))
+            stale = sum(1 for r in s[i:] if bad_frame(r))
+            out[(w, a, b)] = (round(s[i][0], 1), s[i][2], s[i][3], s[i][4], s[i][5],
+                              s[i][6], stale, max((r[2] for r in s), default=0))
         p.close()
     return out
 
@@ -116,21 +127,23 @@ def report(name, res):
     bad = []
     print(name)
     print()
-    print('%-6s %-10s %-12s %9s %6s %12s %8s %6s %8s'
-          % ('width', 'from', 'to', 'teardown', 'live', 'height', 'rows', 'stale', 'peak'))
+    print('%-6s %-10s %-12s %9s %5s %8s %6s %8s %6s %6s %5s'
+          % ('width', 'from', 'to', 'teardown', 'hero', 'height', 'rows', 'leaving',
+             'shown', 'stale', 'peak'))
     for k, v in res.items():
         if v is None:
-            print('%-6d %-10s %-12s   no transition ran' % k)
-            bad.append('%d %s -> %s: no transition' % k)
+            print('%-6d %-10s %-12s   no swap animated' % k)
+            bad.append('%d %s -> %s: no swap animated' % k)
             continue
-        t, live, h, rows, stale, peak = v
-        ok = not (h or rows or stale)
-        print('%-6d %-10s %-12s %8.1fms %6d %12s %8s %6d %8d%s'
-              % (k[0], k[1], k[2], t, live, repr(h), repr(rows), stale, peak,
-                 '' if ok else '   FAIL'))
+        t, live, h, rows, leaving, shown, stale, peak = v
+        ok = not (h or rows or leaving or shown != 1 or stale)
+        print('%-6d %-10s %-12s %8.1fms %5d %8s %6s %8d %6d %6d %5d%s'
+              % (k[0], k[1], k[2], t, live, repr(h), repr(rows), leaving, shown, stale,
+                 peak, '' if ok else '   FAIL'))
         if not ok:
-            bad.append('%d %s -> %s: height %r, rows %r, %d stale frame(s), live %d'
-                       % (k[0], k[1], k[2], h, rows, stale, live))
+            bad.append('%d %s -> %s: height %r, rows %r, %d leaving, %d shown, %d stale '
+                       'frame(s), hero %d' % (k[0], k[1], k[2], h, rows, leaving, shown,
+                                              stale, live))
     print()
     return bad
 
