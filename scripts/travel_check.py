@@ -3,10 +3,11 @@
     python scripts/travel_check.py                 # this tree
     python scripts/travel_check.py <other-tree>    # this tree against another build
 
-`getBoundingClientRect` cannot answer this once the transition owns the movement (#54).
-The live element is meant to snap on the frame the DOM changes, so the rect reports two
-values whether the snapshot is travelling correctly or not moving at all. So this reads
-the frames the compositor produced.
+Written when the transition owned the movement (#54) and `getBoundingClientRect` could
+not answer this: the live element snapped on the frame the DOM changed, so the rect
+reported two values whether the snapshot was travelling correctly or not moving at all.
+The live row is what moves now (#60) and a rect can answer again, but this reads the
+frames the compositor produced, because what is painted is the thing being judged.
 
 A CDP screencast is started, the click is made, and every frame the browser paints is
 kept with its own timestamp. In each frame the label's blue is followed down a column
@@ -16,10 +17,11 @@ the topmost row below that edge carrying anything more than 40 of 255 away from 
 ground, which is above the grain and far below any glyph.
 
 Everything is slowed by the same factor so that a 180ms swap is sampled at enough frames
-to tell a ramp from a step: the transition's own animations through an
-`animation-duration` override, and anything the router animates itself through a patched
-`Element.prototype.animate`. Both by SLOW, so nothing is re-timed relative to anything
-else.
+to tell a ramp from a step: everything the router animates, which since #63 is the
+whole swap, through a patched `Element.prototype.animate`, and a view transition's own
+animations through an `animation-duration` override, which the app no longer has and a
+build that brings one back would. Both by SLOW, so nothing is re-timed relative to
+anything else.
 
 What it prints per leg: how many distinct edge positions were painted, the largest step
 between two consecutive frames, and the total travel. A jump is two positions and one
@@ -55,15 +57,16 @@ WIDTHS = [1400, 420]
 # has anything to travel. Both directions, one leg between two equal labels as the
 # control that should not move at all, and one that also changes the scroll position: a
 # navigation keeps your place, so leaving a page you had scrolled down means the router
-# scrolls to the top inside the transition's callback, and every captured rect on the page
-# moves by that much at once. The label's top edge is followed for all of them, because it
-# is the one thing that must never move on any leg at any scroll.
+# scrolls to the top inside the swap, and everything on the page moves by that much at
+# once. The label's top edge is followed for all of them, because it is the one thing
+# that must never move on any leg at any scroll.
 LEGS = [('home', 0, 'about'), ('about', 0, 'home'), ('research', 0, 'about'),
         ('research', 1200, 'about')]
 
-# Timings the transition and the router both live by, multiplied by SLOW. The duration
-# override cannot resurrect an animation that is off: `animation:none` sets the name to
-# none, and a duration without a name still animates nothing.
+# Timings a transition and the router live by, multiplied by SLOW. The duration override
+# cannot resurrect an animation that is off: `animation:none` sets the name to none, and
+# a duration without a name still animates nothing; and it slows nothing on a build with
+# no transition, which this is.
 SLOWCSS = """
 ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){
   animation-duration:%dms !important;
@@ -145,7 +148,7 @@ def leg(br, port, w, a, y, b):
     p.add_style_tag(content=SLOWCSS)
     # The plates and the creature are animations of their own, and a frame of one is not
     # a frame of the swap. Held still so that every frame the screencast returns is one
-    # the transition asked for.
+    # the swap asked for.
     p.add_style_tag(content='canvas,#critsay,#critter{visibility:hidden !important}')
     if a != 'home':
         p.evaluate(GO, a + '.html')
