@@ -940,7 +940,12 @@ var GUN = ['........................O...........',
            '..........O.....O.......O...........',
            '...........O...O....................',
            '............OO......................'];
-var GX = 18, GY = 31, DEAD = 272;   // centred, for the look of it, and nothing else
+// ENDS and not DEAD: DEAD is already the dead cell's ink, twenty lines up and in this
+// same scope, and a second `var DEAD` here silently rebound it to a number. Every dead
+// cell then painted rgb(0,0,0) instead of --lat-on, because `(272)[0]` is undefined and
+// a Uint8ClampedArray stores undefined as zero. The whole board's field went black and
+// ten checks passed on it, none of them looking at the colour. There is one now.
+var GX = 18, GY = 31, ENDS = 272;   // centred, for the look of it, and nothing else
 function gun(){
   board.clear();
   for (var y = 0; y < GUN.length; y++)
@@ -1014,14 +1019,22 @@ function say(){
     text = 'Two gliders, on a course to cross';
   else if (scene === 'gliders')
     text = 'The collision · what it leaves is not readable off what went in';
-  else if (scene === 'gun' && board.gen() < DEAD)
+  else if (scene === 'gun' && board.gen() < ENDS)
     text = "Gosper's gun · five more cells every thirty generations";
   else if (scene === 'gun')
-    text = 'The gun is gone · its own stream came round at ' + DEAD;
+    text = 'The gun is gone · its own stream came round at ' + ENDS;
   // The one state the census adds, and the only place the plate uses the term. It is
   // kept off the two scenes whose own line is already about gliders, so that the
   // collision and the gun go on saying the thing they were built to say.
-  else if (objs.counts.glider)
+  //
+  // And it is kept off the field's own first fifty generations, which is the window the
+  // line below is a claim about and the only stretch where saying it is true. A soup
+  // throws off its first glider almost at once — measured over 30 soups, every one of
+  // them has one by generation 14 and the median has one by 3 — and 511 of the 1500
+  // generations under fifty carry one, so an ungated glider line would have taken a
+  // third of the frames the claim was written for. Above fifty the field has made its
+  // point and the glider is the thing worth saying.
+  else if (objs.counts.glider && board.gen() >= FIFTY)
     text = (objs.counts.glider > 1 ? 'Gliders' : 'A glider') +
            ' · a real pattern the rule has no word for';
   else
@@ -1040,6 +1053,7 @@ function say(){
 // nothing is counted as "got away" — the phrase the caption already had for it — so the
 // components add up whatever the line does. 58 characters is what one line holds at 340
 // CSS px, which is the narrowest the note ever is; it is measured, not guessed.
+var FIFTY = 50;                    // the field's line is a claim about its first fifty
 var KINDS = ['glider','block','blinker','beehive','loaf','boat','tub','pond','ship'];
 var MANY = {glider:'gliders', block:'blocks', blinker:'blinkers', beehive:'beehives',
             loaf:'loaves', boat:'boats', tub:'tubs', pond:'ponds', ship:'ships'};

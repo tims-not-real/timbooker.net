@@ -252,6 +252,36 @@ TRACE = """(frames) => new Promise(res => {
   })();
 })"""
 
+# ---- the two inks -------------------------------------------------------------------
+# What colour the board is actually painted, which nothing here used to look at. Every
+# other check reads the canvas as ones and zeros — `d[i * 4] > 128` — so a plate painting
+# its dead ground in the wrong ink passes all of them, and one did: `var DEAD = 272` in
+# the same scope as `var DEAD = hex(css('--lat-on'))` rebound the ink to a number, every
+# dead cell painted rgb(0,0,0) instead of the field blue, and ten checks passed on it.
+#
+# The board is read at a known generation with a known population, so the two inks can be
+# told apart by how many cells carry them as well as by where they are.
+INK = """() => {
+  const cv = document.querySelector('.viz[data-plate=about] canvas');
+  const n = cv.width, d = cv.getContext('2d').getImageData(0, 0, n, n).data;
+  const css = v => getComputedStyle(document.documentElement)
+                     .getPropertyValue(v).trim();
+  const rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16),
+                    parseInt(h.slice(5, 7), 16)].join(',');
+  const at = (x, y) => { const i = (y * n + x) * 4;
+                         return d[i] + ',' + d[i + 1] + ',' + d[i + 2]; };
+  const inks = {};
+  for (let i = 0; i < n * n; i++) {
+    const k = d[i * 4] + ',' + d[i * 4 + 1] + ',' + d[i * 4 + 2];
+    inks[k] = (inks[k] || 0) + 1;
+  }
+  return {n: n, inks: inks, on: rgb(css('--lat-on')), off: rgb(css('--lat-off')),
+          onName: css('--lat-on'), offName: css('--lat-off'),
+          // the five cells of the glider the Gliders scene puts at MARGIN, MARGIN
+          live: [[5, 4], [6, 5], [4, 6], [5, 6], [6, 6]].map(p => at(p[0], p[1])),
+          dead: [[36, 36], [0, 0], [71, 71], [40, 8]].map(p => at(p[0], p[1]))};
+}"""
+
 # The plate itself, sampled every painted frame: the board read off the picture, the
 # census run over that same board, and the two lines of the caption measured. The census
 # is run on the picture rather than reached for inside the plate, so what is checked is
@@ -452,6 +482,41 @@ with sync_playwright() as pw:
              '  population %d at the first frame, %d at the last, low water %d, of %d'
              % (pops[0], pops[-1], min(pops), n * n))
 
+    # ---- the board is painted in the two inks the palette names -------------------
+    # Reduced motion opens the plate paused, so the Gliders scene sits at generation 0
+    # with exactly ten live cells and the rest of the board dead: two inks, and which is
+    # which is not a guess.
+    p = br.new_page(viewport={'width': 1400, 'height': 900}, device_scale_factor=1,
+                    reduced_motion='reduce')
+    p.goto(URL + 'about.html')
+    p.wait_for_function('TB.running() === null && TB.mounted().indexOf("about") >= 0')
+    p.click('.viz[data-plate=about] button[data-scene=gliders]')
+    p.wait_for_timeout(200)
+    m = p.evaluate(INK)
+    cells = m['n'] * m['n']
+    inks = m['inks']
+    note('the board is painted in exactly the two inks the palette names',
+         sorted(inks) == sorted([m['on'], m['off']])
+         and inks.get(m['on']) == cells - 10 and inks.get(m['off']) == 10,
+         '  dead ground %s rgb(%s) on %s cells, live cell %s rgb(%s) on %s of %d\n'
+         '  painted: %s' % (m['onName'], m['on'], inks.get(m['on']), m['offName'],
+                            m['off'], inks.get(m['off']), cells,
+                            ', '.join('rgb(%s) x %d' % (k, v) for k, v in inks.items())))
+    note('and a live cell is the pale ink and dead ground the blue, not the other way '
+         'round', all(v == m['off'] for v in m['live'])
+         and all(v == m['on'] for v in m['dead']),
+         '  the glider\'s five cells read %s, four cells of empty board read %s'
+         % (sorted(set(m['live'])), sorted(set(m['dead']))))
+    # and running, on the soup, where every cell is one or the other and nothing else
+    p.click('.viz[data-plate=about] button[data-scene=soup]')
+    p.click('.viz[data-plate=about] button.run')
+    p.wait_for_timeout(600)
+    m2 = p.evaluate(INK)
+    note('and it stays the two inks with the model running', sorted(m2['inks'])
+         == sorted([m2['on'], m2['off']]),
+         '  %s' % ', '.join('rgb(%s) x %d' % (k, v) for k, v in m2['inks'].items()))
+    p.close()
+
     # ---- the caption at the widths, and the narrowest is the one that matters -----
     # 340 CSS px at 380, which is the least the note is ever given. Everything the
     # caption can say has to be two lines there as well as at 1400.
@@ -482,6 +547,30 @@ with sync_playwright() as pw:
     note('the gun scene says it is alive before %d and gone after' % GUN_DEAD,
          gen_before < GUN_DEAD and 'gone' not in before and str(GUN_DEAD) in after,
          '  at generation %d: %r\n  past %d: %r' % (gen_before, before, GUN_DEAD, after))
+    p.close()
+
+    # ---- the random field keeps its own first fifty generations -------------------
+    # A soup throws off a glider almost at once, so an ungated glider line would take a
+    # third of the window the field's line is a claim about. Sampled every painted frame
+    # from the load: below fifty the field's line, and the glider line only above it.
+    p = br.new_page(viewport={'width': 1400, 'height': 900})
+    p.goto(URL + 'about.html')
+    p.wait_for_function('TB.running() === "about"')
+    seen = p.evaluate("""() => new Promise(res => {
+      const viz = document.querySelector('.viz[data-plate=about]');
+      const st = viz.querySelector('.note .state'), out = viz.querySelector('output');
+      const rows = [];
+      (function loop(){
+        rows.push([parseInt(out.textContent, 10), st.textContent]);
+        if (rows.length < 260) requestAnimationFrame(loop); else res(rows);
+      })();
+    })""")
+    early = [r for r in seen if r[0] < 50 and 'real pattern' in r[1]]
+    late = [r for r in seen if r[0] >= 50 and 'real pattern' in r[1]]
+    under = [r for r in seen if r[0] < 50]
+    note('the random field keeps its own first fifty generations', not early,
+         '  %d frames under generation 50, none of them the glider line; %d frames '
+         'above it say it' % (len(under), len(late)))
     p.close()
 
     # ---- a drag draws ------------------------------------------------------------
