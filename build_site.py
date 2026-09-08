@@ -183,7 +183,7 @@ SHELL = """<!DOCTYPE html>
 <title>__TITLE__</title>
 <meta name="description" content="__DESC__">
 <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-__NARROW__<style>
+__NARROW____HEAD__<style>
 __CSS__
 </style>
 </head>
@@ -411,13 +411,14 @@ PAT_JS = r"""
 """
 
 
-def render(path, title, main, js='', desc=DESC, narrow=False):
+def render(path, title, main, js='', desc=DESC, narrow=False, head=''):
     # The counter goes on every page, because the creature does: it lives in the label
     # and the label is on all six. Assembled here rather than at each call site, so
     # there is one place it is added and one place it can be taken away.
     script = "<script>" + js + PAT_JS.replace('__ENDPOINT__', PAT_ENDPOINT) + "</script>"
     html = (SHELL.replace('__TITLE__', title).replace('__DESC__', desc)
                  .replace('__NARROW__', NARROW if narrow else '')
+                 .replace('__HEAD__', head)
                  .replace('__CSS__', CSS)
                  .replace('__MAIN__', main).replace('__FOOTER__', FOOTER)
                  .replace('__FOOTER_LLMS__', FOOTER_LLMS)
@@ -501,6 +502,46 @@ requestAnimationFrame(function(){
 # What it buys is what a page load cannot: the label is never destroyed and rebuilt, so
 # it cannot flash; and the plate is never destroyed either, so a page you come back to
 # carries on from where you left it.
+#
+# `app` on the root is what hands the stylesheet's transition rules to the router: the
+# root, the label and the grain lose their names, so a swap captures nothing but the
+# page body. That class used to go on as the router parsed. It goes on here instead, in
+# the head, on `pagereveal`, because of what a reader coming in from one of the
+# standalone pages saw (#59): "the grain sometimes flashes white".
+#
+# A standalone page is captured with `root`, `label` and `grain` named. This document
+# arrived with `app` already on — measured, `pagereveal` fires with readyState complete
+# and the class set — so its new state was captured with nothing named, the three old
+# groups had nothing to cross to and exit-animated over the live page, and the grain's
+# group faded out with its overlay blend over a root snapshot fading to nothing. Read off
+# every compositor frame on this machine's GPU: a grey veil over the whole page, up to
+# +10 of 255 on the label and +7 on the ground, thirteen to fifteen frames, every time.
+#
+# `pagereveal` fires before the new state is captured, which is what it is for: a page
+# arriving under a transition takes `app` off so it is captured the way the standalone
+# pages are, and puts it back when the transition is finished, either way it finishes.
+# A page arriving with no transition puts it on at once, and so does a browser with no
+# `pagereveal` at all. It has to be registered before the first render, and the router
+# at the foot of the body is not certainly that on a slow connection, so it lives here.
+# `<link rel=expect blocking=render>` would order it too and was not used: first paint
+# must not wait on the parser. The two `issue-59-label-travels-*` branches measured this
+# same flash and read it as their own change; their router threw on load, so every click
+# there was a page load.
+ARRIVE_JS = """<script>
+(function(){
+  var r = document.documentElement;
+  function on(){ r.classList.add('app'); }
+  if (!('onpagereveal' in window)){ on(); return; }
+  addEventListener('pagereveal', function(e){
+    var vt = e.viewTransition;
+    if (!vt){ on(); return; }
+    r.classList.remove('app');
+    vt.finished.then(on, on);
+  });
+})();
+</script>
+"""
+
 ROUTER_JS = r"""
 (function(){
   var root = document.documentElement;
@@ -513,7 +554,10 @@ ROUTER_JS = r"""
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
   var cur = '__START__', at = {}, tok = 0;
 
-  root.className = root.className ? root.className + ' app' : 'app';
+  // `app` is not put on the root here. The head does that on `pagereveal`, so that a
+  // document arriving under a cross-document transition keeps the standalone names
+  // until it is over (#59). swap() puts it on again before every swap, which is
+  // idempotent, and is what a click inside those 180ms gets.
   try { history.replaceState({p:cur}, '', location.href); } catch (e) {}
 
   function sec(key){ return document.querySelector('[data-page="' + key + '"]'); }
@@ -571,6 +615,7 @@ ROUTER_JS = r"""
 
   function swap(next, push){
     if (next === cur || !PAGE[next]) return;
+    root.classList.add('app');          // the router owns this swap, whatever came before
     // The floor is about to move (#41). The creature is told here, where the navigation
     // is handled rather than on a clock of its own, and told again below once the pages
     // have swapped; it measures the travel between the two and decides from that whether
@@ -2733,7 +2778,8 @@ if __name__ == '__main__':
               + ROUTER_JS.replace('__PAGES__', page_map()).replace('__START__', 'home')
               + BOOT_JS.replace('__KEY__', 'home') + creature)
     for path in ('index.html', 'home.html'):
-        written.append((path, render(path, META['home'][0], app, app_js, narrow=True)))
+        written.append((path, render(path, META['home'][0], app, app_js, narrow=True,
+                                     head=ARRIVE_JS)))
 
     # ---- and the standalone documents, unchanged in what they are: one page each,
     # complete, and the truth for crawlers, language models and anyone with JS off.

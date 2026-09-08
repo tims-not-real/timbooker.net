@@ -425,8 +425,12 @@ footer p.llms{white-space:nowrap; max-width:none}
    The rules above stay, because every page is still written as a complete standalone
    document and a reader who arrives on one navigates out of it the cross-document way.
    These take over only where the router is running, which is where `app` is set on the
-   root element by script. With no JavaScript the class is never set and nothing below
-   applies.
+   root element by script: from the first render, except where the document is arriving
+   under a cross-document transition from one of those standalone pages, when it is set
+   at that transition's end (#59). The old page was captured with the root, the label and
+   the grain named, and this one has to be captured the same way or the three groups have
+   nothing to cross to and the grain fades out as a veil over the whole page. With no
+   JavaScript the class is never set and nothing below applies.
 
    The root loses its name, so the document is not captured at all. Nothing is
    snapshotted unless it is named, and the label is not named: it is not lifted out of
