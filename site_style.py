@@ -575,11 +575,12 @@ html.app::view-transition-group(critter),html.app::view-transition-group(critsay
                                                                  there is 2.43
 
    The step is the fixed grain on `body::after` no longer reaching the label: it stays in
-   the root and the label has been lifted out of it. That is the same mechanism Tim
-   reported from the live site on the cross-document path — "goes dim and then bright
-   again" — where it measured 9 to 10. It is less than half of that here because the
-   label's own two grain layers are captured with it and only the page's layer is lost.
-   The frame-to-frame number is the squeeze resampling those two layers.
+   the root and the label has been lifted out of it. That is the mechanism design-goals.md
+   records under "The plate stopped flashing 2026-09-05", where the same lift measured a
+   drop of 9 to 10 of 255 on the cross-document path. It is less than half of that here
+   because the label's own two grain layers are captured with it and only the page's layer
+   is lost. The frame-to-frame number is the squeeze resampling those two layers, and it
+   is a flattening of the mottle as well as a level step.
 
    The one fix for the step is to name `body::after` so it is lifted too, which is what
    fixed it cross-document. It cannot work here: with the root uncaptured, the grain's
