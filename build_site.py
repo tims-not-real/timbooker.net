@@ -382,9 +382,10 @@ PAT_JS = r"""
   // repeated callbacks on an observer that is no longer there, and the router never
   // destroys the label, so a route change has nothing to re-observe either.
   // Two conditions now, not one, and they are genuinely independent. The creature has to
-  // be on screen -- it is display:none at two widths, and the browser is asked rather than
-  // this script knowing which (#39) -- and it has to have said something, which it does
-  // two seconds after the page opens. Whichever lands second posts the show.
+  // be on screen -- she shows at every width since #49, but she is still down in the
+  // label and the browser is asked rather than this script guessing (#39) -- and it has
+  // to have said something, which it does two seconds after the page opens. Whichever
+  // lands second posts the show.
   //
   // A show is the moment a line was in front of somebody. Posting one for a creature that
   // is still silent would count the visitors who leave inside the opening pause, and they
@@ -951,8 +952,8 @@ CREATURE_JS = r"""
   // clicks, and they are the whole of the interface: #28 reads them off the canvas when
   // the canvas comes on screen, so they are written in the same tick as the text and are
   // on it before its own script runs. Whether that ever happens is the canvas's own
-  // affair — it is display:none at two widths and the counter asks the browser, not this
-  // script, so nothing here has to know or say which widths those are (#39).
+  // affair — the counter asks the browser whether the canvas is on screen rather than
+  // working it out from the width, so nothing here has to know the layout at all (#39).
   //
   // data-gen is on the canvas from the build. The other two are set here, once, and are
   // never cleared (#35); there is simply nothing to replace them with now. The bubble
