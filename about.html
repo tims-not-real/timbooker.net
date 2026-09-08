@@ -10,6 +10,7 @@
 <title>About &mdash; Tim Booker</title>
 <meta name="description" content="Tim Booker is a complex systems scientist who studies cultural evolution online, where much of the selection now runs through ranking functions, and what those ought to select for.">
 <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/archivo-narrow-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 
 @font-face{
@@ -58,8 +59,9 @@ a{color:inherit}
 .link:hover{border-bottom-color:var(--accent)}
 .wrap{max-width:72rem; margin:0 auto; padding:2rem 2rem 6rem}
 .hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
-/* no model on this page yet: one column, label full width. Holding the 23rem open and
-   empty reads as a missing thing, and a big empty field is a failure, not a minimum. */
+/* Two columns on every page, whether or not the page has a model in the right one. The
+   alternative was letting a page without one run the label full width, and that moves the
+   label the day a plate arrives; the floor below is the other half of the same decision. */
 /* One width everywhere, and never shorter than 29.25rem, which is what Research needs.
    A floor rather than a fixed height: the hero is align-items:stretch, so the label
    already wants to fill its row, and where the plate column runs taller — home, which
@@ -213,8 +215,9 @@ a{color:inherit}
   display:block; width:100%; height:auto; image-rendering:pixelated;
   border:1px solid var(--rule); background:var(--plate);
 }
-/* The chemistry dish takes a click, and this is the whole of how it says so. */
-.viz[data-plate=freelancing] canvas{cursor:crosshair}
+/* The chemistry dish takes a click, and so does the board on About. This is the whole of
+   how either of them says so. */
+.viz[data-plate=freelancing] canvas, .viz[data-plate=about] canvas{cursor:crosshair}
 .viz .row{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem}
 .viz .row figure{margin:0}
 .viz .row figcaption{
@@ -258,6 +261,55 @@ a{color:inherit}
 /* at Tc the cap goes white, so the instrument agrees with the caption */
 .crit-on .ctrl input[type=range]::-webkit-slider-thumb{background:var(--fg)}
 .crit-on .ctrl input[type=range]::-moz-range-thumb{background:var(--fg)}
+/* The board on About picks a scenario and stops, which a fader cannot say, so this is
+   the first button on the site. It is drawn out of what is already here rather than out
+   of a widget library: the type is the .ctrl label's, a size down and letterspaced up to
+   the figcaption's, and the 2px inset shadow marking the loaded scenario is the same
+   mark the nav puts under the page you are on, because it is saying the same thing.
+   No border, no fill, no radius and no hover box — a box drawn round the fader would
+   have been the wrong instrument, and it is the wrong instrument here too. Pause and
+   Resume carry no mark: the word is the state, and a control that says what it will do
+   does not also need to say what it has done.
+   It stands 1.25rem, which is the fader's own height, and that is not a detail. The
+   plate column is what sets the label's height, and the label is one size on every page
+   but home; a control row a few pixels taller than the other three plates' would have
+   made About the one page whose label is its own height, and given the router a seven
+   pixel travel to animate on the way in and out of it. Same row height, nothing moves. */
+.ctrl button{
+  font:inherit; font-size:.625rem; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dim); background:none; border:0; padding:0;
+  height:1.25rem; line-height:1.25rem;
+  cursor:pointer; transition:color .2s ease;
+}
+/* What you press is bigger than what is painted, and it has to be: the painted words are
+   52.5, 33.4 and 39.6 wide by 20 tall, and 33 by 20 is not a target on a phone. The row
+   height is not negotiable — it is what keeps About's label at 468.36 and the router with
+   nothing to animate — so the pressable box is a transparent child, absolutely positioned
+   and therefore invisible to the layout, reaching out past the painted word to 44 in both
+   directions. Zero-width space would have been the other way, but padding cancelled by a
+   negative margin leaves the box's own size fighting the flex line, and this does not.
+
+   It reaches into open ground and never into the gap a button shares with its neighbour,
+   which is why Soup grows rightwards and Pause leftwards: between them sits the space
+   margin-left:auto opens, 121px at the narrowest. So no two boxes come near each other —
+   11.19px between Gliders and Soup, 11.19 between Pause and the Gen label, and about 100
+   between Soup and Pause — and none of them has to be squeezed to keep them apart.
+
+   Vertically it is 11 up and 13 down rather than 12 and 12. There is 13.18px of clear
+   above the button and 10 below it, so 44 will not fit between the canvas and the note
+   whatever it does; the asymmetry spends the shortfall downwards, over the top 3px of the
+   caption, which is text nobody clicks, and leaves 2.18px of the board unclaimed above.
+   The board is the thing on this plate you are meant to be able to hit. */
+.ctrl button{position:relative}
+.ctrl button::before{content:""; position:absolute; top:-11px; right:0; bottom:-13px; left:0}
+.ctrl button[data-scene=soup]::before{right:-1rem}
+.ctrl .run::before{left:-1rem}
+.ctrl button:hover{color:var(--fg)}
+.ctrl button[aria-pressed=true]{color:var(--fg); box-shadow:inset 0 -2px 0 currentColor}
+.ctrl button:focus-visible{outline:1px solid var(--accent); outline-offset:3px}
+/* the scenarios are a pair at the left; the action goes to the right-hand end, against
+   the readout, which is where the fader's own handle finishes on the other three */
+.ctrl .run{margin-left:auto}
 .ctrl output{
   font-family:'Archivo Narrow',sans-serif; font-size:.8125rem; letter-spacing:.02em;
   color:var(--dim); min-width:2.4rem; text-align:right; transition:color .3s ease;
@@ -470,6 +522,17 @@ html.app::view-transition-group(page){animation:none}
       <div id="critsay" aria-hidden="true"></div>
     </div>
     <div class="plate">
+      <div class="viz" data-plate="about">
+        <canvas aria-label="Conway's Game of Life on a board that wraps"></canvas>
+        <div class="ctrl">
+          <button type="button" data-scene="gliders" aria-pressed="false">Gliders</button>
+          <button type="button" data-scene="soup" aria-pressed="true">Soup</button>
+          <button type="button" class="run">Pause</button>
+          <label for="gen">Gen</label>
+          <output id="gen" aria-live="off">0</output>
+        </div>
+        <p class="note"></p>
+      </div>
     </div>
   </div>
   <section class="body" data-page="about">
@@ -577,6 +640,293 @@ html.app::view-transition-group(page){animation:none}
 })();
 </script>
 <script>
+var TB = (function(){
+  var defs = {}, made = {}, cur = null, raf = 0, ticks = {};
+  function stop(){
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0; cur = null;
+  }
+  function mount(name){
+    if (made[name] || !defs[name]) return;
+    var el = document.querySelector('.viz[data-plate="' + name + '"]');
+    if (el) made[name] = defs[name](el);
+  }
+  function run(name){
+    stop();
+    mount(name);
+    var p = made[name];
+    if (!p) return;                    // this page has no plate, so nothing runs
+    if (p.enter) p.enter();            // a plate that begins again says so, here
+    cur = name;
+    raf = requestAnimationFrame(function loop(){
+      ticks[name] = (ticks[name] || 0) + 1;
+      if (p.tick() === false){ raf = 0; cur = null; return; }   // settled, and stops
+      raf = requestAnimationFrame(loop);
+    });
+  }
+  return {
+    define: function(name, fn){ defs[name] = fn; },
+    mount: mount, run: run, stop: stop,
+    // Four lines that make the claim checkable rather than asserted: which model is
+    // stepping, which have been built, and how many frames each of them has had.
+    ticks: ticks,
+    running: function(){ return cur; },
+    mounted: function(){ var k = []; for (var n in made) k.push(n); return k; }
+  };
+})();
+
+// ---- Conway's Game of Life --------------------------------------------------
+// B3/S23, and there is nothing else in it. A dead cell with exactly three live
+// neighbours is born; a live cell with two or three of them stays; every other cell is
+// dead next generation. The gliders, the ash, the several hundred generations a
+// two-glider collision can take to burn out: all of it is that one line applied to
+// every cell of the board at once, over and over, with nothing aimed and nothing
+// steered.
+//
+// The board wraps, like the lattice on the front page and the dish on Freelancing. An
+// edge that kills whatever reaches it would be a second rule, and the one rule is the
+// whole reason this is worth putting on a page.
+
+// The rule and the board it runs on are built out here rather than inside the plate, so
+// that the rule can be checked rather than asserted: scripts/life_check.py calls this
+// with a board of its own, puts an R-pentomino on it, and reads the population back at
+// generation 1103. A model nobody can run apart from the page it decorates is decoration.
+function TBlife(n){
+  var L = n*n, a = new Uint8Array(L), b = new Uint8Array(L), gen = 0;
+  // The two boards before this one. Ash is still lifes and blinkers, which is to say a
+  // board that repeats itself with period 1 or 2, and holding two frames back is the
+  // cheapest way there is to notice that it has stopped going anywhere.
+  var p1 = new Uint8Array(L), p2 = new Uint8Array(L);
+  function same(u, v){ var i; for (i=0;i<L;i++) if (u[i] !== v[i]) return false; return true; }
+  function step(){
+    p2.set(p1); p1.set(a);
+    for (var y=0;y<n;y++){
+      var yu = ((y-1+n)%n)*n, yd = ((y+1)%n)*n, y0 = y*n;
+      for (var x=0;x<n;x++){
+        var xl = (x-1+n)%n, xr = (x+1)%n, i = y0+x;
+        var s = a[yu+xl] + a[yu+x] + a[yu+xr]
+              + a[y0+xl]           + a[y0+xr]
+              + a[yd+xl] + a[yd+x] + a[yd+xr];
+        b[i] = (s === 3 || (s === 2 && a[i])) ? 1 : 0;
+      }
+    }
+    var t = a; a = b; b = t; gen++;
+  }
+  return {
+    n: n,
+    step: step,
+    gen: function(){ return gen; },
+    // The two boards are swapped on every step, so this hands back whichever one is
+    // current and a caller that holds on to it is holding the wrong one next generation.
+    cells: function(){ return a; },
+    pop: function(){ var s=0, i; for (i=0;i<L;i++) s += a[i]; return s; },
+    put: function(x, y, v){ a[y*n+x] = v; },
+    toggle: function(x, y){ a[y*n+x] ^= 1; },
+    // 2 is not a state any cell can be in, so a freshly laid out board cannot read as a
+    // repeat of whatever was on it before.
+    clear: function(){ a.fill(0); b.fill(0); p1.fill(2); p2.fill(2); gen = 0; },
+    repeats: function(){ return same(a, p1) || same(a, p2); }
+  };
+}
+
+TB.define('about', function(root){
+var N = 72;                        // 366 CSS px of picture at the plate's own width, so
+                                   // a cell is 5.08 of them square: big enough that a
+                                   // glider reads as a glider and that a cell can be
+                                   // aimed at with a mouse or with a finger, which is
+                                   // what this plate is asking of the reader
+var board = TBlife(N);
+
+var cv = root.querySelector('canvas');
+cv.width = N; cv.height = N;
+var ctx = cv.getContext('2d'), img = ctx.createImageData(N, N);
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// Dead ground takes the field colour and a live cell is knocked out of it: the same two
+// inks, the same way round, as the lattice on the front page and the dish on Freelancing.
+var DEAD = hex(css('--lat-on')), LIVE = hex(css('--lat-off'));
+
+function paint(){
+  var c = board.cells(), d = img.data, i, k;
+  for (i=0;i<N*N;i++){
+    k = c[i] ? LIVE : DEAD;
+    d[i*4] = k[0]; d[i*4+1] = k[1]; d[i*4+2] = k[2]; d[i*4+3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// A glider: five cells, and the smallest thing in Life that moves. It walks one cell
+// diagonally every four generations, and sx and sy pick which of the four diagonals.
+var GLIDER = [[1,0],[2,1],[0,2],[1,2],[2,2]];
+function glider(cx, cy, sx, sy){
+  for (var i=0;i<5;i++)
+    board.put((cx + sx*GLIDER[i][0] + N) % N, (cy + sy*GLIDER[i][1] + N) % N, 1);
+}
+
+// Two gliders, one out of each of the left-hand corners, crossing in the middle. An
+// ordinary collision, and picked for being one: not a celebrated construction, just two
+// of the five-cell things a random field throws off by itself, put on a course to meet.
+// Measured on this board: they touch at generation 117, the wreck reaches 201 cells at
+// generation 240, and by generation 300 what is left is 55 cells that only blink. Four
+// columns of offset is the whole of the difference between that and the same two gliders
+// peaking at 40 and leaving 18, which is why the offset is a named number here rather
+// than a nudge in the coordinates.
+var MARGIN = 4, OFFSET = 4, HIT = 117;
+function gliders(){
+  board.clear();
+  glider(MARGIN, MARGIN, 1, 1);
+  glider(MARGIN + OFFSET, N - 1 - MARGIN, 1, -1);
+}
+
+// Half the cells, at random, and where that goes is the reason the second button is
+// here: three quarters of it dies in the first fifty generations and what is left is
+// ash. Measured over 30 soups on this board — a quarter of the cells still alive at
+// generation 50, the median soup reaching ash at generation 1235, and 151 cells left,
+// 2.9% of the board. Counted over 20 settled soups, what those cells are is 11.8
+// blinkers, 10.1 blocks, 5.2 beehives, 2.0 boats, 1.9 loaves and the odd pond, tub and
+// ship apiece, which is what the caption says and is why it says those four words. And
+// 7 gliders in flight across 20 soups at generation 400, which is what "now and then"
+// is doing in it.
+function soup(){
+  board.clear();
+  for (var y=0;y<N;y++) for (var x=0;x<N;x++)
+    if (Math.random() < 0.5) board.put(x, y, 1);
+}
+
+// A board that repeats is a board that has finished, and it is held for WAIT and then
+// laid out again. This is the other way out: a glider walking away across a board that
+// wraps meets nothing and comes back round for ever, so a board with one loose glider on
+// it never repeats. The cap sits above the longest of the 30 soups, which took 4377, so
+// a soup always reaches ash on its own account and the cap only ever catches a board
+// with a glider loose on it.
+var CAP = 4800;
+
+var SCENES = {gliders: gliders, soup: soup};
+
+var picks = root.querySelectorAll('button[data-scene]'),
+    runner = root.querySelector('button.run'),
+    out = root.querySelector('output'),
+    cap = root.querySelector('.note');
+
+// Reduced motion is the pause, not a second path through the plate: the board is laid
+// out and painted and then sits there, with the button reading Resume, because a reader
+// who asked for no motion has not asked for none ever.
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var paused = reduce, shown = false;
+
+var WAIT = 2000;                   // ash held this long before the scenario runs again
+var quietAt = 0, touchedAt = -1e9, scene = 'soup';
+
+// What is on the board, in the register the plates on Research and Freelancing use: the
+// state, then the thing about that state worth saying. Their second halves name a place
+// the model turns up outdoors, and this one cannot, because Life is not a model of
+// anything outdoors and saying otherwise to keep the format would be the worse fault.
+// The collision line is the only claim the plate makes: 55 cells of ash are a
+// consequence of ten, and there is no way at them except to run the rule and watch.
+function say(){
+  var t = performance.now(), text;
+  if (t - touchedAt < 1200)
+    text = 'Changed by hand';
+  else if (quietAt)
+    text = 'Ash · blocks, beehives, blinkers, and whatever got away';
+  else if (scene === 'gliders' && board.gen() < HIT)
+    text = 'Two gliders, on a course to cross';
+  else if (scene === 'gliders')
+    text = 'The collision · what it leaves is not readable off what went in';
+  else
+    text = 'A random field · three quarters of it is gone by generation fifty';
+  if (cap.textContent !== text) cap.textContent = text;
+  var end = !!quietAt;
+  if (cap.classList.contains('crit') !== end) cap.classList.toggle('crit', end);
+}
+
+function count(){ out.textContent = board.gen(); }
+
+function load(name){
+  scene = name;
+  SCENES[name]();
+  quietAt = 0; touchedAt = -1e9;
+  for (var i=0;i<picks.length;i++)
+    picks[i].setAttribute('aria-pressed',
+                          picks[i].getAttribute('data-scene') === name ? 'true' : 'false');
+  count(); say(); paint();
+}
+
+for (var i=0;i<picks.length;i++) picks[i].addEventListener('click', function(){
+  load(this.getAttribute('data-scene'));
+});
+
+// Pause is the loop stopping, not the loop spinning on a flag: tick() returns false and
+// the runtime takes it down, which is the same settle-and-stop every plate here already
+// has. Resume asks the runtime for it back. Everything the reader can do while it is
+// stopped paints its own frame.
+runner.addEventListener('click', function(){
+  paused = !paused;
+  runner.textContent = paused ? 'Resume' : 'Pause';
+  if (!paused) TB.run('about');
+});
+if (paused) runner.textContent = 'Resume';
+
+// A click toggles the cell under it, running or paused. The picture is N cells across a
+// box the page sizes in CSS pixels, and the box carries its 1px border inside its own
+// width, so the border comes off the rect before the scale — otherwise the last pixel of
+// the picture resolves to cell N, which is not a cell. It is the arithmetic the dish on
+// Freelancing already uses, and pointer events, so a finger is a click.
+cv.addEventListener('pointerdown', function(e){
+  var r = cv.getBoundingClientRect(), s = getComputedStyle(cv),
+      bl = parseFloat(s.borderLeftWidth), bt = parseFloat(s.borderTopWidth),
+      w = r.width - bl - parseFloat(s.borderRightWidth),
+      h = r.height - bt - parseFloat(s.borderBottomWidth),
+      x = Math.floor((e.clientX - r.left - bl) * N / w),
+      y = Math.floor((e.clientY - r.top - bt) * N / h);
+  x = x < 0 ? 0 : x > N-1 ? N-1 : x;
+  y = y < 0 ? 0 : y > N-1 ? N-1 : y;
+  board.toggle(x, y);
+  // The board is the reader's from here. The ash clock is cleared for the same reason
+  // the dish on Freelancing clears its death clock on a click: what happens next is
+  // theirs, and it should not be swept away by a countdown they never saw.
+  quietAt = 0; touchedAt = performance.now();
+  say();
+  paint();
+});
+
+// It opens on the soup, every time, and that is not the coin flip the other two plates
+// open on. The collision is the sparser picture by a long way — ten cells for its first
+// 117 generations and 55 for its last — and a plate that opened on a nearly empty field
+// half the time would be a big empty field waiting to be filled, which this site has
+// ruled against more than once. The soup is never the same field twice, so the plate
+// still opens somewhere else on every visit. The collision is one press away and the
+// press is what makes it worth watching.
+load('soup');
+cv.style.opacity = 0;
+
+return { tick: function(){
+  if (!shown){ shown = true; paint(); cv.style.opacity = 1; return !paused; }
+  if (paused) return false;
+  board.step();
+  paint();
+  count();
+  var t = performance.now();
+  if (board.repeats()){ if (!quietAt) quietAt = t; }
+  else quietAt = 0;
+  say();
+  // Ash is the end of the run, not a fault, so it is held long enough to be looked at
+  // and then the same scenario is laid out again — the same one, so that the picture and
+  // the button that is lit go on agreeing.
+  if ((quietAt && t - quietAt >= WAIT) || board.gen() >= CAP) load(scene);
+  return true;
+} };
+});
+
+TB.mount('about');
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){ TB.run('about'); });
+});
+
 // ---- a creature in the corner of the label ----------------------------------
 // It lives inside the label, which is one element per document and, since the router
 // landed, is never destroyed by a navigation. So there is one creature on the whole
