@@ -107,13 +107,13 @@ a{color:inherit}
 .credits b{font-weight:700}
 /* a personnel list breaks between credits, never inside one */
 .credits i{font-style:normal; white-space:nowrap}
-/* Except where a column that narrow cannot hold one. The longest credit paints 237.2px,
-   so under that the nowrap does not keep the credit whole, it just paints it out of the
-   block and across the creature standing beside it. Breaking inside the credit is the
-   lesser fault, and the smaller creature buys the column back everywhere but the phone:
-   it fires under a 413px viewport and nowhere else, 380 alone of the widths measured,
-   because 292 of content cannot hold a 237.2 credit and an 84 creature at once whatever
-   it does with the 55 left over. */
+/* Except where a column that narrow cannot hold one. The longest credit paints 233.8px
+   and the full stop that follows it takes the line to 237.2, so under that the nowrap does
+   not keep the credit whole, it just paints it out of the block and across the creature
+   standing beside it. Breaking inside the credit is the lesser fault, and the smaller
+   creature buys the column back everywhere but the phone: it fires under a 413px viewport
+   and nowhere else, 380 alone of the widths measured, because 292 of content cannot hold
+   a 237.2 line and an 84 creature at once whatever it does with the 55 left over. */
 @container (max-width:237px){ .credits i{white-space:normal} }
 .label nav{
   display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center;
