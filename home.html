@@ -332,6 +332,13 @@ a{color:inherit}
   font-size:.8125rem; line-height:1.5; color:var(--dim);
   min-height:4.4em; transition:color .3s ease;
 }
+/* About's caption is two lines: the sentence, and under it the census of what is on the
+   board. They are separate lines rather than one flowing clause because the second one
+   is a list of numbers that changes every frame, and a list that reflowed the sentence
+   above it every time a blinker died would be unreadable. 4.4em is 57.19px and a line is
+   19.5, so two lines fit and three do not — which is why both are written to a length.
+   An empty span is no line at all, so a board with nothing on it shows one. */
+.viz .note span{display:block}
 .viz .note.crit{color:var(--fg); font-weight:600}
 
 /* ---- page body ---- */
@@ -578,12 +585,13 @@ html.app .body.leaving{
         <canvas aria-label="Conway's Game of Life on a board that wraps"></canvas>
         <div class="ctrl">
           <button type="button" data-scene="gliders" aria-pressed="false">Gliders</button>
+          <button type="button" data-scene="gun" aria-pressed="false">Gosper</button>
           <button type="button" data-scene="soup" aria-pressed="true">Soup</button>
           <button type="button" class="run">Pause</button>
           <label for="gen">Gen</label>
           <output id="gen" aria-live="off">0</output>
         </div>
-        <p class="note"></p>
+        <p class="note"><span class="state"></span><span class="tally"></span></p>
       </div>
     </div>
   </div>
@@ -1466,6 +1474,129 @@ function TBlife(n){
   };
 }
 
+// ---- what is on the board ---------------------------------------------------------
+// The rule has no word for a glider. It has no word for anything: B3/S23 talks about a
+// cell and its eight neighbours and stops. What a reader watching the board sees is not
+// cells, it is objects — a block that sits, a blinker that goes on and off, a glider
+// that walks — and naming them is a second description of the same 5,184 numbers, in a
+// vocabulary the first description does not contain. It is also a far shorter one, and
+// it still predicts: told where a glider is, you know where five cells will be in four
+// generations without running anything. Dennett calls a pattern real when that holds,
+// and Life is the example he uses.
+//
+// So the plate counts them, and says the count. Connected components of the board,
+// 8-connected and across the wrap, each matched against a catalogue by shape alone, up
+// to translation and the eight symmetries of the square. Whatever matches nothing is
+// counted rather than dropped: most of a running board is not catalogue objects at all,
+// and a census that quietly binned the remainder would be reporting a tidier board than
+// the one on the screen.
+
+// The catalogue, keyed by shape. Every entry goes in in all eight orientations, so a
+// boat facing the other way is still a boat, and the key is each cell's offset from the
+// component's own top-left corner, so translation falls out and nothing has to be lined
+// up first.
+var TBcat = (function(){
+  var cat = {};
+  function key(cs){
+    var i, mx = cs[0][0], my = cs[0][1], out = [];
+    for (i = 1; i < cs.length; i++){
+      if (cs[i][0] < mx) mx = cs[i][0];
+      if (cs[i][1] < my) my = cs[i][1];
+    }
+    // eight cells at most, so the box is at most eight across and 16 is room to spare
+    for (i = 0; i < cs.length; i++) out.push((cs[i][1] - my) * 16 + cs[i][0] - mx);
+    out.sort(function(p, q){ return p - q; });
+    return out.join(',');
+  }
+  function add(name, cs){
+    for (var k = 0; k < 8; k++){
+      var t = [], i, x, y, s;
+      for (i = 0; i < cs.length; i++){
+        x = cs[i][0]; y = cs[i][1];
+        if (k & 4){ s = x; x = y; y = s; }        // the diagonal
+        if (k & 1) x = -x;                        // and the two mirrors, which between
+        if (k & 2) y = -y;                        // them are the eight of the square
+        t.push([x, y]);
+      }
+      cat[key(t)] = name;
+    }
+  }
+  // What the 20 settled soups measured for the caption actually leave, and nothing else:
+  // this is a list of what turns up on this board, not a list of what Life contains.
+  add('block',   [[0,0],[1,0],[0,1],[1,1]]);
+  add('blinker', [[0,0],[1,0],[2,0]]);
+  add('beehive', [[1,0],[2,0],[0,1],[3,1],[1,2],[2,2]]);
+  add('loaf',    [[1,0],[2,0],[0,1],[3,1],[1,2],[3,2],[2,3]]);
+  add('boat',    [[0,0],[1,0],[0,1],[2,1],[1,2]]);
+  add('tub',     [[1,0],[0,1],[2,1],[1,2]]);
+  add('pond',    [[1,0],[2,0],[0,1],[3,1],[0,2],[3,2],[1,3],[2,3]]);
+  add('ship',    [[0,0],[1,0],[0,1],[2,1],[1,2],[2,2]]);
+  // The glider is the one that moves, so it is four shapes rather than one, and they are
+  // run out of the rule here rather than drawn by hand: whatever TBlife does to a glider
+  // is what the catalogue will be looking for.
+  var g = TBlife(16), G = [[1,0],[2,1],[0,2],[1,2],[2,2]], i, x, y, cs, c;
+  for (i = 0; i < 5; i++) g.put(G[i][0] + 6, G[i][1] + 6, 1);
+  for (i = 0; i < 4; i++){
+    c = g.cells(); cs = [];
+    for (y = 0; y < 16; y++) for (x = 0; x < 16; x++) if (c[y * 16 + x]) cs.push([x, y]);
+    add('glider', cs);
+    g.step();
+  }
+  return {cat: cat, key: key};
+})();
+
+// The census, built out beside the rule and for the same reason it was: scripts/
+// life_check.py puts a board of its own down — a glider, a block and a blinker well
+// clear of each other, and a block laid across the wrap seam — and reads this back, so
+// the count is checked rather than asserted. It is handed the cells and the size, so it
+// never has to hold on to a board that swaps under it.
+var TBcensus = (function(){
+  var n0 = 0, seen, ux, uy, st;
+  var buf = [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]];
+  return function(c, n){
+    if (n0 !== n){
+      seen = new Uint8Array(n * n); st = new Int32Array(n * n);
+      ux = new Int16Array(n * n); uy = new Int16Array(n * n); n0 = n;
+    }
+    seen.fill(0);
+    var counts = {}, comps = 0, lost = 0, lostCells = 0, namedCells = 0;
+    var i, top, size, k, kx, ky, dx, dy, nx, ny, m, name;
+    for (i = 0; i < n * n; i++){
+      if (!c[i] || seen[i]) continue;
+      top = 0; size = 0;
+      seen[i] = 1; ux[i] = 0; uy[i] = 0; st[top++] = i;
+      while (top){
+        k = st[--top]; kx = k % n; ky = (k / n) | 0;
+        // Only the first nine offsets are kept. The pond is the biggest thing in the
+        // catalogue at eight cells, so a ninth is already proof this is not one of them,
+        // and a component of two thousand cells costs no more to reject than one of ten.
+        if (size < 9){ buf[size][0] = ux[k]; buf[size][1] = uy[k]; }
+        size++;
+        for (dy = -1; dy <= 1; dy++) for (dx = -1; dx <= 1; dx++){
+          if (!dx && !dy) continue;
+          nx = kx + dx; nx = nx < 0 ? n - 1 : nx >= n ? 0 : nx;
+          ny = ky + dy; ny = ny < 0 ? n - 1 : ny >= n ? 0 : ny;
+          m = ny * n + nx;
+          if (c[m] && !seen[m]){
+            // The walk carries where a cell is relative to where the walk started, not
+            // where it is on the board, so a component lying across the seam keeps its
+            // shape: a block on the edge is a block.
+            seen[m] = 1; ux[m] = ux[k] + dx; uy[m] = uy[k] + dy; st[top++] = m;
+          }
+        }
+      }
+      comps++;
+      name = size <= 8 ? TBcat.cat[TBcat.key(buf.slice(0, size))] : null;
+      if (name){ counts[name] = (counts[name] || 0) + 1; namedCells += size; }
+      else { lost++; lostCells += size; }
+    }
+    // namedCells + lostCells is the population, always: every live cell is in exactly
+    // one component and every component is either named or counted as got away.
+    return {counts: counts, comps: comps, lost: lost,
+            lostCells: lostCells, namedCells: namedCells};
+  };
+})();
+
 TB.define('about', function(root){
 var N = 72;                        // 366 CSS px of picture at the plate's own width, so
                                    // a cell is 5.08 of them square: big enough that a
@@ -1519,15 +1650,48 @@ function gliders(){
   glider(MARGIN + OFFSET, N - 1 - MARGIN, 1, -1);
 }
 
+// Gosper's glider gun, 1970: thirty-six cells that put out a glider every thirty
+// generations and so grow without bound, which is what won Conway's fifty dollars and
+// the first step towards Life being able to compute anything at all.
+//
+// It cannot grow without bound here, and the plate says so rather than hiding it. This
+// board wraps, so the stream the gun fires goes round and comes back to where it was
+// fired from. Measured on this board, and the numbers are the caption's: the gun's own
+// 36 by 9 box stops matching what it held thirty generations earlier at generation 272,
+// its population stops climbing by exactly five a period at 273, and the wreck settles
+// at 531. Where it is put makes no difference at all — the board is a torus, so moving
+// the whole pattern moves the collision with it.
+var GUN = ['........................O...........',
+           '......................O.O...........',
+           '............OO......OO............OO',
+           '...........O...O....OO............OO',
+           'OO........O.....O...OO..............',
+           'OO........O...O.OO....O.O...........',
+           '..........O.....O.......O...........',
+           '...........O...O....................',
+           '............OO......................'];
+// ENDS and not DEAD: DEAD is already the dead cell's ink, twenty lines up and in this
+// same scope, and a second `var DEAD` here silently rebound it to a number. Every dead
+// cell then painted rgb(0,0,0) instead of --lat-on, because `(272)[0]` is undefined and
+// a Uint8ClampedArray stores undefined as zero. The whole board's field went black and
+// ten checks passed on it, none of them looking at the colour. There is one now.
+var GX = 18, GY = 31, ENDS = 272;   // centred, for the look of it, and nothing else
+function gun(){
+  board.clear();
+  for (var y = 0; y < GUN.length; y++)
+    for (var x = 0; x < GUN[y].length; x++)
+      if (GUN[y].charAt(x) === 'O') board.put((GX + x) % N, (GY + y) % N, 1);
+}
+
 // Half the cells, at random, and where that goes is the reason the second button is
 // here: three quarters of it dies in the first fifty generations and what is left is
 // ash. Measured over 30 soups on this board — a quarter of the cells still alive at
 // generation 50, the median soup reaching ash at generation 1235, and 151 cells left,
 // 2.9% of the board. Counted over 20 settled soups, what those cells are is 11.8
 // blinkers, 10.1 blocks, 5.2 beehives, 2.0 boats, 1.9 loaves and the odd pond, tub and
-// ship apiece, which is what the caption says and is why it says those four words. And
-// 7 gliders in flight across 20 soups at generation 400, which is what "now and then"
-// is doing in it.
+// ship apiece. That list is where the catalogue comes from, and the caption used to
+// recite the three commonest of it; the census counts them instead. And 7 gliders in
+// flight across 20 soups at generation 400, which is how often the glider line comes up.
 function soup(){
   board.clear();
   for (var y=0;y<N;y++) for (var x=0;x<N;x++)
@@ -1542,12 +1706,14 @@ function soup(){
 // with a glider loose on it.
 var CAP = 4800;
 
-var SCENES = {gliders: gliders, soup: soup};
+var SCENES = {gliders: gliders, gun: gun, soup: soup};
 
 var picks = root.querySelectorAll('button[data-scene]'),
     runner = root.querySelector('button.run'),
     out = root.querySelector('output'),
-    cap = root.querySelector('.note');
+    cap = root.querySelector('.note'),
+    line1 = cap.querySelector('.state'),
+    line2 = cap.querySelector('.tally');
 
 // Reduced motion is the pause, not a second path through the plate: the board is laid
 // out and painted and then sits there, with the button reading Resume, because a reader
@@ -1557,29 +1723,88 @@ var paused = reduce, shown = false;
 
 var WAIT = 2000;                   // ash held this long before the scenario runs again
 var quietAt = 0, touchedAt = -1e9, scene = 'soup';
+var objs = TBcensus(board.cells(), N);   // what the caption's second line is reading
 
 // What is on the board, in the register the plates on Research and Freelancing use: the
 // state, then the thing about that state worth saying. Their second halves name a place
 // the model turns up outdoors, and this one cannot, because Life is not a model of
 // anything outdoors and saying otherwise to keep the format would be the worse fault.
-// The collision line is the only claim the plate makes: 55 cells of ash are a
-// consequence of ten, and there is no way at them except to run the rule and watch.
+// The collision line is the only claim the plate makes that is not a count: 55 cells of
+// ash are a consequence of ten, and there is no way at them except to run the rule and
+// watch.
+//
+// Under it goes the census, which is that sentence's job done by counting instead. The
+// two are one line each and have to be: .note is 4.4em, the plate column is what sets
+// the label's height on About, and a third line is 58.5px against 57.19 — a pixel and a
+// third, which is enough to make About the one page whose label is its own height and
+// give the router something to animate. So the sentences are written to a line and the
+// census is written to a budget.
 function say(){
   var t = performance.now(), text;
   if (t - touchedAt < 1200)
     text = 'Changed by hand';
   else if (quietAt)
-    text = 'Ash · blocks, beehives, blinkers, and whatever got away';
+    text = 'Ash · what is left of it only repeats';
   else if (scene === 'gliders' && board.gen() < HIT)
     text = 'Two gliders, on a course to cross';
   else if (scene === 'gliders')
     text = 'The collision · what it leaves is not readable off what went in';
+  else if (scene === 'gun' && board.gen() < ENDS)
+    text = "Gosper's gun · five more cells every thirty generations";
+  else if (scene === 'gun')
+    text = 'The gun is gone · its own stream came round at ' + ENDS;
+  // The one state the census adds, and the only place the plate uses the term. It is
+  // kept off the two scenes whose own line is already about gliders, so that the
+  // collision and the gun go on saying the thing they were built to say.
+  //
+  // And it is kept off the field's own first fifty generations, which is the window the
+  // line below is a claim about and the only stretch where saying it is true. A soup
+  // throws off its first glider almost at once — measured over 30 soups, every one of
+  // them has one by generation 14 and the median has one by 3 — and 511 of the 1500
+  // generations under fifty carry one, so an ungated glider line would have taken a
+  // third of the frames the claim was written for. Above fifty the field has made its
+  // point and the glider is the thing worth saying.
+  else if (objs.counts.glider && board.gen() >= FIFTY)
+    text = (objs.counts.glider > 1 ? 'Gliders' : 'A glider') +
+           ' · a real pattern the rule has no word for';
   else
-    text = 'A random field · three quarters of it is gone by generation fifty';
-  if (cap.textContent !== text) cap.textContent = text;
+    text = 'A random field · three quarters gone by generation fifty';
+  var line = tally();
+  if (line1.textContent !== text) line1.textContent = text;
+  if (line2.textContent !== line) line2.textContent = line;
   var end = !!quietAt;
   if (cap.classList.contains('crit') !== end) cap.classList.toggle('crit', end);
 }
+
+// The census gets one line and writes what fits in it. Kinds go in this order rather
+// than the catalogue's, so that gliders lead and are the last thing that could fall off
+// the end: they are what the reader is watching and the reason the census is here at
+// all. Anything that does not fit is counted as "more" and anything that matched
+// nothing is counted as "got away" — the phrase the caption already had for it — so the
+// components add up whatever the line does. 58 characters is what one line holds at 340
+// CSS px, which is the narrowest the note ever is; it is measured, not guessed.
+var FIFTY = 50;                    // the field's line is a claim about its first fifty
+var KINDS = ['glider','block','blinker','beehive','loaf','boat','tub','pond','ship'];
+var MANY = {glider:'gliders', block:'blocks', blinker:'blinkers', beehive:'beehives',
+            loaf:'loaves', boat:'boats', tub:'tubs', pond:'ponds', ship:'ships'};
+var ROOM = 58;
+function tally(){
+  var got = [], i, k, take, bits, more, s;
+  for (i = 0; i < KINDS.length; i++){ k = KINDS[i]; if (objs.counts[k]) got.push(k); }
+  for (take = got.length;; take--){
+    bits = []; more = 0;
+    for (i = 0; i < take; i++)
+      bits.push(objs.counts[got[i]] + ' ' +
+                (objs.counts[got[i]] === 1 ? got[i] : MANY[got[i]]));
+    for (i = take; i < got.length; i++) more += objs.counts[got[i]];
+    if (more) bits.push(more + ' more');
+    if (objs.lost) bits.push(objs.lost + ' got away');
+    s = bits.join(' · ');
+    if (s.length <= ROOM || !take) return s;
+  }
+}
+
+function look(){ objs = TBcensus(board.cells(), N); }
 
 function count(){ out.textContent = board.gen(); }
 
@@ -1590,7 +1815,7 @@ function load(name){
   for (var i=0;i<picks.length;i++)
     picks[i].setAttribute('aria-pressed',
                           picks[i].getAttribute('data-scene') === name ? 'true' : 'false');
-  count(); say(); paint();
+  count(); look(); say(); paint();
 }
 
 for (var i=0;i<picks.length;i++) picks[i].addEventListener('click', function(){
@@ -1608,28 +1833,67 @@ runner.addEventListener('click', function(){
 });
 if (paused) runner.textContent = 'Resume';
 
-// A click toggles the cell under it, running or paused. The picture is N cells across a
-// box the page sizes in CSS pixels, and the box carries its 1px border inside its own
-// width, so the border comes off the rect before the scale — otherwise the last pixel of
-// the picture resolves to cell N, which is not a cell. It is the arithmetic the dish on
-// Freelancing already uses, and pointer events, so a finger is a click.
-cv.addEventListener('pointerdown', function(e){
+// A press changes the cell under it, running or paused, and a drag goes on changing the
+// cells it crosses. The picture is N cells across a box the page sizes in CSS pixels,
+// and the box carries its 1px border inside its own width, so the border comes off the
+// rect before the scale — otherwise the last pixel of the picture resolves to cell N,
+// which is not a cell. It is the arithmetic the dish on Freelancing already uses, and
+// pointer events, so a finger draws.
+function cell(e){
   var r = cv.getBoundingClientRect(), s = getComputedStyle(cv),
       bl = parseFloat(s.borderLeftWidth), bt = parseFloat(s.borderTopWidth),
       w = r.width - bl - parseFloat(s.borderRightWidth),
       h = r.height - bt - parseFloat(s.borderBottomWidth),
       x = Math.floor((e.clientX - r.left - bl) * N / w),
       y = Math.floor((e.clientY - r.top - bt) * N / h);
-  x = x < 0 ? 0 : x > N-1 ? N-1 : x;
-  y = y < 0 ? 0 : y > N-1 ? N-1 : y;
-  board.toggle(x, y);
+  // A press on the border rounds to a cell outside the board, and is clamped back in.
+  // A drag is not: past the edge it stops drawing rather than smearing the last row.
+  return {x: x < 0 ? 0 : x > N-1 ? N-1 : x,
+          y: y < 0 ? 0 : y > N-1 ? N-1 : y,
+          over: x >= 0 && x < N && y >= 0 && y < N};
+}
+
+// A drag draws one state rather than toggling: whichever the first cell was not, every
+// cell after it becomes. Toggling would rub out half of its own line on the way back
+// across, which is not what drawing does anywhere else.
+var ink = -1, lx = 0, ly = 0;
+function touch(){
   // The board is the reader's from here. The ash clock is cleared for the same reason
   // the dish on Freelancing clears its death clock on a click: what happens next is
   // theirs, and it should not be swept away by a countdown they never saw.
   quietAt = 0; touchedAt = performance.now();
-  say();
-  paint();
+  look(); say(); paint();
+}
+
+cv.addEventListener('pointerdown', function(e){
+  var p = cell(e);
+  ink = board.cells()[p.y * N + p.x] ? 0 : 1;
+  lx = p.x; ly = p.y;
+  board.put(p.x, p.y, ink);
+  // Capture, so a drag that wanders off the canvas still ends on the pointerup. A
+  // synthesised event has no live pointer to capture and throws instead of returning.
+  try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+  touch();
 });
+
+cv.addEventListener('pointermove', function(e){
+  if (ink < 0) return;
+  if (!e.buttons){ ink = -1; return; }   // a pointerup nobody saw
+  var p = cell(e);
+  if (!p.over) return;
+  // A pointer covers more than a cell between two frames, so the cells between the last
+  // one and this one are filled in as well. A drawn line with holes in it is not one.
+  var dx = p.x - lx, dy = p.y - ly, n = Math.abs(dx) > Math.abs(dy) ? Math.abs(dx)
+                                                                    : Math.abs(dy), i;
+  for (i = 1; i <= n; i++)
+    board.put(lx + Math.round(dx * i / n), ly + Math.round(dy * i / n), ink);
+  lx = p.x; ly = p.y;
+  touch();
+});
+
+function drop(){ ink = -1; }
+cv.addEventListener('pointerup', drop);
+cv.addEventListener('pointercancel', drop);
 
 // It opens on the soup, every time, and that is not the coin flip the other two plates
 // open on. The collision is the sparser picture by a long way — ten cells for its first
@@ -1647,6 +1911,7 @@ return { tick: function(){
   board.step();
   paint();
   count();
+  look();
   var t = performance.now();
   if (board.repeats()){ if (!quietAt) quietAt = t; }
   else quietAt = 0;
