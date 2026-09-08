@@ -28,12 +28,13 @@ than distance/frames. The gap between the label's bottom edge and the first line
 text is printed with it: it is constant when the body moves with the label, and it is
 not when the body trails.
 
-On this build the label snaps: home to About at 1400 reads 2 positions and one 145px
-step, because the transition owns the movement and the label is not captured, and Tim has
-ruled that restoring the travel waits for the grain (#58). The implementation that does
-restore it is parked on `issue-54-travel-parked`, where the same leg reads 35 positions
-and a largest step of 15px, against 27 and 20px on the build before #54. That is the bar
-this script exists to hold the re-application to.
+On this build the label travels (#60): the router animates the hero's row on the live
+page with one `Element.animate`, which the patched `animate` above slows with everything
+else, so home to About at 1400 reads a ramp of many positions and no step near 145px.
+The build before it (#57) read 2 positions and one 145px step, because nothing moved the
+live page and the label is not captured; the build before that read 27 positions and a
+20px largest step; the parked travel-in-parts on `issue-54-travel-parked` reads 35 and
+15px. Those are the bars this script holds a build to.
 
 Served over http, headless Chromium, device_scale_factor 1. Nothing here writes to the
 tree.

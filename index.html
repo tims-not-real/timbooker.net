@@ -476,36 +476,30 @@ html.app .label{view-transition-name:none}
    to blend with, its overlay has nothing to work against and it lands as a flat grey
    veil over the whole page: 29 of 255, measured, for the length of every swap. */
 html.app body::after{view-transition-name:none}
-/* The one group there is does not animate, and that is deliberate. It was pinned because
-   the router was animating the hero's row underneath it and a browser re-targets a group
-   at its live element on every frame, so the group interpolated towards a target that was
-   itself moving and the body trailed the label by up to 36px mid-swap.
+/* The one group there is does not animate, and that is deliberate. The transition owns
+   the cross-fade and the live row owns the travel (#60): home's label is 145px taller
+   than the others, and the router animates the hero's row from the one height to the
+   other on the live page, .18s, the same clock as the snapshots. A browser re-targets a
+   group at its live element on every frame, so an animating group would interpolate
+   towards a target that was itself moving, and the body trailed the label by up to 36px
+   mid-swap when that was tried. Pinned, the group sits exactly on the live body, and
+   the live body is where the row puts it, so the gap between the label's bottom edge
+   and the first line of body text is 55px on every frame of every leg.
 
-   Nothing animates the live page any more (#54), so that reason has gone and the pin was
-   taken out to see what it was worth. The answer, measured off painted frames at 1400
-   with everything slowed ten times: unpinned, the body's snapshot starts where the page
-   it was captured on had it and slides to where the new page wants it, while the label
-   underneath it — which is not captured at all — is already there. The gap between the
-   label's bottom edge and the first line of body text opens from 55px to 200px and closes
-   again over the swap. Pinned, that gap is 55px on every frame of every leg, which is
-   what it has always been.
+   Unpinned with nothing moving the live page (#54, the build between) it was worse the
+   other way: the body's snapshot slid from where it was captured to where the new page
+   wanted it while the label underneath, which is not captured, had already snapped,
+   and the gap opened from 55px to 200px and closed again over the swap. A pinned group
+   also keeps a swap that changes the scroll position from sliding.
 
-   So the pin stays, for the reason it always mattered: the group sits exactly on the live
-   element, the body is where the label says it is on every frame, and a swap that changes
-   the scroll position does not slide. Only the cross-fade is animated, which is all a
-   cross-fade needs. What the pin now costs is home's 145px: the label snaps to its new
-   height rather than travelling to it. See the note in build_site.py and design-goals.
-
-   The travel can be had back, and the way to do it is built and parked on
-   `issue-54-travel-parked`: name the label in parts, so the credits, the nav and the
-   creature are lifted out of its snapshot and ride its bottom edge up as translations,
-   and let this group animate with them. Measured there at 1400, home to About, off
-   painted frames: 35 distinct edge positions and a largest step of 15px, against 27 and
-   20px on the build before #54. It is parked rather than shipped because capturing the
-   label takes the page's grain off it for the length of every swap — a step of 4.29 of
-   255 on the blue, and the mottle flattens with it, both measurable by
-   scripts/grain_check.py. The grain is a fixed full-viewport blend-mode layer and it
-   composes badly with view transitions; that is #58, and this waits for it. */
+   Two ways of travelling the label were built and are not this. A CSS transition on
+   the row does not run from a length that has only just been set, because the
+   before-change style is the last rendered one; measured, `auto -> 613px -> 468px` in
+   one task interpolated nothing. The label named in parts (`issue-54-travel-parked`)
+   travels well, 35 edge positions and a 15px largest step, but it captures the label,
+   which takes the fixed grain on `body::after` off it for the length of every swap: a
+   step of 4.29 of 255 on the blue and the mottle flattens with it, by
+   scripts/grain_check.py. The live row captures nothing, so the grain never moves. */
 html.app::view-transition-group(page){animation:none}
 
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
@@ -1673,6 +1667,7 @@ return { tick: function(){
 
   var meta = document.querySelector('meta[name=description]');
   var mark = document.querySelector('.title');
+  var hero = document.querySelector('.hero');
   var reduce = matchMedia('(prefers-reduced-motion: reduce)');
   var cur = 'home', at = {}, tok = 0;
 
@@ -1747,10 +1742,47 @@ return { tick: function(){
     // Where you were on the page you are leaving, so that coming back to it puts you
     // back. There is no page load to survive any more, so nothing is stored anywhere.
     var y0 = Math.round(pageYOffset), y1 = at[next] || 0;
-    var mine = ++tok;
+    var mine = ++tok, h0 = -1;
     at[cur] = y0;
     TB.stop();                          // nothing steps while we are between pages
     if (push) try { history.pushState({p:next}, '', PAGE[next].f); } catch (e) {}
+
+    // Home's label is 145px taller than the others, because its plate column is, and
+    // that difference travels on the live row (#60). The transition cannot carry it: a
+    // group animates a rect and draws a fixed picture inside it, and the label is not
+    // captured anyway, so in the app it is the live element for the whole swap and a
+    // change to its row is simply visible. One animation on the hero's row, from the
+    // height the page had when the click landed to the height the new page has once
+    // the DOM has changed, the transition's own .18s and ease, no fill: the row is back
+    // on `auto` the frame it ends, which is the height it ends on, so there is no inline
+    // style to clear and nothing for settle() to do. Started here, inside the update
+    // callback, so it shares the transition's first frame and its last. The `page`
+    // group is pinned, so the body's snapshot sits on the live body and rides this row.
+    //
+    // Not a CSS transition: measured, a transition from a length that has only just
+    // been set does not run, because the before-change style is the last rendered one
+    // and `auto -> 613px -> 468px` inside one task interpolates nothing. Not the label
+    // named in parts, which travels as well but captures the label and costs it the
+    // page's grain for every swap (`issue-54-travel-parked`, a step of 4.29 of 255).
+    //
+    // Two columns only: below the breakpoint the hero is one column of two rows and one
+    // track size would hand the label the whole hero, which was #51. Under a pixel is
+    // not travelled, because research and about differ by 0.36px and animating a third
+    // of a pixel for 180ms is worse than not. A second click mid-travel reads the
+    // current height as its start, below, and the last swap's animation is cancelled
+    // here before anything is measured: left running, it would carry the row on to the
+    // page that was abandoned and snap back when it finished. Measured, that is what
+    // cancelling only when a new animation starts did on a click inside the first
+    // frame, when the row had not moved yet and the two heights read equal.
+    function travel(){
+      if (!hero || h0 < 0) return;
+      hero.getAnimations().forEach(function(a){ a.cancel(); });
+      var h1 = hero.getBoundingClientRect().height;
+      if (Math.abs(h1 - h0) < 1) return;
+      if (getComputedStyle(hero).gridTemplateColumns.split(' ').length !== 2) return;
+      hero.animate([{gridTemplateRows: h0 + 'px'}, {gridTemplateRows: h1 + 'px'}],
+                   {duration: 180, easing: 'ease'});
+    }
 
     function update(){
       show(cur, false); show(next, true);
@@ -1759,11 +1791,12 @@ return { tick: function(){
       if (held !== null) hold(next);    // the incoming page carries the name now
       TB.mount(next);                   // built here, but not run here
       if (y1 !== y0) scrollTo(0, y1);
-      // Last, because the destination's plate column is what sets the label's height and
-      // the creature is positioned from the label's bottom. The live layout is final the
-      // moment this returns — the movement is on the snapshots, not on the page — so
-      // this reads the floor the creature is going to stand on.
+      // The destination's plate column is what sets the label's height and the creature
+      // is positioned from the label's bottom, so this reads the settled layout: the
+      // DOM has changed and the row has not started moving yet, which is the floor the
+      // creature is going to stand on.
       if (window.TBfloor) TBfloor.moved();
+      travel();                         // and only then does the row set off
     }
     function settle(){
       // Click again before the first swap is done and the browser drops the first
@@ -1777,11 +1810,16 @@ return { tick: function(){
     }
     if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
 
-    // The transition owns the movement, and nothing races it (#54). The DOM changes at
-    // once inside `update` and the live page is final from that moment; what animates is
-    // the snapshots, over the transition's own .18s. There is nothing here to cancel, no
-    // inline height to clear, and no second animation to be still running at the frame
-    // the snapshots are torn down.
+    // The transition owns the cross-fade and the live row owns the travel, and they
+    // share a clock: both start on the frame after `update` and both run .18s. The DOM
+    // changes at once inside `update`; what the transition animates is the body's
+    // snapshots, and what the row animation moves is the label and the body under
+    // them. There is no inline height to clear and nothing left running that settle()
+    // has to stop. The leaving height is read here, before the old state is captured
+    // and while the last swap's animation, if there is one, is still applied, so a
+    // click mid-travel starts from wherever the row is rather than from where the page
+    // began.
+    if (hero) h0 = hero.getBoundingClientRect().height;
     hold(cur);                          // the page being left, for the old capture
     var vt = document.startViewTransition(update);
     // Click faster than a swap and the browser skips the first transition, which rejects

@@ -19,9 +19,18 @@ the frame before. What is reported at that frame, and on every frame after it:
     rows      the inline grid-template-rows on it
     stale     frames after teardown still carrying either inline style
 
+What fails the check is an inline style at teardown or after it. `live` is reported and
+does not fail it on its own: since #60 the router animates the hero's row again, with
+one `Element.animate` that starts on the same frame as the transition and runs the same
+.18s, no fill and no inline style, so it can still be on its last frame when the
+snapshots come down. That is not the defect above. The row is a frame from its final
+height with the body riding it, not a page wearing the height it left; the number is
+printed so a build that leaves an animation running for longer than that says so.
+
 A build that leaves the movement to the transition reports 0, '', '' and 0 at every
-width. Served over http, headless Chromium, device_scale_factor 1, reduced motion left
-at no-preference so that the transition actually runs. Nothing here writes to the tree.
+width; this build reports '', '' and 0 with `live` at 0 or 1. Served over http, headless
+Chromium, device_scale_factor 1, reduced motion left at no-preference so that the
+transition actually runs. Nothing here writes to the tree.
 """
 import sys, functools, http.server, socketserver, threading, pathlib
 from playwright.sync_api import sync_playwright
@@ -115,13 +124,13 @@ def report(name, res):
             bad.append('%d %s -> %s: no transition' % k)
             continue
         t, live, h, rows, stale, peak = v
-        ok = not (live or h or rows or stale)
+        ok = not (h or rows or stale)
         print('%-6d %-10s %-12s %8.1fms %6d %12s %8s %6d %8d%s'
               % (k[0], k[1], k[2], t, live, repr(h), repr(rows), stale, peak,
                  '' if ok else '   FAIL'))
         if not ok:
-            bad.append('%d %s -> %s: live %d, height %r, rows %r, %d stale frame(s)'
-                       % (k[0], k[1], k[2], live, h, rows, stale))
+            bad.append('%d %s -> %s: height %r, rows %r, %d stale frame(s), live %d'
+                       % (k[0], k[1], k[2], h, rows, stale, live))
     print()
     return bad
 
