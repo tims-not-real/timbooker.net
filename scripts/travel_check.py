@@ -28,6 +28,13 @@ than distance/frames. The gap between the label's bottom edge and the first line
 text is printed with it: it is constant when the body moves with the label, and it is
 not when the body trails.
 
+On this build the label snaps: home to About at 1400 reads 2 positions and one 145px
+step, because the transition owns the movement and the label is not captured, and Tim has
+ruled that restoring the travel waits for the grain (#58). The implementation that does
+restore it is parked on `issue-54-travel-parked`, where the same leg reads 35 positions
+and a largest step of 15px, against 27 and 20px on the build before #54. That is the bar
+this script exists to hold the re-application to.
+
 Served over http, headless Chromium, device_scale_factor 1. Nothing here writes to the
 tree.
 """
@@ -39,11 +46,19 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 OTHER = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else None
 
 SLOW = 10
-WIDTH, HEIGHT = 1400, 900
+HEIGHT = 900
+# Two columns, where the label's height differs between home and everywhere else, and one,
+# where it does not and nothing about the label can move at all.
+WIDTHS = [1400, 420]
 # Home is the only page whose label is a different height, so it is the only leg that
-# has anything to travel. Both directions, and one leg between two equal labels as the
-# control that should not move at all.
-LEGS = [('home', 'about'), ('about', 'home'), ('research', 'about')]
+# has anything to travel. Both directions, one leg between two equal labels as the
+# control that should not move at all, and one that also changes the scroll position: a
+# navigation keeps your place, so leaving a page you had scrolled down means the router
+# scrolls to the top inside the transition's callback, and every captured rect on the page
+# moves by that much at once. The label's top edge is followed for all of them, because it
+# is the one thing that must never move on any leg at any scroll.
+LEGS = [('home', 0, 'about'), ('about', 0, 'home'), ('research', 0, 'about'),
+        ('research', 1200, 'about')]
 
 # Timings the transition and the router both live by, multiplied by SLOW. The duration
 # override cannot resurrect an animation that is off: `animation:none` sets the name to
@@ -87,12 +102,17 @@ def near(a, b, tol):
 
 
 def read(img, probe):
-    """(bottom edge of the blue, top of the first line of body text) in this frame."""
+    """(top of the blue, bottom of the blue, top of the first line of body text)."""
     px = img.load()
     x, top = probe['x'], probe['top']
-    blue = px[x, top]
-    edge = top
-    for y in range(top, img.height):
+    blue = probe['blue']
+    head = None
+    for y in range(0, img.height):
+        if near(px[x, y], blue, 24):
+            head = y
+            break
+    edge = head if head is not None else top
+    for y in range(edge, img.height):
         if near(px[x, y], blue, 24):
             edge = y
         elif y - edge > 6:              # six rows clear of it, so grain cannot end it
@@ -112,11 +132,11 @@ def read(img, probe):
         if n > 2:
             body = y
             break
-    return edge, body
+    return head, edge, body
 
 
-def leg(br, port, a, b):
-    p = br.new_page(viewport={'width': WIDTH, 'height': HEIGHT}, device_scale_factor=1)
+def leg(br, port, w, a, y, b):
+    p = br.new_page(viewport={'width': w, 'height': HEIGHT}, device_scale_factor=1)
     p.add_init_script(SLOWJS)
     p.goto('http://127.0.0.1:%d/home.html' % port)
     p.evaluate('() => document.fonts.ready')
@@ -130,6 +150,11 @@ def leg(br, port, a, b):
         p.evaluate(GO, a + '.html')
         p.wait_for_timeout(400 * SLOW)
     probe = p.evaluate(PROBE)
+    px = Image.open(io.BytesIO(p.screenshot())).convert('RGB').load()
+    probe['blue'] = px[probe['x'], probe['top']]
+    if y:
+        p.evaluate('(y) => window.scrollTo(0, y)', y)
+        p.wait_for_timeout(400)
 
     frames = []
     cdp = p.context.new_cdp_session(p)
@@ -143,7 +168,7 @@ def leg(br, port, a, b):
 
     cdp.on('Page.screencastFrame', got)
     cdp.send('Page.startScreencast', {'format': 'png', 'everyNthFrame': 1,
-                                      'maxWidth': WIDTH, 'maxHeight': HEIGHT})
+                                      'maxWidth': w, 'maxHeight': HEIGHT})
     p.wait_for_timeout(300)
     frames.clear()
     p.evaluate(GO, b + '.html')
@@ -154,8 +179,8 @@ def leg(br, port, a, b):
     seen = []
     for t, data in frames:
         img = Image.open(io.BytesIO(base64.b64decode(data))).convert('RGB')
-        if img.size != (WIDTH, HEIGHT):
-            img = img.resize((WIDTH, HEIGHT))
+        if img.size != (w, HEIGHT):
+            img = img.resize((w, HEIGHT))
         seen.append((t,) + read(img, probe))
     p.close()
     return seen
@@ -165,27 +190,34 @@ def run(port, label):
     out = {}
     with sync_playwright() as pw:
         br = pw.chromium.launch()
-        for a, b in LEGS:
-            out[(a, b)] = leg(br, port, a, b)
+        for w in WIDTHS:
+            for a, y, b in LEGS:
+                out[(w, a, y, b)] = leg(br, port, w, a, y, b)
         br.close()
     return out
 
 
 def report(name, res):
-    print('%s, %dx%d, everything slowed %dx' % (name, WIDTH, HEIGHT, SLOW))
+    print('%s, %s wide, everything slowed %dx'
+          % (name, ' and '.join(str(w) for w in WIDTHS), SLOW))
     print()
-    print('%-11s %-11s %7s %9s %8s %9s %9s'
-          % ('from', 'to', 'frames', 'positions', 'travel', 'max step', 'gap min/max'))
-    for (a, b), s in res.items():
-        e = [r[1] for r in s]
-        g = [r[2] - r[1] for r in s if r[2] is not None]
+    print('%-6s %-24s %7s %9s %8s %9s %11s %9s'
+          % ('width', 'leg', 'frames', 'positions', 'travel', 'max step', 'gap min/max',
+             'top edge'))
+    for (w, a, y, b), s in res.items():
+        e = [r[2] for r in s]
+        g = [r[3] - r[2] for r in s if r[3] is not None and r[2] is not None]
+        h = [r[1] for r in s if r[1] is not None]
         if not e:
-            print('%-11s %-11s   no frames' % (a, b))
+            print('%-6d %-24s   no frames'
+                  % (w, '%s%s -> %s' % (a, '@%d' % y if y else '', b)))
             continue
         step = max((abs(e[i] - e[i - 1]) for i in range(1, len(e))), default=0)
-        print('%-11s %-11s %7d %9d %8d %9d   %d / %d'
-              % (a, b, len(e), len(set(e)), abs(e[-1] - e[0]), step,
-                 min(g) if g else -1, max(g) if g else -1))
+        print('%-6d %-24s %7d %9d %8d %9d   %5d / %-5d %4d / %d'
+              % (w, '%s%s -> %s' % (a, '@%d' % y if y else '', b), len(e), len(set(e)),
+                 abs(e[-1] - e[0]), step,
+                 min(g) if g else -1, max(g) if g else -1,
+                 min(h) if h else -1, max(h) if h else -1))
         print('           edges: ' + ' '.join(str(v) for v in e))
     print()
 
