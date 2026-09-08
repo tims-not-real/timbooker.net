@@ -1885,6 +1885,271 @@ def research_body():
 
 # ============================================================ ABOUT
 
+LIFE_JS = r"""
+// ---- Conway's Game of Life --------------------------------------------------
+// B3/S23, and there is nothing else in it. A dead cell with exactly three live
+// neighbours is born; a live cell with two or three of them stays; every other cell is
+// dead next generation. The gliders, the ash, the several hundred generations a
+// two-glider collision can take to burn out: all of it is that one line applied to
+// every cell of the board at once, over and over, with nothing aimed and nothing
+// steered.
+//
+// The board wraps, like the lattice on the front page and the dish on Freelancing. An
+// edge that kills whatever reaches it would be a second rule, and the one rule is the
+// whole reason this is worth putting on a page.
+
+// The rule and the board it runs on are built out here rather than inside the plate, so
+// that the rule can be checked rather than asserted: scripts/life_check.py calls this
+// with a board of its own, puts an R-pentomino on it, and reads the population back at
+// generation 1103. A model nobody can run apart from the page it decorates is decoration.
+function TBlife(n){
+  var L = n*n, a = new Uint8Array(L), b = new Uint8Array(L), gen = 0;
+  // The two boards before this one. Ash is still lifes and blinkers, which is to say a
+  // board that repeats itself with period 1 or 2, and holding two frames back is the
+  // cheapest way there is to notice that it has stopped going anywhere.
+  var p1 = new Uint8Array(L), p2 = new Uint8Array(L);
+  function same(u, v){ var i; for (i=0;i<L;i++) if (u[i] !== v[i]) return false; return true; }
+  function step(){
+    p2.set(p1); p1.set(a);
+    for (var y=0;y<n;y++){
+      var yu = ((y-1+n)%n)*n, yd = ((y+1)%n)*n, y0 = y*n;
+      for (var x=0;x<n;x++){
+        var xl = (x-1+n)%n, xr = (x+1)%n, i = y0+x;
+        var s = a[yu+xl] + a[yu+x] + a[yu+xr]
+              + a[y0+xl]           + a[y0+xr]
+              + a[yd+xl] + a[yd+x] + a[yd+xr];
+        b[i] = (s === 3 || (s === 2 && a[i])) ? 1 : 0;
+      }
+    }
+    var t = a; a = b; b = t; gen++;
+  }
+  return {
+    n: n,
+    step: step,
+    gen: function(){ return gen; },
+    // The two boards are swapped on every step, so this hands back whichever one is
+    // current and a caller that holds on to it is holding the wrong one next generation.
+    cells: function(){ return a; },
+    pop: function(){ var s=0, i; for (i=0;i<L;i++) s += a[i]; return s; },
+    put: function(x, y, v){ a[y*n+x] = v; },
+    toggle: function(x, y){ a[y*n+x] ^= 1; },
+    // 2 is not a state any cell can be in, so a freshly laid out board cannot read as a
+    // repeat of whatever was on it before.
+    clear: function(){ a.fill(0); b.fill(0); p1.fill(2); p2.fill(2); gen = 0; },
+    repeats: function(){ return same(a, p1) || same(a, p2); }
+  };
+}
+
+TB.define('about', function(root){
+var N = 72;                        // 366 CSS px of picture at the plate's own width, so
+                                   // a cell is 5.08 of them square: big enough that a
+                                   // glider reads as a glider and that a cell can be
+                                   // aimed at with a mouse or with a finger, which is
+                                   // what this plate is asking of the reader
+var board = TBlife(N);
+
+var cv = root.querySelector('canvas');
+cv.width = N; cv.height = N;
+var ctx = cv.getContext('2d'), img = ctx.createImageData(N, N);
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function hex(h){
+  h = h.replace('#','');
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+}
+// Dead ground takes the field colour and a live cell is knocked out of it: the same two
+// inks, the same way round, as the lattice on the front page and the dish on Freelancing.
+var DEAD = hex(css('--lat-on')), LIVE = hex(css('--lat-off'));
+
+function paint(){
+  var c = board.cells(), d = img.data, i, k;
+  for (i=0;i<N*N;i++){
+    k = c[i] ? LIVE : DEAD;
+    d[i*4] = k[0]; d[i*4+1] = k[1]; d[i*4+2] = k[2]; d[i*4+3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// A glider: five cells, and the smallest thing in Life that moves. It walks one cell
+// diagonally every four generations, and sx and sy pick which of the four diagonals.
+var GLIDER = [[1,0],[2,1],[0,2],[1,2],[2,2]];
+function glider(cx, cy, sx, sy){
+  for (var i=0;i<5;i++)
+    board.put((cx + sx*GLIDER[i][0] + N) % N, (cy + sy*GLIDER[i][1] + N) % N, 1);
+}
+
+// Two gliders, one out of each of the left-hand corners, crossing in the middle. An
+// ordinary collision, and picked for being one: not a celebrated construction, just two
+// of the five-cell things a random field throws off by itself, put on a course to meet.
+// Measured on this board: they touch at generation 117, the wreck reaches 201 cells at
+// generation 240, and by generation 300 what is left is 55 cells that only blink. Four
+// columns of offset is the whole of the difference between that and the same two gliders
+// peaking at 40 and leaving 18, which is why the offset is a named number here rather
+// than a nudge in the coordinates.
+var MARGIN = 4, OFFSET = 4, HIT = 117;
+function gliders(){
+  board.clear();
+  glider(MARGIN, MARGIN, 1, 1);
+  glider(MARGIN + OFFSET, N - 1 - MARGIN, 1, -1);
+}
+
+// Half the cells, at random, and where that goes is the reason the second button is
+// here: three quarters of it dies in the first fifty generations and what is left is
+// ash. Measured over 30 soups on this board — a quarter of the cells still alive at
+// generation 50, the median soup reaching ash at generation 1235, and 151 cells left,
+// 2.9% of the board. Counted over 20 settled soups, what those cells are is 11.8
+// blinkers, 10.1 blocks, 5.2 beehives, 2.0 boats, 1.9 loaves and the odd pond, tub and
+// ship apiece, which is what the caption says and is why it says those four words. And
+// 7 gliders in flight across 20 soups at generation 400, which is what "now and then"
+// is doing in it.
+function soup(){
+  board.clear();
+  for (var y=0;y<N;y++) for (var x=0;x<N;x++)
+    if (Math.random() < 0.5) board.put(x, y, 1);
+}
+
+// A board that repeats is a board that has finished, and it is held for WAIT and then
+// laid out again. This is the other way out: a glider walking away across a board that
+// wraps meets nothing and comes back round for ever, so a board with one loose glider on
+// it never repeats. The cap sits above the longest of the 30 soups, which took 4377, so
+// a soup always reaches ash on its own account and the cap only ever catches a board
+// with a glider loose on it.
+var CAP = 4800;
+
+var SCENES = {gliders: gliders, soup: soup};
+
+var picks = root.querySelectorAll('button[data-scene]'),
+    runner = root.querySelector('button.run'),
+    out = root.querySelector('output'),
+    cap = root.querySelector('.note');
+
+// Reduced motion is the pause, not a second path through the plate: the board is laid
+// out and painted and then sits there, with the button reading Resume, because a reader
+// who asked for no motion has not asked for none ever.
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var paused = reduce, shown = false;
+
+var WAIT = 2000;                   // ash held this long before the scenario runs again
+var quietAt = 0, touchedAt = -1e9, scene = 'soup';
+
+// What is on the board, in the register the plates on Research and Freelancing use: the
+// state, then the thing about that state worth saying. Their second halves name a place
+// the model turns up outdoors, and this one cannot, because Life is not a model of
+// anything outdoors and saying otherwise to keep the format would be the worse fault.
+// The collision line is the only claim the plate makes: 55 cells of ash are a
+// consequence of ten, and there is no way at them except to run the rule and watch.
+function say(){
+  var t = performance.now(), text;
+  if (t - touchedAt < 1200)
+    text = 'Changed by hand';
+  else if (quietAt)
+    text = 'Ash · blocks, beehives, blinkers, and whatever got away';
+  else if (scene === 'gliders' && board.gen() < HIT)
+    text = 'Two gliders, on a course to cross';
+  else if (scene === 'gliders')
+    text = 'The collision · what it leaves is not readable off what went in';
+  else
+    text = 'A random field · three quarters of it is gone by generation fifty';
+  if (cap.textContent !== text) cap.textContent = text;
+  var end = !!quietAt;
+  if (cap.classList.contains('crit') !== end) cap.classList.toggle('crit', end);
+}
+
+function count(){ out.textContent = board.gen(); }
+
+function load(name){
+  scene = name;
+  SCENES[name]();
+  quietAt = 0; touchedAt = -1e9;
+  for (var i=0;i<picks.length;i++)
+    picks[i].setAttribute('aria-pressed',
+                          picks[i].getAttribute('data-scene') === name ? 'true' : 'false');
+  count(); say(); paint();
+}
+
+for (var i=0;i<picks.length;i++) picks[i].addEventListener('click', function(){
+  load(this.getAttribute('data-scene'));
+});
+
+// Pause is the loop stopping, not the loop spinning on a flag: tick() returns false and
+// the runtime takes it down, which is the same settle-and-stop every plate here already
+// has. Resume asks the runtime for it back. Everything the reader can do while it is
+// stopped paints its own frame.
+runner.addEventListener('click', function(){
+  paused = !paused;
+  runner.textContent = paused ? 'Resume' : 'Pause';
+  if (!paused) TB.run('about');
+});
+if (paused) runner.textContent = 'Resume';
+
+// A click toggles the cell under it, running or paused. The picture is N cells across a
+// box the page sizes in CSS pixels, and the box carries its 1px border inside its own
+// width, so the border comes off the rect before the scale — otherwise the last pixel of
+// the picture resolves to cell N, which is not a cell. It is the arithmetic the dish on
+// Freelancing already uses, and pointer events, so a finger is a click.
+cv.addEventListener('pointerdown', function(e){
+  var r = cv.getBoundingClientRect(), s = getComputedStyle(cv),
+      bl = parseFloat(s.borderLeftWidth), bt = parseFloat(s.borderTopWidth),
+      w = r.width - bl - parseFloat(s.borderRightWidth),
+      h = r.height - bt - parseFloat(s.borderBottomWidth),
+      x = Math.floor((e.clientX - r.left - bl) * N / w),
+      y = Math.floor((e.clientY - r.top - bt) * N / h);
+  x = x < 0 ? 0 : x > N-1 ? N-1 : x;
+  y = y < 0 ? 0 : y > N-1 ? N-1 : y;
+  board.toggle(x, y);
+  // The board is the reader's from here. The ash clock is cleared for the same reason
+  // the dish on Freelancing clears its death clock on a click: what happens next is
+  // theirs, and it should not be swept away by a countdown they never saw.
+  quietAt = 0; touchedAt = performance.now();
+  say();
+  paint();
+});
+
+// It opens on the soup, every time, and that is not the coin flip the other two plates
+// open on. The collision is the sparser picture by a long way — ten cells for its first
+// 117 generations and 55 for its last — and a plate that opened on a nearly empty field
+// half the time would be a big empty field waiting to be filled, which this site has
+// ruled against more than once. The soup is never the same field twice, so the plate
+// still opens somewhere else on every visit. The collision is one press away and the
+// press is what makes it worth watching.
+load('soup');
+cv.style.opacity = 0;
+
+return { tick: function(){
+  if (!shown){ shown = true; paint(); cv.style.opacity = 1; return !paused; }
+  if (paused) return false;
+  board.step();
+  paint();
+  count();
+  var t = performance.now();
+  if (board.repeats()){ if (!quietAt) quietAt = t; }
+  else quietAt = 0;
+  say();
+  // Ash is the end of the run, not a fault, so it is held long enough to be looked at
+  // and then the same scenario is laid out again — the same one, so that the picture and
+  // the button that is lit go on agreeing.
+  if ((quietAt && t - quietAt >= WAIT) || board.gen() >= CAP) load(scene);
+  return true;
+} };
+});
+"""
+
+# The 23rem column on About. Same shape as the other three: canvas, one row of controls,
+# the caption. The row is buttons rather than a fader, which is new furniture and the
+# only new furniture here; see the note beside .ctrl button in site_style.py.
+LIFE_PLATE = """      <div class="viz" data-plate="about"__HIDE__>
+        <canvas aria-label="Conway's Game of Life on a board that wraps"></canvas>
+        <div class="ctrl">
+          <button type="button" data-scene="gliders" aria-pressed="false">Gliders</button>
+          <button type="button" data-scene="soup" aria-pressed="true">Soup</button>
+          <button type="button" class="run">Pause</button>
+          <label for="gen">Gen</label>
+          <output id="gen" aria-live="off">0</output>
+        </div>
+        <p class="note"></p>
+      </div>"""
+
+
 ABOUT = """
     <div class="prose">
       <p>Platforms rank for engagement, and a ranking function is a selector with an
@@ -2413,8 +2678,10 @@ I'm happy to be reached out to by students, journalists, professionals, and rese
 
 # The three plates, the markup for each and the model behind it, keyed by the page they
 # belong to. A page not named here has no plate and its column is held open and empty.
-PLATES = {'home': ISING_PLATE, 'research': SLE_PLATE, 'freelancing': GS_PLATE}
-PLATE_JS = {'home': ISING_JS, 'research': SLE_JS, 'freelancing': GRAY_SCOTT_JS}
+PLATES = {'home': ISING_PLATE, 'research': SLE_PLATE, 'freelancing': GS_PLATE,
+          'about': LIFE_PLATE}
+PLATE_JS = {'home': ISING_JS, 'research': SLE_JS, 'freelancing': GRAY_SCOTT_JS,
+            'about': LIFE_JS}
 
 # Title and description per page. The head carries the current one; the router carries
 # all of them, since it has to rewrite the head as the state changes.
@@ -2466,9 +2733,9 @@ if __name__ == '__main__':
     # ---- the one document. Every state, one label, one plate column, one of each
     # shown. Written to index.html and to home.html, which have always been the same
     # file, so the app is what you get at the root and at the address the nav points to.
-    app = (hero('Home', 'home', ['home', 'research', 'freelancing'])
+    app = (hero('Home', 'home', ['home', 'research', 'freelancing', 'about'])
            + ''.join(section(k, body[k], 'home') for k in KEYS))
-    app_js = (RUNTIME_JS + ISING_JS + SLE_JS + GRAY_SCOTT_JS
+    app_js = (RUNTIME_JS + ISING_JS + SLE_JS + GRAY_SCOTT_JS + LIFE_JS
               + ROUTER_JS.replace('__PAGES__', page_map()).replace('__START__', 'home')
               + BOOT_JS.replace('__KEY__', 'home') + creature)
     for path in ('index.html', 'home.html'):

@@ -4,8 +4,9 @@ Supersedes home.py, which built the home page alone. Edit this file, not the .ht
 
 The label is the identity, and every page opens on it: the full Blue Note label, name,
 data stack, personnel credits, nav. Beside it sits a 23rem column for a live model.
-Where a page has no model yet, the hero goes to one column and the label runs the full
-width, so there is no empty field waiting to be filled.
+Home, Research, Freelancing and About each have one. Contact and 404 hold the column open
+and empty rather than collapsing it, so that nothing on the page moves on the day a plate
+arrives — which is what happened to About.
 """
 import io
 
@@ -89,8 +90,9 @@ a{color:inherit}
 .link:hover{border-bottom-color:var(--accent)}
 .wrap{max-width:72rem; margin:0 auto; padding:2rem 2rem 6rem}
 .hero{display:grid; grid-template-columns:1fr 23rem; gap:2.5rem; align-items:stretch}
-/* no model on this page yet: one column, label full width. Holding the 23rem open and
-   empty reads as a missing thing, and a big empty field is a failure, not a minimum. */
+/* Two columns on every page, whether or not the page has a model in the right one. The
+   alternative was letting a page without one run the label full width, and that moves the
+   label the day a plate arrives; the floor below is the other half of the same decision. */
 /* One width everywhere, and never shorter than 29.25rem, which is what Research needs.
    A floor rather than a fixed height: the hero is align-items:stretch, so the label
    already wants to fill its row, and where the plate column runs taller — home, which
@@ -244,8 +246,9 @@ a{color:inherit}
   display:block; width:100%; height:auto; image-rendering:pixelated;
   border:1px solid var(--rule); background:var(--plate);
 }
-/* The chemistry dish takes a click, and this is the whole of how it says so. */
-.viz[data-plate=freelancing] canvas{cursor:crosshair}
+/* The chemistry dish takes a click, and so does the board on About. This is the whole of
+   how either of them says so. */
+.viz[data-plate=freelancing] canvas, .viz[data-plate=about] canvas{cursor:crosshair}
 .viz .row{display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem}
 .viz .row figure{margin:0}
 .viz .row figcaption{
@@ -289,6 +292,32 @@ a{color:inherit}
 /* at Tc the cap goes white, so the instrument agrees with the caption */
 .crit-on .ctrl input[type=range]::-webkit-slider-thumb{background:var(--fg)}
 .crit-on .ctrl input[type=range]::-moz-range-thumb{background:var(--fg)}
+/* The board on About picks a scenario and stops, which a fader cannot say, so this is
+   the first button on the site. It is drawn out of what is already here rather than out
+   of a widget library: the type is the .ctrl label's, a size down and letterspaced up to
+   the figcaption's, and the 2px inset shadow marking the loaded scenario is the same
+   mark the nav puts under the page you are on, because it is saying the same thing.
+   No border, no fill, no radius and no hover box — a box drawn round the fader would
+   have been the wrong instrument, and it is the wrong instrument here too. Pause and
+   Resume carry no mark: the word is the state, and a control that says what it will do
+   does not also need to say what it has done.
+   It stands 1.25rem, which is the fader's own height, and that is not a detail. The
+   plate column is what sets the label's height, and the label is one size on every page
+   but home; a control row a few pixels taller than the other three plates' would have
+   made About the one page whose label is its own height, and given the router a seven
+   pixel travel to animate on the way in and out of it. Same row height, nothing moves. */
+.ctrl button{
+  font:inherit; font-size:.625rem; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dim); background:none; border:0; padding:0;
+  height:1.25rem; line-height:1.25rem;
+  cursor:pointer; transition:color .2s ease;
+}
+.ctrl button:hover{color:var(--fg)}
+.ctrl button[aria-pressed=true]{color:var(--fg); box-shadow:inset 0 -2px 0 currentColor}
+.ctrl button:focus-visible{outline:1px solid var(--accent); outline-offset:3px}
+/* the scenarios are a pair at the left; the action goes to the right-hand end, against
+   the readout, which is where the fader's own handle finishes on the other three */
+.ctrl .run{margin-left:auto}
 .ctrl output{
   font-family:'Archivo Narrow',sans-serif; font-size:.8125rem; letter-spacing:.02em;
   color:var(--dim); min-width:2.4rem; text-align:right; transition:color .3s ease;
