@@ -379,12 +379,10 @@ footer p.llms{white-space:nowrap; max-width:none}
    applies.
 
    The root loses its name, so the document is not captured at all. Nothing is
-   snapshotted unless it is named, and the label is not named: it is not lifted out of
-   the page, not composited against a copy of itself and not re-laid-out. It is simply
-   still there, being the same element it was before the click. That is the whole of the
-   fix, and it is one declaration.
+   snapshotted unless it is named, and nothing here is named at rest.
 
-   What is named is the page body, and nothing else. That name is not here, because a
+   What is named for the length of a swap is the page body and the label in parts. Those
+   names are not here, because a
    name is not a free declaration. Naming an element promotes it to a compositing layer
    of its own for as long as the name is set, which takes its text off subpixel
    antialiasing — 78,785 pixels of the home page changed against the build before this
@@ -400,6 +398,10 @@ footer p.llms{white-space:nowrap; max-width:none}
    one thing at a time — the name held for ever, the canvas fade, the height animation,
    the pinned group — not capturing the plate was the only one that stopped it. */
 html.app{view-transition-name:none}
+/* The stylesheet's own `.label{view-transition-name:label}` is taken off here for the
+   same reason the page's name is not written here: it would be set at rest, all the
+   time, on the one element that carries the site's identity. The router sets it, and the
+   six part names with it, immediately before a swap and clears them at the end. */
 html.app .label{view-transition-name:none}
 /* And the grain gives its name back, because the reason it was given one has gone. It
    was named so that it would be lifted into the transition layer along with the label
@@ -408,26 +410,100 @@ html.app .label{view-transition-name:none}
    to blend with, its overlay has nothing to work against and it lands as a flat grey
    veil over the whole page: 29 of 255, measured, for the length of every swap. */
 html.app body::after{view-transition-name:none}
-/* The one group there is does not animate, and that is deliberate. It was pinned because
-   the router was animating the hero's row underneath it and a browser re-targets a group
-   at its live element on every frame, so the group interpolated towards a target that was
-   itself moving and the body trailed the label by up to 36px mid-swap.
+/* The body's group animates, and that is the travel. It did not: it was pinned with
+   `animation:none`, because the router was animating the hero's row underneath it and a
+   browser re-targets a group at its live element on every frame, so the group
+   interpolated towards a target that was itself moving and the body trailed the label by
+   up to 36px mid-swap.
 
-   Nothing animates the live page any more (#54), so that reason has gone and the pin was
-   taken out to see what it was worth. The answer, measured off painted frames at 1400
-   with everything slowed ten times: unpinned, the body's snapshot starts where the page
-   it was captured on had it and slides to where the new page wants it, while the label
-   underneath it — which is not captured at all — is already there. The gap between the
-   label's bottom edge and the first line of body text opens from 55px to 200px and closes
-   again over the swap. Pinned, that gap is 55px on every frame of every leg, which is
-   what it has always been.
+   Nothing animates the live page any more (#54), so the target is fixed from the first
+   frame and the interpolation is honest. Both settings were then measured off painted
+   frames, and which one is right had reversed. Pinned, the group sits on the live element
+   — and the live label has snapped, while the label the eye can see is the snapshot, which
+   travels. The gap between the label's bottom edge and the first line of body text opened
+   from 55px to 200px and closed again over the swap. Animating, that gap is 54 to 56px on
+   every frame of every leg, which is what it has always been, and the body and the label
+   move as one thing again.
 
-   So the pin stays, for the reason it always mattered: the group sits exactly on the live
-   element, the body is where the label says it is on every frame, and a swap that changes
-   the scroll position does not slide. Only the cross-fade is animated, which is all a
-   cross-fade needs. What the pin now costs is home's 145px: the label snaps to its new
-   height rather than travelling to it. See the note in build_site.py and design-goals. */
-html.app::view-transition-group(page){animation:none}
+   The pin is kept for the two cases where a group's interpolation is not a movement. */
+/* One: where the swap moves the scroll as well as the pages. A navigation keeps your
+   place, so the router sometimes scrolls inside the transition's own callback, and then
+   every captured rect moves by that much at once and an animating group interpolates it:
+   measured at 1400, research scrolled to 1200 then About, the label slid in from off the
+   top of the screen — its top edge 0 -> 32 and its bottom edge sweeping 36 -> 499, 463px
+   of travel where nothing should have moved. The router sets `jump` for the length of
+   those swaps and nothing animates its geometry; only the cross-fade is left, which is
+   all a cross-fade needs. Nothing is lost by it: a swap that changes the scroll has the
+   label off-screen at one end or the other, so there is no travel to see. */
+html.app.jump::view-transition-group(*){animation:none}
+/* Two: below the breakpoint, where the hero is one column. Above it the label and the body
+   share a row, so the body's position moves by exactly the label's height and the two
+   travel as one thing: measured, the page group's translation is 145px at 1400 and 140px
+   at 881, which is the label's height change to the pixel. Below it they are stacked with
+   the plate column between them, so what moves the body is the plate — 629px between home
+   and About at 420, 923px at 640 — and that is a different page arriving, not a movement.
+   The plate itself is not captured and hard-cuts for the same reason. So the body cuts
+   with it, and the label, which is the same height at every width below here, does not
+   move at all. */
+@media(max-width:880px){ html.app::view-transition-group(*){animation:none} }
+
+/* ---- and the label travels in parts ----
+   Every one of these is held rather than cross-faded, the way the label already is on the
+   cross-document path: the old snapshot at opacity 0 and the new at opacity 1, both with
+   no animation of their own. Each part is the same content on both pages — only the nav's
+   underline differs — so there is nothing a cross-fade is for, and holding them is what
+   keeps a line of text from being composited over a copy of itself. What is left animating
+   is the group, which is the rect, and that is the travel: the credits, the nav and the
+   creature are anchored to the label's bottom edge and ride it up the 145px. */
+html.app::view-transition-old(title),html.app::view-transition-old(stack),
+html.app::view-transition-old(credits),html.app::view-transition-old(nav),
+html.app::view-transition-old(critter),html.app::view-transition-old(critsay){
+  animation:none; opacity:0;
+}
+html.app::view-transition-new(title),html.app::view-transition-new(stack),
+html.app::view-transition-new(credits),html.app::view-transition-new(nav),
+html.app::view-transition-new(critter),html.app::view-transition-new(critsay){
+  animation:none; opacity:1;
+}
+/* The label's own snapshot is the only one told to fill its group. A UA draws a captured
+   image at its natural size against a top edge that does not move, which is why naming the
+   whole label did nothing: the group animated its height and the picture inside ignored
+   it. Filling the group makes that height visible, and it is the one snapshot here that
+   can survive being stretched, because everything with an edge in it — every line of type,
+   and the creature, who is pixel art — has been lifted out of it by a name of its own.
+   What is left is flat blue and two layers of grain. */
+html.app::view-transition-old(label),html.app::view-transition-new(label){
+  block-size:100%;
+}
+/* The cat does not move smoothly, ever. Her canvas is anchored to the label's bottom, so
+   an animating group would slide her the 145px in the one case where the script does not
+   move her at all — the band where the floor travels but the gesture is the wrong number
+   of cells for it and she simply stands on the new floor (#49). Pinned, her group sits on
+   the live element and she is where the script put her, which is the only thing allowed to
+   place her. The bubble goes with her, being anchored to the same edge. */
+html.app::view-transition-group(critter),html.app::view-transition-group(critsay){
+  animation:none;
+}
+/* What capturing the label costs, measured by scripts/grain_check.py against the build
+   before it, in a band of the blue that no named part covers, 1400x900:
+
+     the blue's level, at rest 44.74 of 255, mid-swap 40.46      a step of 4.28
+     frame to frame in the same band, mean 1.73 and peak 4.51    against a grain
+                                                                 whose own amplitude
+                                                                 there is 2.43
+
+   The step is the fixed grain on `body::after` no longer reaching the label: it stays in
+   the root and the label has been lifted out of it. That is the same mechanism Tim
+   reported from the live site on the cross-document path — "goes dim and then bright
+   again" — where it measured 9 to 10. It is less than half of that here because the
+   label's own two grain layers are captured with it and only the page's layer is lost.
+   The frame-to-frame number is the squeeze resampling those two layers.
+
+   The one fix for the step is to name `body::after` so it is lifted too, which is what
+   fixed it cross-document. It cannot work here: with the root uncaptured, the grain's
+   group has nothing to blend against and lands as a veil over everything that was not
+   captured. Built and measured rather than assumed — the label's step went to 0.27 and the
+   plate column went 23.19 lighter, the page ground 28.08. Reversed. */
 
 @media(prefers-reduced-motion:reduce){ .viz canvas{transition:none} }
 

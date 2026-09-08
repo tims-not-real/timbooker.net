@@ -538,10 +538,25 @@ ROUTER_JS = r"""
   // transition tears down, and home's plate is 613 tall against Research's 468, so its
   // three renormalisation boxes landed on bare page ground for a frame. Uncaptured, the
   // plate hard-cuts instead of cross-fading, which is the trade.
+  //
+  // The label is named in parts, and the parts are the point. What differs between home's
+  // label and every other page's is a height, and its content is anchored to the bottom
+  // of it, so a snapshot of the whole label is a picture that cannot move: a group
+  // animates a rect and draws a fixed image inside it, which was measured — the group
+  // interpolating 610 to 468 while the image stayed 468 and the label snapped. A named
+  // descendant is lifted out of its ancestor's snapshot and gets a group of its own, so
+  // naming the parts turns the one height change into what a transition is good at: the
+  // credits, the nav and the creature ride the bottom edge up as translations, the title
+  // and the stack stay where they are, and the label's own snapshot is left holding flat
+  // blue and grain, which is what the height animation stretches. Every one of these is
+  // set for the length of the swap and cleared with the page name, for the reason above.
+  var PARTS = [['.title', 'title'], ['.stack', 'stack'], ['.credits', 'credits'],
+               ['.label nav', 'nav'], ['#critter', 'critter'], ['#critsay', 'critsay'],
+               ['.label', 'label']];
   var held = null;
   function hold(key){
     if (held === key) return;
-    var s;
+    var s, i, e;
     if (held !== null){
       s = sec(held);
       if (s) s.style.viewTransitionName = '';
@@ -550,6 +565,10 @@ ROUTER_JS = r"""
     if (key !== null){
       s = sec(key);
       if (s) s.style.viewTransitionName = 'page';
+    }
+    for (i = 0; i < PARTS.length; i++){
+      e = document.querySelector(PARTS[i][0]);
+      if (e) e.style.viewTransitionName = key === null ? '' : PARTS[i][1];
     }
   }
   // The label's only moving parts. Both are writes to elements that stay exactly where
@@ -606,6 +625,7 @@ ROUTER_JS = r"""
       // page you are on.
       if (mine !== tok) return;
       hold(null);                       // nothing is named, and nothing is promoted
+      root.classList.remove('jump');
       TB.run(next);                     // and the model starts once the page is still
     }
     if (reduce.matches || !document.startViewTransition){ update(); settle(); return; }
@@ -615,6 +635,15 @@ ROUTER_JS = r"""
     // the snapshots, over the transition's own .18s. There is nothing here to cancel, no
     // inline height to clear, and no second animation to be still running at the frame
     // the snapshots are torn down.
+    // A navigation keeps your place, so a swap can move the scroll as well as the pages,
+    // and then every rect on the page moves by that much at once. An animating group
+    // interpolates that: measured on research at 1200 to about at 0, the label slid in
+    // from off the top of the screen, 463px of travel where nothing should have moved at
+    // all. Where the scroll moves, nothing animates its geometry and only the cross-fade
+    // is left, which is all a cross-fade needs. It costs nothing to look at either: a
+    // swap that changes the scroll has the label off-screen at one end of it or the
+    // other, so there is no travel to see.
+    if (y1 !== y0) root.classList.add('jump');
     hold(cur);                          // the page being left, for the old capture
     var vt = document.startViewTransition(update);
     // Click faster than a swap and the browser skips the first transition, which rejects
