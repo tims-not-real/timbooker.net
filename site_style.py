@@ -516,7 +516,7 @@ html.app body::after{view-transition-name:none}
    and let this group animate with them. Measured there at 1400, home to About, off
    painted frames: 35 distinct edge positions and a largest step of 15px, against 27 and
    20px on the build before #54. It is parked rather than shipped because capturing the
-   label takes the page's grain off it for the length of every swap — a step of 4.24 of
+   label takes the page's grain off it for the length of every swap — a step of 4.29 of
    255 on the blue, and the mottle flattens with it, both measurable by
    scripts/grain_check.py. The grain is a fixed full-viewport blend-mode layer and it
    composes badly with view transitions; that is #58, and this waits for it. */

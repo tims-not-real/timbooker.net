@@ -41,9 +41,11 @@ OTHER = pathlib.Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else None
 
 SLOW = 10
 W, H = 1400, 900
-# The blue band is on both pages, below the stack and right of the credits' 44ch measure,
-# so no named part of the label ever covers it.
-BANDS = {'label blue': (520, 250, 700, 430),
+# The blue band has to be blue on both pages, and the shorter label is what constrains it:
+# About's credits sit 145px higher than home's, so a band chosen against home alone catches
+# the left edge of them on About and reads 0.37 of a grey level that has nothing to do with
+# the grain. It is above the credits at either height and right of their 44ch measure.
+BANDS = {'label blue': (540, 190, 800, 330),
          'plate column': (780, 120, 1100, 400),
          'page ground': (1300, 420, 1390, 800)}
 
