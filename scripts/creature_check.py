@@ -1,5 +1,6 @@
-"""The creature's acceptance check for #49: she shows, at her one size, clear of the
-credits and the nav, at every width and on every page.
+"""The creature's acceptance check for #49: she shows, at one of her two sizes and never
+at anything between them, clear of the credits and the nav, at every width and on every
+page.
 
     python scripts/creature_check.py            # the table and a pass/fail line
     python scripts/creature_check.py --all      # every line of the generation, not just
