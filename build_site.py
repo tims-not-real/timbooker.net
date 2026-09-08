@@ -601,7 +601,9 @@ ROUTER_JS = r"""
     function settle(){
       // Click again before the first swap is done and the browser drops the first
       // transition, which lands here while the second is still running. The second one
-      // owns the page from that moment, so this one clears up after itself and stops.
+      // owns the page from that moment, so this one leaves it alone and stops: the name
+      // it would clear is the running swap's, and the model it would start is not the
+      // page you are on.
       if (mine !== tok) return;
       hold(null);                       // nothing is named, and nothing is promoted
       TB.run(next);                     // and the model starts once the page is still
@@ -614,7 +616,13 @@ ROUTER_JS = r"""
     // inline height to clear, and no second animation to be still running at the frame
     // the snapshots are torn down.
     hold(cur);                          // the page being left, for the old capture
-    document.startViewTransition(update).finished.then(settle, settle);
+    var vt = document.startViewTransition(update);
+    // Click faster than a swap and the browser skips the first transition, which rejects
+    // `ready`. Nothing here waits on `ready` any more, but a rejection nobody takes is a
+    // page error, so it is taken and dropped. `finished` resolves either way and settle()
+    // stops itself when it is the older swap's.
+    vt.ready.catch(function(){});
+    vt.finished.then(settle, settle);
   }
 
   addEventListener('popstate', function(e){
