@@ -123,13 +123,29 @@ a{color:inherit}
 .stack b{font-weight:700; font-size:.9375rem}
 .stack .sm{font-size:.75rem; opacity:.85}
 .stack .gap{height:.85rem}
+/* 44ch is the measure it wants, and it keeps it wherever the label is wide enough to
+   give the creature her corner as well. Where it is not, the credits give the corner up
+   rather than the creature being hidden in it: the bubble's own width and a 4px gutter,
+   which is the gap the block already leaves at 1400. That is 176 beside the big creature
+   and 88 beside the small one, so it bites below a 478px content box at the one and a
+   390px content box at the other — 380, 420, 560, 881 and 1000 of the widths measured.
+   The block gets taller and raggeder there, which is the cost of her being on the page. */
 .credits{
   margin-top:auto; padding-top:1.9rem; font-size:.75rem; line-height:1.6; opacity:.92;
-  max-width:44ch;
+  max-width:min(44ch, calc(100% - var(--crit-say) - 4px));
+  container-type:inline-size;
 }
 .credits b{font-weight:700}
 /* a personnel list breaks between credits, never inside one */
 .credits i{font-style:normal; white-space:nowrap}
+/* Except where a column that narrow cannot hold one. The longest credit paints 233.8px
+   and the full stop that follows it takes the line to 237.2, so under that the nowrap does
+   not keep the credit whole, it just paints it out of the block and across the creature
+   standing beside it. Breaking inside the credit is the lesser fault, and the smaller
+   creature buys the column back everywhere but the phone: it fires under a 413px viewport
+   and nowhere else, 380 alone of the widths measured, because 292 of content cannot hold
+   a 237.2 line and an 84 creature at once whatever it does with the 55 left over. */
+@container (max-width:237px){ .credits i{white-space:normal} }
 .label nav{
   display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center;
   font-size:.6875rem; letter-spacing:.16em; text-transform:uppercase;
@@ -142,48 +158,81 @@ a{color:inherit}
 /* ---- the creature ---- */
 /* It takes the free rectangle the label already has: 283 x 127 at x = 357 on a 680
    label, right of the credits and above the nav rule. Fourteen cells by twelve at eight
-   pixels is 112 x 96, which sits in there with room for the bubble beside it.
-   Nothing scales. The canvas is drawn at its own size, so one canvas pixel is one CSS
-   pixel and every rect the script draws lands on a whole cell; image-rendering keeps
-   that true where the device scales the page instead. --crit-y is the label's bottom
-   padding plus the height of the nav, so the sprite's feet sit a pixel above the rule. */
-.label{--crit-x:2.5rem; --crit-y:74px}
+   pixels is 112 x 96, which sits in there with room for the bubble over its head.
+   Nothing is ever scaled. She has two sizes and both are whole cells: --crit-cell is the
+   only number that changes, the script reads it back and sets the canvas to fourteen by
+   twelve of it, so one canvas pixel is one CSS pixel at either size and every rect the
+   script draws still lands on a whole cell. No width or height here, for the same reason
+   — the canvas is its own size and a CSS one would only fight the script for it;
+   image-rendering keeps the grid true where the device scales the page instead.
+   --crit-y is the label's bottom padding plus the height of the nav, so the sprite's feet
+   sit a pixel above the rule. The nav is not always one line: it wraps wherever the
+   label's content box is under 407px, which is below 495 and again at 881 to 958, where
+   the plate column has the label at its narrowest — the second band the issue did not
+   know about. A second nav line is 37.6px and a third is another, and --crit-nav is that,
+   so there is one number for the floor and one for the nav rather than a set of totals to
+   keep in step. */
+.label{
+  --crit-x:2.5rem; --crit-nav:0px; --crit-y:calc(74px + var(--crit-nav));
+  --crit-cell:8; --crit-tail:8px; --crit-say:172px;
+}
+@media(min-width:881px) and (max-width:958px){ .label{--crit-nav:37.6px} }
+@media(max-width:494px){ .label{--crit-nav:37.6px} }
+@media(max-width:338px){ .label{--crit-nav:75.2px} }
 #critter{
   position:absolute; right:var(--crit-x); bottom:var(--crit-y);
-  width:112px; height:96px; image-rendering:pixelated; cursor:pointer;
+  image-rendering:pixelated; cursor:pointer;
 }
-/* Small, white, left of the creature with its tail pointing at it. Hidden until the
-   creature speaks, which it does on load, so in practice it is up for the whole visit:
-   somebody deciding whether to click has to be able to read the line. 122px is the
-   sprite plus a gap, and 172px is what the label's free 283 holds beside the sprite. */
+/* Small, white, over the creature's head with its tail pointing down at it. Hidden until
+   the creature speaks, which it does on load, so in practice it is up for the whole
+   visit: somebody deciding whether to click has to be able to read the line. Above her
+   rather than beside her, because beside her the corner has to be 294 wide — sprite, gap
+   and bubble in a row — and it is that clear of the credits at two of the eleven widths
+   measured. Above her the corner has to hold the bubble alone, on the same right edge as
+   the sprite, and the credits give that up at every width. It stands twelve cells and a
+   10px gap off the floor, which is the sprite's own height and the gap the bubble has
+   always kept off her, so it comes down a size with her without a second number. */
 #critsay{
-  position:absolute; right:calc(var(--crit-x) + 122px); bottom:calc(var(--crit-y) + 22px);
-  max-width:172px; padding:.4rem .55rem; border-radius:11px;
+  position:absolute; right:var(--crit-x);
+  bottom:calc(var(--crit-y) + var(--crit-cell) * 12px + 10px);
+  max-width:var(--crit-say); padding:.4rem .55rem; border-radius:11px;
   background:var(--fg); color:var(--bg); font-size:.75rem; line-height:1.35;
   opacity:0; transition:opacity .18s ease; pointer-events:none;
 }
-/* The tail is 16px tall and the corners are an 11px radius, so on a bubble of two lines
-   or more it sits in the straight part of the right edge. A one-line bubble is 29px tall
-   and there is only 7px of straight edge in it: pinned 14px from the bottom the tail was
-   pushed up into the corner, where the radius has curved away from it, and it read as a
-   notched-off arrow floating beside the bubble rather than as a tail. min() keeps the
-   original position on a tall bubble and centres it once the bubble is too short to hold
-   it, and the tail starts 1px inside the edge so the curve cannot open a seam at either
-   base corner. */
+/* The tail is two of its own border widths across, and against an 11px corner radius it
+   sits in the straight part of the bottom edge on any bubble wider than the sprite. Seven
+   cells in from the right puts its point on the middle of a sprite hung off that same
+   edge — 48px at eight pixels a cell, 34 at six. A short line makes a bubble narrower
+   than that: pinned at seven cells the tail was pushed into the corner, where the radius
+   has curved away from it, and it read as a notched-off arrow floating under the bubble
+   rather than as a tail. min() keeps the aimed position on a wide bubble and centres it
+   once the bubble is too narrow to hold it, and the tail starts 1px inside the edge so
+   the curve cannot open a seam at either base corner. */
 #critsay::after{
-  content:""; position:absolute; right:-7px; bottom:min(14px, calc(50% - 8px));
-  border:8px solid transparent; border-left-color:var(--fg); border-right:0;
+  content:""; position:absolute; bottom:calc(1px - var(--crit-tail));
+  right:min(calc(var(--crit-cell) * 7px - var(--crit-tail)), calc(50% - var(--crit-tail)));
+  border:var(--crit-tail) solid transparent; border-top-color:var(--fg); border-bottom:0;
 }
 #critsay.on{opacity:1}
-/* Two bands where the label has not got the room, and it is hidden in both rather than
-   shrunk: a sprite that is a whole number of cells has exactly one size. Above 880 the
-   plate column is a fixed 23rem, so the label is at its narrowest just above the
-   breakpoint — 409px at 881 — and only reaches its full 680 at 1152; the bubble runs
-   into the credits until about 1100. Below 640 the nav takes two lines and the credits
-   reach across the corner. Both bands measured; the numbers are in the PR. */
-#critter, #critsay{display:none}
-@media(min-width:1120px){ #critter, #critsay{display:block} }
-@media(max-width:880px) and (min-width:640px){ #critter, #critsay{display:block} }
+/* The band where she is smaller: six pixels a cell instead of eight, 84 x 72, and the
+   bubble comes down with her. Smaller rather than hidden, and a whole cell smaller rather
+   than scaled, because a sprite on half pixels is not this sprite.
+   Where the line is drawn: at 112 x 96 the corner takes 176 and the widest credit paints
+   237.2, so the credits keep whole credits only where the content box holds 413.2. The
+   band ends where the box holds 420, a few pixels of margin on that. Content is the
+   viewport less 88 below 880 and less 552 above it, so the band is 507 and below, and 881
+   to 971, where the plate column has the label at its narrowest.
+   The bubble is 84 here, her own width to the pixel, and that is not a coincidence with a
+   reason invented for it: 88 of reserve is the most the corner can take at 881 and still
+   leave the credits their 237.2, and 84 with the 4px gutter is what fits under that. It
+   does make the tail's two positions one — seven cells in from the bubble's right edge is
+   the middle of the bubble as well as the middle of her.
+   Ten pixels is the smallest type on the site and the bubble does not go under it. The
+   line is the whole point of the bubble and it has to be read. */
+@media(max-width:507px), (min-width:881px) and (max-width:971px){
+  .label{--crit-cell:6; --crit-tail:6px; --crit-say:84px}
+  #critsay{font-size:.625rem; padding:.3rem .4rem; border-radius:9px}
+}
 
 /* ---- the toy ---- */
 .viz{display:flex; flex-direction:column; gap:.6rem}
@@ -409,7 +458,7 @@ html.app::view-transition-group(page){animation:none}
   .hero{grid-template-columns:minmax(0,1fr)}
   /* the creature keeps to the label's own padding, which is smaller here, and the nav
      sits four pixels nearer the bottom edge for the same reason, so the creature does */
-  .label{padding:1.75rem 1.5rem; --crit-x:1.5rem; --crit-y:70px}
+  .label{padding:1.75rem 1.5rem; --crit-x:1.5rem; --crit-y:calc(70px + var(--crit-nav))}
   .title{font-size:1.875rem}
   .rows{grid-template-columns:minmax(0,1fr); gap:0}
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}
