@@ -70,8 +70,11 @@ MEASURE = """() => {
   }
   const gap = (box) => Math.max(box.l - paintR, paintT - box.b);
   const S = R(sp), B = R(bu), C = R(cr), N = R(nv);
+  const cell = parseFloat(getComputedStyle(L).getPropertyValue('--crit-cell'));
   return {
     sprite: S, bubble: B, credits: C, nav: N, pad: pad,
+    cell: cell, canvas: [sp.width, sp.height],
+    creditsBreaks: getComputedStyle(cr.querySelector('i')).whiteSpace,
     spriteVisible: vis(sp), bubbleVisible: vis(bu),
     free: pad.r - C.r, paintFree: pad.r - paintR,
     bubbleHitsCredits: hit(B, C), bubbleHitsNav: hit(B, N),
@@ -84,14 +87,22 @@ MEASURE = """() => {
 
 
 def check(m):
+    c, s = m['cell'], m['sprite']
     return [
         ('1 both visible', m['spriteVisible'] and m['bubbleVisible']),
-        ('2 sprite 112x96', abs(m['sprite']['w'] - 112) < .01
-                            and abs(m['sprite']['h'] - 96) < .01),
+        # 14 cells by 12 of a whole number of pixels, and the canvas's own width and
+        # height are that too, so one canvas pixel is one CSS pixel at either size.
+        ('2 sprite %d x %d cells of %g' % (14, 12, c),
+         c in (6, 8) and abs(s['w'] - 14 * c) < .01 and abs(s['h'] - 12 * c) < .01
+         and m['canvas'] == [14 * c, 12 * c]),
         ('3 bubble clears credits and nav',
          not m['bubbleHitsCredits'] and not m['bubbleHitsNav']),
         ('4 sprite above the nav', m['spriteAboveNav'] > 0),
         ('5 bubble inside the label', m['bubbleInLabel']),
+        # Not in the issue, and the one that a box test alone gets wrong: each credit is
+        # nowrap, so a credit wider than its column paints outside it.
+        ('6 credits paint clear of the sprite', m['spritePaintGap'] > 0),
+        ('7 credits paint clear of the bubble', m['bubblePaintGap'] > 0),
     ]
 
 
@@ -121,16 +132,17 @@ with sync_playwright() as pw:
 
 print('longest line, %d characters: %s' % (len(LONGEST), LONGEST))
 print()
-print('%-6s %-12s %6s %6s  %-22s %-24s %6s %6s  %s'
-      % ('width', 'page', 'free', 'paint', 'sprite', 'bubble',
-         'navgap', 'credgap', ''))
+print('%-6s %-12s %5s %6s %6s  %-20s %-22s %6s %6s %6s  %s'
+      % ('width', 'page', 'cell', 'free', 'paint', 'sprite', 'bubble',
+         'navgap', 'sprgap', 'bubgap', 'nowrap'))
 for w, name, m, bad in rows:
     s, b = m['sprite'], m['bubble']
-    print('%-6d %-12s %6.1f %6.1f  %-22s %-24s %6.2f %6.1f  %s'
-          % (w, name, m['free'], m['paintFree'],
+    print('%-6d %-12s %5g %6.1f %6.1f  %-20s %-22s %6.2f %6.1f %6.1f %6s  %s'
+          % (w, name, m['cell'], m['free'], m['paintFree'],
              '%.0f,%.0f %gx%g' % (s['x'], s['y'], s['w'], s['h']),
              '%.0f,%.0f %.0fx%.1f' % (b['x'], b['y'], b['w'], b['h']),
-             m['spriteAboveNav'], m['spritePaintGap'],
+             m['spriteAboveNav'], m['spritePaintGap'], m['bubblePaintGap'],
+             'kept' if m['creditsBreaks'] == 'nowrap' else 'BROKEN',
              'pass' if not bad else 'FAIL ' + '; '.join(bad)))
 print()
 print('%d rows, %d failures' % (len(rows), len(fails)))

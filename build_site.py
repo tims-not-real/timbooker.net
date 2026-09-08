@@ -917,7 +917,22 @@ CREATURE_JS = r"""
   if (!cv) return;
   var say = document.getElementById('critsay'), cx = cv.getContext('2d');
   function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
-  var CELL = 8, FUR = css('--lat-off'), HOLE = css('--fill');
+  var FUR = css('--lat-off'), HOLE = css('--fill');
+  // Two sizes, eight pixels a cell and six, and the stylesheet owns which: it knows the
+  // label's width, this does not, and one copy of that rule is enough (#49). Setting the
+  // canvas attributes rather than a CSS width is what keeps one canvas pixel one CSS
+  // pixel at either size -- and it clears the canvas, so whoever calls this redraws.
+  var CELL = 0;
+  function fit(){
+    var c = parseInt(getComputedStyle(cv.parentNode)
+                     .getPropertyValue('--crit-cell'), 10) || 8;
+    if (c === CELL) return false;
+    CELL = c;
+    cv.width = 14 * CELL;
+    cv.height = 12 * CELL;
+    return true;
+  }
+  fit();
   var F = __FRAMES__;
   var LINES = __LINES__;          // [agent slot, line id, line], this generation's lot
 
@@ -934,14 +949,22 @@ CREATURE_JS = r"""
     P[k] = {fur: fur, ink: ink};
   });
 
+  var drewF = 'idleA', drewUp = 0;
   function draw(f, up){
     var sp = P[f], oy = -up * CELL;
+    drewF = f; drewUp = up;
     cx.clearRect(0, 0, cv.width, cv.height);
     cx.fillStyle = FUR;
     sp.fur.forEach(function(p){ cx.fillRect(p[0]*CELL, oy + p[1]*CELL, CELL, CELL); });
     cx.fillStyle = HOLE;
     sp.ink.forEach(function(p){ cx.fillRect(p[0]*CELL, oy + p[1]*CELL, CELL, CELL); });
   }
+  // A window that crosses the band takes the canvas with it. Resizing clears it, and the
+  // idle loop only draws when the picture changes, so the frame it was already showing is
+  // put back here rather than left to a change that may be seconds away. Registered once,
+  // above the reduced-motion return, because under that query there is no loop at all and
+  // a cleared canvas would stay empty for the rest of the visit.
+  addEventListener('resize', function(){ if (fit()) draw(drewF, drewUp); });
 
   // One line, drawn uniformly, said on arrival. That is the whole of the experiment: a
   // visitor reads a line nobody chose for them and then either pats the creature or
@@ -1160,6 +1183,13 @@ CREATURE_JS = r"""
       // worse than no gesture. Written as an exact expectation rather than a threshold so
       // that a label geometry which ever travels some other distance switches the gesture
       // off instead of landing the cat short of the floor.
+      //
+      // That is what happens in the small band (#49). The floor still travels 145.06px at
+      // 881 to 971, but at six pixels a cell that is 24 cells and the sequence is drawn
+      // for 18, so the test fails and the cat simply stands on the new floor. Landing her
+      // 37px short of it would be the alternative. Rewriting the gesture in pixels, or a
+      // second sequence for the small cell, is a change to a thing Tim iterated six times
+      // and is not one to make in passing.
       if (Math.round(Math.abs(d) / CELL) !== RESIZE) return;
       rest = now;
       // Leaving keeps the clock from the click, because that is when the floor started

@@ -52,9 +52,11 @@ def shoot(br, port, name, w):
     p.goto('http://127.0.0.1:%d/%s.html' % (port, name))
     p.add_style_tag(content=HIDE)
     # The faces are same-origin and swap in, so a shot taken before they land catches
-    # Helvetica in one or two lines of the note and reports it as a change.
+    # Helvetica in a line of the note and reports it as a change. The chemistry dish's
+    # note says "Seeded again from outside" for its first 1200ms and its regime after
+    # that, so a shot near that edge catches one side on each sentence: 2500 clears it.
     p.evaluate('() => document.fonts.ready')
-    p.wait_for_timeout(1400)
+    p.wait_for_timeout(2500)
     p.evaluate('() => window.scrollTo(0, 0)')
     png = p.screenshot(full_page=True)
     p.close()
