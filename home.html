@@ -1698,13 +1698,22 @@ function soup(){
     if (Math.random() < 0.5) board.put(x, y, 1);
 }
 
-// A board that repeats is a board that has finished, and it is held for WAIT and then
-// laid out again. This is the other way out: a glider walking away across a board that
-// wraps meets nothing and comes back round for ever, so a board with one loose glider on
-// it never repeats. The cap sits above the longest of the 30 soups, which took 4377, so
-// a soup always reaches ash on its own account and the cap only ever catches a board
-// with a glider loose on it.
-var CAP = 4800;
+// The plate never lays the scenario out again. It runs until it settles and then it
+// stops and waits, and what happens next is the reader's. A board that repeats has
+// finished; that is one exit. The other is the board that never repeats — a glider
+// walking away across a board that wraps meets nothing and comes back round for ever —
+// and it runs out its cap and stops there instead. The cap sits above the longest of the
+// 30 soups, which took 4377, so a soup always reaches ash on its own account and the cap
+// only ever catches a board with something loose on it.
+//
+// Both exits stop the same way Pause does, by returning false from tick(), so there is
+// one way for this plate to be stopped and not two.
+//
+// The cap is a limit on a run and not on the board: a reader who presses Resume on a
+// capped board is asking for another run and gets one, for the same reason ash the reader
+// has asked to run goes on running. Without that, Resume on this exit would be as dead as
+// Resume on the other one.
+var CAP = 4800, capAt = CAP;
 
 var SCENES = {gliders: gliders, gun: gun, soup: soup};
 
@@ -1721,8 +1730,11 @@ var picks = root.querySelectorAll('button[data-scene]'),
 var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var paused = reduce, shown = false;
 
-var WAIT = 2000;                   // ash held this long before the scenario runs again
-var quietAt = 0, touchedAt = -1e9, scene = 'soup';
+// skip  — half speed: every other tick does nothing at all
+// armed — whether the settle detector is allowed to fire. A settled board is still
+//         settled, so it is not, until the board has been seen going somewhere.
+var skip = false, armed = false;
+var quiet = false, capped = false, touchedAt = -1e9, scene = 'soup';
 var objs = TBcensus(board.cells(), N);   // what the caption's second line is reading
 
 // What is on the board, in the register the plates on Research and Freelancing use: the
@@ -1743,8 +1755,23 @@ function say(){
   var t = performance.now(), text;
   if (t - touchedAt < 1200)
     text = 'Changed by hand';
-  else if (quietAt)
-    text = 'Ash · what is left of it only repeats';
+  // The two ends, and both of them now say that they are one. Ash used to be a state the
+  // plate passed through on its way to laying the scenario out again, and the line was
+  // written for that; it is the state the plate ends on, so the line says so. The cap
+  // gets a line of its own rather than sharing that one, because a board still going at
+  // 4800 has something loose on it that never comes back, which is a different thing from
+  // a board with nothing left but repeats — and the two lines name exactly the difference
+  // between them, which is whether the board repeats.
+  //
+  // Measured in .note at 340, which is the narrowest it is ever given: the ash line
+  // paints 272.89 and the cap line 301.00, against the collision line's 336.70, which is
+  // the widest the caption has ever said. The cap line carries a number that grows every
+  // time a reader resumes a board that has run out its cap, so it was written to hold one
+  // that grows: 307.53 at five digits and 315.58 at six.
+  else if (quiet)
+    text = 'Ash · what is left only repeats, so the plate stops';
+  else if (capped)
+    text = 'Nothing settled by ' + capAt + ' · what is loose never repeats';
   else if (scene === 'gliders' && board.gen() < HIT)
     text = 'Two gliders, on a course to cross';
   else if (scene === 'gliders')
@@ -1772,7 +1799,10 @@ function say(){
   var line = tally();
   if (line1.textContent !== text) line1.textContent = text;
   if (line2.textContent !== line) line2.textContent = line;
-  var end = !!quietAt;
+  // The caption goes bold when the board has finished, whichever of the two ways it
+  // finished in. It is a fact about the board and not about the loop, so it reads the
+  // same on ash the reader has asked to go on running.
+  var end = quiet || capped;
   if (cap.classList.contains('crit') !== end) cap.classList.toggle('crit', end);
 }
 
@@ -1808,28 +1838,47 @@ function look(){ objs = TBcensus(board.cells(), N); }
 
 function count(){ out.textContent = board.gen(); }
 
+// A new board, and the generation goes back to nought with it, so both exits start over:
+// the settle detector has seen nothing yet and the cap is 4800 again.
 function load(name){
   scene = name;
   SCENES[name]();
-  quietAt = 0; touchedAt = -1e9;
+  quiet = false; capped = false; armed = false; capAt = CAP; touchedAt = -1e9;
   for (var i=0;i<picks.length;i++)
     picks[i].setAttribute('aria-pressed',
                           picks[i].getAttribute('data-scene') === name ? 'true' : 'false');
   count(); look(); say(); paint();
 }
 
+// A scene button lays the scenario out and paints it, and it does not start the loop. It
+// never has: everything the reader can do while the plate is stopped paints its own frame
+// and leaves it stopped, which is what keeps the run button's word true. Making this one
+// press an exception would mean a scene button silently undoing a Pause the reader asked
+// for, and there would then be a press that says Resume and a press that resumes.
 for (var i=0;i<picks.length;i++) picks[i].addEventListener('click', function(){
   load(this.getAttribute('data-scene'));
 });
 
 // Pause is the loop stopping, not the loop spinning on a flag: tick() returns false and
 // the runtime takes it down, which is the same settle-and-stop every plate here already
-// has. Resume asks the runtime for it back. Everything the reader can do while it is
-// stopped paints its own frame.
+// has. It is also how the plate stops itself when a run ends, so there is one way to be
+// stopped and the button's word is true whichever of them did it. Resume asks the runtime
+// for it back. Everything the reader can do while it is stopped paints its own frame.
+function halt(){ paused = true; runner.textContent = 'Resume'; }
+
+// Resume re-arms both exits, and it has to. A settled board is still settled, so a
+// detector that fired on the first tick after a resume would stop the plate again and the
+// button would have done nothing, twice. The board has to be seen not repeating once
+// before it may stop on repeating again; ash the reader has asked to run goes on running,
+// which is what they asked for. A board already at the cap gets a fresh run of them.
 runner.addEventListener('click', function(){
   paused = !paused;
   runner.textContent = paused ? 'Resume' : 'Pause';
-  if (!paused) TB.run('about');
+  if (!paused){
+    armed = false; capped = false;
+    if (board.gen() >= capAt) capAt = board.gen() + CAP;
+    TB.run('about');
+  }
 });
 if (paused) runner.textContent = 'Resume';
 
@@ -1858,10 +1907,12 @@ function cell(e){
 // across, which is not what drawing does anywhere else.
 var ink = -1, lx = 0, ly = 0;
 function touch(){
-  // The board is the reader's from here. The ash clock is cleared for the same reason
-  // the dish on Freelancing clears its death clock on a click: what happens next is
-  // theirs, and it should not be swept away by a countdown they never saw.
-  quietAt = 0; touchedAt = performance.now();
+  // The board is the reader's from here, so the settle detector goes back to unarmed
+  // along with it: what they have just drawn gets seen going somewhere before the plate
+  // is allowed to call it finished. It is the same re-arming Resume does, for the same
+  // reason. `capped` is left alone: a board past the cap is still past the cap, and the
+  // caption goes on saying so once the hand-drawn line has had its 1200ms.
+  quiet = false; armed = false; touchedAt = performance.now();
   look(); say(); paint();
 }
 
@@ -1908,19 +1959,32 @@ cv.style.opacity = 0;
 return { tick: function(){
   if (!shown){ shown = true; paint(); cv.style.opacity = 1; return !paused; }
   if (paused) return false;
+  // Half speed, and it is a skipped tick rather than a clock: the plate keeps the
+  // frame-tied character it has always had, and half is exactly half on any display. A
+  // skipped tick does nothing at all — no step, no paint, no count and no census. The
+  // board has not changed, so there is nothing to repaint and nothing to recount, and
+  // the census is the expensive call on this plate.
+  skip = !skip;
+  if (skip) return true;
   board.step();
   paint();
   count();
   look();
-  var t = performance.now();
-  if (board.repeats()){ if (!quietAt) quietAt = t; }
-  else quietAt = 0;
+  quiet = board.repeats();
+  // Seen going somewhere, so it may be called finished when it stops going anywhere.
+  // repeats() compares against one and two generations back, so it fires one step past a
+  // still life and two past a blinker, and the generation it rests on is that far past
+  // where the board truly settled.
+  if (!quiet) armed = true;
+  capped = board.gen() >= capAt;
+  var done = (quiet && armed) || capped;
+  // The run is over, so the plate stops, the way Pause stops it, and the button says so.
+  // It does not lay the scenario out again — neither here nor at the cap. What is on the
+  // board is what the reader was watching, and it stays there until they ask for
+  // something else.
+  if (done) halt();
   say();
-  // Ash is the end of the run, not a fault, so it is held long enough to be looked at
-  // and then the same scenario is laid out again — the same one, so that the picture and
-  // the button that is lit go on agreeing.
-  if ((quietAt && t - quietAt >= WAIT) || board.gen() >= CAP) load(scene);
-  return true;
+  return !done;
 } };
 });
 
