@@ -27,6 +27,22 @@ stays stopped, that it never lays the scenario out again, and that Resume is not
 button — a settled board is still settled, so a detector that fired on the first tick
 after a resume would stop it again and the press would have done nothing.
 
+That last one is where the review of PR #68 found the bug, and the shape of it is the
+lesson. The detector was armed by seeing the board take one step that did not repeat,
+which never happens on a board of nothing but still lifes: the gun's wreck is 32 cells,
+period 1, and not a blinker in it. Draw a cell on that and press Resume and the plate ran
+a visibly finished board 4,269 generations to the cap. Every one of the six checks the
+issue asked for passed on it, because every one of them settled a board and stopped and
+none of them clicked on it afterwards. So the settle is now checked on all three
+scenarios after a mark drawn in clear space, on a board that is nothing but still lifes,
+and on a board that is completely static — and the cap's caption is checked never to
+appear on a board that has stopped moving.
+
+The fourth thing is the scene buttons, which since #67 tell apart the two ways the plate
+can be stopped. A Pause the reader pressed and reduced motion are the reader asking for
+stillness, and a scenario picked under either is laid out and left still; a run that has
+ended is nobody asking for anything, so a scenario picked there starts the next run.
+
 The cap needs 4800 generations, which is 160 seconds at the rate the plate actually runs.
 That one check gets a browser launched with vsync off, purely so the generations arrive;
 nothing in it depends on the rate, and the rate is measured on an ordinary browser.
@@ -53,6 +69,10 @@ CAP = 4800                      # the generations a run gets before the plate st
 # 240 and what is left of it only blinks, so repeats() fires and the plate stops. It is
 # deterministic, so the generation it rests on is a number and not a range.
 SETTLE_GLIDERS = 300
+# The steps the settle detector waits out after every re-arming, which is what repeats()
+# needs for its own comparison window to be clear of whatever the reader just did.
+WINDOW = 2
+SOON = 6                        # generations a re-armed board gets to stop inside
 # Launching with vsync off is the only way 4800 generations arrive inside a check. The
 # fallback is the same browser at its ordinary rate, which takes about 160 seconds.
 FAST = ['--disable-gpu-vsync', '--disable-frame-rate-limit', '--use-gl=swiftshader',
@@ -420,12 +440,11 @@ STOPPED = """() => {
           census: TBcensus(cells, n), running: TB.running(), ticks: TB.ticks.about};
 }"""
 
-# One glider, alone on an empty board, is the board that never repeats: it walks away, the
-# board wraps, it comes round, and it is never the board it was one or two generations
-# ago. The Gliders scene puts two of them down and they collide, so one of them is rubbed
-# out — five presses on five known live cells, with the plate stopped so that nothing has
-# moved between them. What is left is the loose glider the cap exists for.
-RUB = """([n, l, t, w, h, cells]) => {
+# Presses on named cells, the way a reader's finger lands, with the plate stopped so that
+# nothing has moved between them. A press on a dead cell draws and a press on a live one
+# rubs out, which is the plate's own rule, so this both puts a block down on empty ground
+# and takes a glider off the board depending on where it is aimed.
+MARK = """([n, l, t, w, h, cells]) => {
   const cv = document.querySelector('.viz[data-plate=about] canvas');
   for (const p of cells)
     cv.dispatchEvent(new PointerEvent('pointerdown',
@@ -450,6 +469,23 @@ BOX = """() => {
 # The five cells of the glider the Gliders scene puts at MARGIN, MARGIN. The other one
 # goes in at MARGIN + OFFSET, N - 1 - MARGIN, and is the one left standing.
 FIRST_GLIDER = [[5, 4], [6, 5], [4, 6], [5, 6], [6, 6]]
+
+# A cell with nothing live inside `pad` of it, read off the picture and across the wrap.
+# Settled ash is 97% empty board, so this is what a reader clicking at random hits, and a
+# mark drawn there touches none of the ash: whatever the plate does next it does because
+# of the mark and not because the mark landed on something.
+CLEAR = """(pad) => {
+  const cv = document.querySelector('.viz[data-plate=about] canvas');
+  const n = cv.width, d = cv.getContext('2d').getImageData(0, 0, n, n).data;
+  const on = (x, y) => d[(((y + n) % n) * n + (x + n) % n) * 4] > 128;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    let clear = true;
+    for (let dy = -pad; dy <= pad && clear; dy++)
+      for (let dx = -pad; dx <= pad; dx++) if (on(x + dx, y + dy)) { clear = false; break; }
+    if (clear) return [x, y];
+  }
+  return null;
+}"""
 
 STOPS = ('() => document.querySelector(".viz[data-plate=about] button.run")'
          '.textContent === "Resume"')
@@ -821,22 +857,25 @@ with sync_playwright() as pw:
          '  %r\n  %r\n  %.2f of %.2f allowed, .viz %.2f'
          % (s0['state'], s0['tally'], s0['note'], TWO_LINES, s0['viz']))
     # (4) and the press does something. A settled board is still settled, so a plate that
-    # re-detected the settle on the first tick after the resume would advance the counter
-    # by exactly one and stop again, which is a dead button with a number on it.
+    # read the settle off the first tick after the resume would advance the counter by
+    # exactly one and stop again, which is a dead button with a number on it. The board
+    # gets WINDOW steps in which it may not be called finished, so a live Resume is worth
+    # exactly that many generations here and a dead one is worth one.
     p.click('.viz[data-plate=about] button.run')
-    p.wait_for_timeout(1000)
+    p.wait_for_timeout(1200)
     s2 = p.evaluate(STOPPED)
     note('Resume on a settled board is not a dead button',
-         s2['gen'] > s0['gen'] + 1 and s2['running'] == 'about'
-         and s2['run'] == 'Pause',
-         '  generation %d to %d over 1000ms, loop %s, button %r'
-         % (s0['gen'], s2['gen'], s2['running'], s2['run']))
-    # and the ash it has been asked to run goes on running rather than stopping again
+         s2['gen'] >= s0['gen'] + WINDOW,
+         '  generation %d to %d, %d steps, against the %d a dead one would be worth'
+         % (s0['gen'], s2['gen'], s2['gen'] - s0['gen'], 1))
+    # and then it stops again, because the board is finished and there is nothing there to
+    # resume. Running on would be Gen climbing on a board the reader can see is not moving.
     p.wait_for_timeout(1000)
     s3 = p.evaluate(STOPPED)
-    note('and ash the reader has asked to run goes on running',
-         s3['gen'] > s2['gen'] and s3['running'] == 'about',
-         '  generation %d a second later, still %s' % (s3['gen'], s3['running']))
+    note('and then it stops again, rather than running finished ash on to the cap',
+         s3['gen'] == s2['gen'] and s3['running'] is None and s3['run'] == 'Resume',
+         '  generation %d, then %d a second later, loop %s, button %r'
+         % (s2['gen'], s3['gen'], s3['running'], s3['run']))
     # The three things a reader can do to a stopped plate, and the one thing that has to
     # be true after each of them: the button's word is what the loop is doing.
     p.click('.viz[data-plate=about] button.run')
@@ -857,15 +896,139 @@ with sync_playwright() as pw:
          and len(r['changed']) == 1 and s5['gen'] == s4['gen'],
          '  %d cell changed, generation still %d, button %r, loop %s'
          % (len(r['changed']), s5['gen'], s5['run'], s5['running']))
-    p.click('.viz[data-plate=about] button[data-scene=soup]')
+    p.close()
+
+    # ---- the settle detector arms on the window, not on the board moving ---------
+    # The bug PR #68 was sent back for. Arming on "the board took a step that did not
+    # repeat" never arms on a board of nothing but still lifes, because such a board has
+    # no such step in it, so the plate ran a finished board to the cap. Each of the three
+    # scenarios is run to settled, marked with one cell in clear ground — which is what a
+    # reader clicking on settled ash actually hits — and resumed, and each has to stop
+    # again within a few generations rather than climbing to 4800.
+    #
+    # These use the vsync-off browser: the soup takes 110 seconds to settle at the rate
+    # the plate runs and about two here, and nothing in them reads a rate.
+    try:
+        fast = br.browser_type.launch(args=FAST)
+    except Exception:
+        fast = br.browser_type.launch(args=FAST[:2])
+    for scene in ('gliders', 'gun', 'soup'):
+        p = fast.new_page(viewport={'width': 1400, 'height': 900})
+        p.goto(URL + 'about.html')
+        p.wait_for_function('TB.running() === "about"')
+        p.click('.viz[data-plate=about] button[data-scene=%s]' % scene)
+        settled = waits_to_stop(p, 180000)
+        a = p.evaluate(STOPPED)
+        box = p.evaluate(BOX)
+        spot = p.evaluate(CLEAR, 2)
+        p.evaluate(MARK, [box['n'], box['l'], box['t'], box['w'], box['h'], [spot]])
+        p.click('.viz[data-plate=about] button.run')
+        again = waits_to_stop(p, 60000)
+        # past the 1200ms the hand-drawn line is held for, so the caption under test is
+        # the one the plate rests on and not "Changed by hand"
+        p.wait_for_timeout(1600)
+        b = p.evaluate(STOPPED)
+        blinkers = a['census']['counts'].get('blinker', 0)
+        note('%s: settled, marked in clear ground and resumed, it stops again within %d '
+             'generations' % (scene, SOON),
+             settled and again and b['running'] is None
+             and WINDOW <= b['gen'] - a['gen'] <= SOON,
+             '  settled at %d with %d cells and %d blinkers; marked at %s and resumed, '
+             'stopped at %d, %d steps on' % (a['gen'], a['pop'], blinkers, spot, b['gen'],
+                                             b['gen'] - a['gen']))
+        c = p.evaluate(STOPPED)
+        note('%s: and Gen holds there, and it says ash rather than the cap' % scene,
+             c['gen'] == b['gen'] and 'Ash' in b['state'] and str(CAP) not in b['state'],
+             '  generation %d, and the caption is %r' % (c['gen'], b['state']))
+        p.close()
+
+    # A board that is nothing but still lifes is the one arming on movement could not see,
+    # so it gets a check of its own by name. The gun's wreck is measured to be exactly
+    # that, and a block drawn on clear ground beside it leaves a board that is completely
+    # static: not one cell changes from the resume to the stop.
+    p = fast.new_page(viewport={'width': 1400, 'height': 900})
+    p.goto(URL + 'about.html')
+    p.wait_for_function('TB.running() === "about"')
+    p.click('.viz[data-plate=about] button[data-scene=gun]')
+    settled = waits_to_stop(p, 180000)
+    a = p.evaluate(STOPPED)
+    note("the gun's wreck is nothing but still lifes, which is the board the old arming "
+         'could not see', settled and a['census']['counts'].get('blinker', 0) == 0,
+         '  %d cells at generation %d, %s' % (a['pop'], a['gen'], a['census']['counts']))
+    box = p.evaluate(BOX)
+    x, y = p.evaluate(CLEAR, 3)
+    p.evaluate(MARK, [box['n'], box['l'], box['t'], box['w'], box['h'],
+                      [[x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]]])
+    drawn = p.evaluate(STOPPED)
+    p.click('.viz[data-plate=about] button.run')
+    again = waits_to_stop(p, 60000)
+    p.wait_for_timeout(1600)
+    b = p.evaluate(STOPPED)
+    note('a board that is completely static stops rather than running to the cap',
+         again and b['running'] is None and WINDOW <= b['gen'] - a['gen'] <= SOON
+         and drawn['pop'] == a['pop'] + 4 and b['pop'] == drawn['pop'],
+         '  %d cells settled, a block drawn at %s makes %d, and %d after the resume; it '
+         'stopped at generation %d, %d steps on'
+         % (a['pop'], (x, y), drawn['pop'], b['pop'], b['gen'], b['gen'] - a['gen']))
+    note('and the cap line is never shown on a board that has stopped moving',
+         'Ash' in b['state'] and str(CAP) not in b['state'],
+         '  the caption is %r' % b['state'])
+    p.close()
+
+    # ---- the scene buttons tell the two ways of being stopped apart ---------------
+    # Tim's ruling on #67. A Pause the reader pressed and reduced motion are the reader
+    # asking for stillness; a run that has ended is nobody asking for anything.
+    p = fast.new_page(viewport={'width': 1400, 'height': 900})
+    p.goto(URL + 'about.html')
+    p.wait_for_function('TB.running() === "about"')
+    p.wait_for_timeout(300)
+    p.click('.viz[data-plate=about] button[data-scene=gliders]')
+    p.wait_for_timeout(400)
+    s = p.evaluate(STOPPED)
+    note('a scene button while it is running leaves it running',
+         s['running'] == 'about' and s['run'] == 'Pause' and s['gen'] > 0,
+         '  generation %d, button %r, loop %s' % (s['gen'], s['run'], s['running']))
+    p.click('.viz[data-plate=about] button.run')
     p.wait_for_timeout(200)
-    s6 = p.evaluate(STOPPED)
-    note('a scene button on a stopped board: it lays the board out, and the word and the '
-         'loop still agree',
-         s6['run'] == 'Resume' and s6['running'] is None and s6['gen'] == 0
-         and s6['pop'] > 2000,
-         '  generation %d, %d cells, button %r, loop %s'
-         % (s6['gen'], s6['pop'], s6['run'], s6['running']))
+    p.click('.viz[data-plate=about] button[data-scene=soup]')
+    a = p.evaluate(STOPPED)
+    p.wait_for_timeout(800)
+    b = p.evaluate(STOPPED)
+    note('a scene button after a Pause the reader pressed leaves it stopped',
+         a['gen'] == b['gen'] == 0 and b['running'] is None and b['run'] == 'Resume'
+         and b['pop'] > 2000,
+         '  generation %d, then %d after 800ms, %d cells, button %r, loop %s'
+         % (a['gen'], b['gen'], b['pop'], b['run'], b['running']))
+    p.close()
+
+    p = fast.new_page(viewport={'width': 1400, 'height': 900})
+    p.goto(URL + 'about.html')
+    p.wait_for_function('TB.running() === "about"')
+    p.click('.viz[data-plate=about] button[data-scene=gliders]')
+    ended = waits_to_stop(p, 180000)
+    p.click('.viz[data-plate=about] button[data-scene=soup]')
+    p.wait_for_timeout(500)
+    s = p.evaluate(STOPPED)
+    note('a scene button after a run has ended starts the next one',
+         ended and s['running'] == 'about' and s['run'] == 'Pause' and s['gen'] > 0,
+         '  generation %d, button %r, loop %s' % (s['gen'], s['run'], s['running']))
+    p.close()
+
+    # The one that matters most: reduced motion is the reader's ask made by the browser,
+    # and the ruling beside `var reduce` is that it is the pause rather than a second path
+    # through the plate. A scenario picked under it is laid out, painted, and still.
+    p = fast.new_page(viewport={'width': 1400, 'height': 900}, reduced_motion='reduce')
+    p.goto(URL + 'about.html')
+    p.wait_for_function('TB.running() === null && TB.mounted().indexOf("about") >= 0')
+    p.click('.viz[data-plate=about] button[data-scene=gliders]')
+    a = p.evaluate(STOPPED)
+    p.wait_for_timeout(900)
+    b = p.evaluate(STOPPED)
+    note('a scene button under reduced motion lays the board out and nothing steps',
+         a['gen'] == b['gen'] == 0 and b['running'] is None and b['run'] == 'Resume'
+         and b['pop'] == 10,
+         '  generation %d, then %d after 900ms, %d cells on the board, button %r, loop %s'
+         % (a['gen'], b['gen'], b['pop'], b['run'], b['running']))
     p.close()
 
     # ---- (6) the cap stops rather than relaying -----------------------------------
@@ -874,12 +1037,8 @@ with sync_playwright() as pw:
     # and they collide, so one of them is rubbed out with five presses while the plate is
     # stopped, which leaves the other one alone on an empty board.
     #
-    # 4800 generations is 160 seconds at the rate the plate runs, so this one browser is
-    # launched with vsync off. Nothing in the check reads a rate.
-    try:
-        fast = br.browser_type.launch(args=FAST)
-    except Exception:
-        fast = br.browser_type.launch(args=FAST[:2])
+    # 4800 generations is 160 seconds at the rate the plate runs, so this runs on the
+    # vsync-off browser too. Nothing in the check reads a rate.
     p = fast.new_page(viewport={'width': 1400, 'height': 900}, device_scale_factor=1,
                       reduced_motion='reduce')
     p.goto(URL + 'about.html')
@@ -887,7 +1046,7 @@ with sync_playwright() as pw:
     p.click('.viz[data-plate=about] button[data-scene=gliders]')
     p.wait_for_timeout(200)
     box = p.evaluate(BOX)
-    left = p.evaluate(RUB, [box['n'], box['l'], box['t'], box['w'], box['h'],
+    left = p.evaluate(MARK, [box['n'], box['l'], box['t'], box['w'], box['h'],
                             FIRST_GLIDER])
     p.click('.viz[data-plate=about] button.run')
     stopped = waits_to_stop(p, 300000)
