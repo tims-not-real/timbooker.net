@@ -62,8 +62,8 @@ WIDTHS = [380, 420, 881, 1120, 1400]
 WIDTHS_HIT = [380, 420, 881, 1400]      # 881 is where the plate column is at its narrowest
 BIG = 640                       # the R-pentomino's own board: see the note at RULE_R
 GUN_DEAD = 272                  # what the caption says, and what GUN_RUN has to find
-TWO_LINES = 39.01               # 4.4em of .note is 57.19 and a line is 19.5: two, not three
-EVERY = 2                       # animation frames to a step since #67
+ONE_LINE = 19.51                # .note is 4.4em, 57.19px, and a line of it is 19.5
+EVERY = 4                       # animation frames to a step since #69
 CAP = 4800                      # the generations a run gets before the plate stops
 # The Gliders scene is the cheap settle: the two gliders touch at 117, the wreck peaks at
 # 240 and what is left of it only blinks, so repeats() fires and the plate stops. It is
@@ -326,9 +326,15 @@ INK = """() => {
 }"""
 
 # The plate itself, sampled every painted frame: the board read off the picture, the
-# census run over that same board, and the two lines of the caption measured. The census
-# is run on the picture rather than reached for inside the plate, so what is checked is
-# the board the reader is looking at.
+# census run over that same board, and the caption measured. The census is run on the
+# picture rather than reached for inside the plate, so what is checked is the board the
+# reader is looking at — and since #69 took the census off the caption, running it here
+# is the only thing still checking that what #65 built is right.
+#
+# .note carries no spans since #69, so the caption is measured with a Range over its own
+# text rather than by summing children. The box cannot be measured instead: min-height
+# holds it at 57.19 whatever the text does, which is the whole reason a third line used
+# to be able to move the plate without the box saying so.
 LIVE = """(frames) => new Promise(res => {
   const viz = document.querySelector('.viz[data-plate=about]');
   const cv = viz.querySelector('canvas'), ctx = cv.getContext('2d');
@@ -343,13 +349,13 @@ LIVE = """(frames) => new Promise(res => {
     const c = TBcensus(cells, n);
     if (c.namedCells + c.lostCells !== p) short++;
     for (const k in c.counts) kinds[k] = (kinds[k] || 0) + 1;
-    let h = 0;
-    for (const s of note.querySelectorAll('span')) h += s.getBoundingClientRect().height;
+    const rg = document.createRange(); rg.selectNodeContents(note);
+    const h = rg.getBoundingClientRect().height;
     if (h > hi) { hi = h; worst = note.textContent; }
-    if (h > 39.01) tall++;
+    if (h > 19.51) tall++;
     const v = viz.getBoundingClientRect().height;
     if (vizH === null) vizH = v; else if (Math.abs(v - vizH) > 0.01) moved++;
-    texts[note.querySelector('.state').textContent] = 1;
+    texts[note.textContent] = 1;
     seen++;
     if (seen < frames) requestAnimationFrame(loop);
     else res({frames: seen, short: short, tall: tall, hi: hi, worst: worst,
@@ -429,12 +435,11 @@ STOPPED = """() => {
   let pop = 0;
   for (let i = 0; i < n * n; i++) { cells[i] = d[i * 4] > 128 ? 1 : 0; pop += cells[i]; }
   const nt = viz.querySelector('.note');
-  let h = 0;
-  for (const s of nt.querySelectorAll('span')) h += s.getBoundingClientRect().height;
+  const rg = document.createRange(); rg.selectNodeContents(nt);
+  const h = rg.getBoundingClientRect().height;
   return {gen: parseInt(viz.querySelector('output').textContent, 10), pop: pop,
           run: viz.querySelector('button.run').textContent,
-          state: nt.querySelector('.state').textContent,
-          tally: nt.querySelector('.tally').textContent,
+          state: nt.textContent,
           crit: nt.classList.contains('crit'), note: h,
           viz: viz.getBoundingClientRect().height,
           census: TBcensus(cells, n), running: TB.running(), ticks: TB.ticks.about};
@@ -604,10 +609,10 @@ with sync_playwright() as pw:
              % (scene, lv['frames'] - lv['short'], lv['frames']), not lv['short'],
              '  named cells plus unmatched cells are the population, read off the '
              'picture; kinds seen %s' % sorted(lv['kinds']))
-        note('%s: the caption stays two lines and the plate column does not move'
+        note('%s: the caption stays one line and the plate column does not move'
              % scene, lv['tall'] == 0 and lv['moved'] == 0,
              '  worst caption %.2f of %.2f allowed, .viz %.2f throughout, %d frames\n'
-             '  states seen: %s' % (lv['hi'], TWO_LINES, lv['viz'], lv['frames'],
+             '  states seen: %s' % (lv['hi'], ONE_LINE, lv['viz'], lv['frames'],
                                     ' / '.join(lv['states'])))
         gens = [t[0] for t in tr]
         pops = [t[1] for t in tr]
@@ -623,8 +628,9 @@ with sync_playwright() as pw:
         # is the runtime's own count of the frames it handed the plate.
         run = steps[:max(i for i, s in enumerate(steps) if s) + 1] if any(steps) else []
         share = float(sum(1 for s in run if s)) / len(run) if run else 0
-        note('%s: the counter advances by one at a time, on about every other frame'
-             % scene, set(steps) <= {0, 1} and 0.40 <= share <= 0.60,
+        note('%s: the counter advances by one at a time, on about one frame in %d'
+             % (scene, EVERY), set(steps) <= {0, 1}
+             and abs(share - 1.0 / EVERY) <= 0.10,
              '  %d frames, generations %d to %d, the counter moved on %.1f%% of the %d '
              'frames before it stopped, peak population %d (%.1f%% of the board)'
              % (len(gens), gens[0], max(gens), 100.0 * share, len(run), peak,
@@ -685,7 +691,7 @@ with sync_playwright() as pw:
 
     # ---- the caption at the widths, and the narrowest is the one that matters -----
     # 340 CSS px at 380, which is the least the note is ever given. Everything the
-    # caption can say has to be two lines there as well as at 1400.
+    # caption can say has to be one line there as well as at 1400.
     for w in (380, 420, 881, 1120):
         p = br.new_page(viewport={'width': w, 'height': 900}, device_scale_factor=1)
         p.goto(URL + 'about.html')
@@ -693,10 +699,10 @@ with sync_playwright() as pw:
         lv = p.evaluate(LIVE, 300)
         nw = p.evaluate("""() => document.querySelector('.viz[data-plate=about] .note')
                                   .getBoundingClientRect().width""")
-        note('%d: the caption is two lines and the plate column is still %.2f'
+        note('%d: the caption is one line and the plate column is still %.2f'
              % (w, lv['viz']), lv['tall'] == 0 and lv['moved'] == 0,
              '  note %.0f wide, worst caption %.2f of %.2f allowed over %d frames'
-             % (nw, lv['hi'], TWO_LINES, lv['frames']))
+             % (nw, lv['hi'], ONE_LINE, lv['frames']))
         p.close()
 
     # ---- the gun's caption says the generation this tree measured -----------------
@@ -705,11 +711,11 @@ with sync_playwright() as pw:
     p.wait_for_function('TB.running() === "about"')
     p.click('.viz[data-plate=about] button[data-scene=gun]')
     p.wait_for_timeout(400)
-    before = p.text_content('.viz[data-plate=about] .note .state')
+    before = p.text_content('.viz[data-plate=about] .note')
     gen_before = int(p.text_content('.viz[data-plate=about] output'))
     p.wait_for_function('parseInt(document.querySelector(".viz[data-plate=about] output")'
                         '.textContent, 10) > %d' % (GUN_DEAD + 5), timeout=30000)
-    after = p.text_content('.viz[data-plate=about] .note .state')
+    after = p.text_content('.viz[data-plate=about] .note')
     note('the gun scene says it is alive before %d and gone after' % GUN_DEAD,
          gen_before < GUN_DEAD and 'gone' not in before and str(GUN_DEAD) in after,
          '  at generation %d: %r\n  past %d: %r' % (gen_before, before, GUN_DEAD, after))
@@ -724,7 +730,7 @@ with sync_playwright() as pw:
     p.wait_for_function('TB.running() === "about"')
     seen = p.evaluate("""() => new Promise(res => {
       const viz = document.querySelector('.viz[data-plate=about]');
-      const st = viz.querySelector('.note .state'), out = viz.querySelector('output');
+      const st = viz.querySelector('.note'), out = viz.querySelector('output');
       const rows = [];
       (function loop(){
         rows.push([parseInt(out.textContent, 10), st.textContent]);
@@ -808,17 +814,19 @@ with sync_playwright() as pw:
     note('and a click toggles one cell while it is running', len(r['changed']) == 1)
     p.close()
 
-    # ---- (1) half speed ----------------------------------------------------------
-    # One step every two animation frames. The ratio is the claim, because it is the half
-    # that holds on a 144Hz display as well as on this one; the wall clock is reported
-    # beside it because it is what the reader on this machine actually gets.
+    # ---- (1) a quarter speed ------------------------------------------------------
+    # One step every four animation frames. The ratio is the claim, because it is the
+    # quarter that holds on a 144Hz display as well as on this one; the wall clock is
+    # reported beside it because it is what the reader on this machine actually gets.
+    # The tolerance is EVERY and not 2: a sample can open anywhere inside a cycle, so it
+    # can be short by as much as one whole cycle less a frame.
     p = br.new_page(viewport={'width': 1400, 'height': 900})
     p.goto(URL + 'about.html')
     p.wait_for_function('TB.running() === "about"')
     p.wait_for_timeout(400)
     m = p.evaluate(RATE, 300)
     note('one step every %d animation frames' % EVERY,
-         abs(m['ticks'] - EVERY * m['gens']) <= 2 and m['gens'] > 50,
+         abs(m['ticks'] - EVERY * m['gens']) <= EVERY and m['gens'] > 50,
          '  %d steps on %d frames in %.0f ms: %.1f steps a second at %.1f frames a '
          'second, %.3f frames a step'
          % (m['gens'], m['ticks'], m['ms'], m['gens'] * 1000.0 / m['ms'],
@@ -852,10 +860,10 @@ with sync_playwright() as pw:
          '  %d cells, then %d' % (s0['pop'], s1['pop']))
     note('the run button reads Resume on a board that stopped by itself',
          s0['run'] == 'Resume', '  it reads %r' % s0['run'])
-    note('and the caption says why it stopped, in two lines',
-         'stops' in s0['state'] and s0['crit'] and s0['note'] <= TWO_LINES,
-         '  %r\n  %r\n  %.2f of %.2f allowed, .viz %.2f'
-         % (s0['state'], s0['tally'], s0['note'], TWO_LINES, s0['viz']))
+    note('and the caption says why it stopped, in one line',
+         'stops' in s0['state'] and s0['crit'] and s0['note'] <= ONE_LINE,
+         '  %r\n  %.2f of %.2f allowed, .viz %.2f'
+         % (s0['state'], s0['note'], ONE_LINE, s0['viz']))
     # (4) and the press does something. A settled board is still settled, so a plate that
     # read the settle off the first tick after the resume would advance the counter by
     # exactly one and stop again, which is a dead button with a number on it. The board
@@ -1059,11 +1067,11 @@ with sync_playwright() as pw:
          'with %d cells in %d component, %s, loop %s'
          % (left, s['gen'], s['pop'], s['census']['comps'], s['census']['counts'],
             s['running']))
-    note('and it says the cap rather than the ash, in two lines',
+    note('and it says the cap rather than the ash, in one line',
          str(CAP) in s['state'] and 'Ash' not in s['state'] and s['crit']
-         and s['note'] <= TWO_LINES,
-         '  %r\n  %r\n  %.2f of %.2f allowed, .viz %.2f'
-         % (s['state'], s['tally'], s['note'], TWO_LINES, s['viz']))
+         and s['note'] <= ONE_LINE,
+         '  %r\n  %.2f of %.2f allowed, .viz %.2f'
+         % (s['state'], s['note'], ONE_LINE, s['viz']))
     note('and the run button reads Resume there too', s['run'] == 'Resume',
          '  it reads %r' % s['run'])
     # The cap is a limit on a run and not on the board, so the press works here as well.
