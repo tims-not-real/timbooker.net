@@ -318,13 +318,6 @@ a{color:inherit}
   font-size:.8125rem; line-height:1.5; color:var(--dim);
   min-height:4.4em; transition:color .3s ease;
 }
-/* About's caption is two lines: the sentence, and under it the census of what is on the
-   board. They are separate lines rather than one flowing clause because the second one
-   is a list of numbers that changes every frame, and a list that reflowed the sentence
-   above it every time a blinker died would be unreadable. 4.4em is 57.19px and a line is
-   19.5, so two lines fit and three do not — which is why both are written to a length.
-   An empty span is no line at all, so a board with nothing on it shows one. */
-.viz .note span{display:block}
 .viz .note.crit{color:var(--fg); font-weight:600}
 
 /* ---- page body ---- */
