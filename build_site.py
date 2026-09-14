@@ -62,7 +62,7 @@ DESC = ('Tim Booker is interested in how culture evolves and in what collectives
         'He is a complex systems scientist, and works on how social technology changes '
         'that evolution and on the design of alternative recommender systems.')
 
-FREELANCE_DESC = ('Tim Booker takes contract work: recommender and ranking design, '
+FREELANCE_DESC = ('Tim Booker takes on contract work: recommender and ranking design, '
                   'measurement, LLM labelling at scale, and data science on large or '
                   'messy sources.')
 
@@ -1862,7 +1862,7 @@ RESEARCH_LEDE = """
       <p>The same instruments point at language models. Part of the work is on models
       directly: when theory of mind appears over training, and how they handle generics
       and default reasoning. Part is on populations of them, as a model system for
-      cultural evolution and as a platform on which I vary the recommender.</p>
+      cultural evolution and as a platform on which we vary the recommender.</p>
 """
 RESEARCH_GROUPS = [
     ('Current', [
@@ -3004,7 +3004,7 @@ GS_PLATE = """      <div class="viz" data-plate="freelancing"__HIDE__>
 
 FREELANCING = """
     <div class="prose">
-      <p class="lede">I take contract and consulting work: recommender and ranking
+      <p class="lede">I take on contract and consulting work: recommender and ranking
       design, data science on large or messy sources, measurement, and applied work with
       language models.</p>
     </div>
