@@ -42,6 +42,36 @@ FACES = """
 """.replace('__LATIN__', LATIN)
 
 # Two layers, because one is not a scan. A fine tooth plus a coarser mottle.
+#
+# The tooth is a photograph and the mottle is not. `grain/tooth-256.webp` is a 256x256
+# lossless WebP, 10,610 bytes, cut from a 7360x4912 greyscale photograph of concrete at
+# native resolution and made exactly periodic; `scripts/make_grain_tooth.py` carries the
+# crop, the method and the reasoning, and regenerates it from the photograph, which is
+# 13.8MB and stays out of the repo. The mottle is still `feTurbulence` because nothing
+# asked it to change: at baseFrequency .035 it is a slow unevenness across 620px, which
+# fractal noise gives for nothing, and a photographed version of it would be a large file
+# holding very little. So the pairing the home page was approved on — screen over multiply,
+# .16 over .30, which is what paper does to ink — is exactly the pairing that ships. Only
+# what the fine layer is made of has changed.
+#
+# It costs the blue. Measured on home at 1400x900, DPR 1, in an empty part of the label,
+# the field renders RGB 26.9 / 29.0 / 173.8 with the procedural tooth and 20.2 / 22.2 /
+# 148.1 with this one: 25 of 255 off the blue channel, and a tooth of under half the
+# amplitude. `--fill` is still #0204a7 and neither opacity moved — what moved is what the
+# grain does over it. Tim was given those numbers twice and chose this on the rendered
+# page, so it is a deliberate change to how the label reads and not a drift to be tuned
+# back out later.
+#
+# The page ground moves as well, which #77 did not expect: outside the label it goes from
+# 47.9 / 47.9 / 45.7 to 43.3 / 43.3 / 41.3, and 43 / 43 / 41 is #2b2b29 itself. The reason
+# is transparency, not level. `feTurbulence` writes noise into the alpha channel as well as
+# into the colour and nothing in that filter chain flattens it, so the procedural layer is
+# roughly half transparent — measured alone it reads 93.6 on black and 221.0 on white — and
+# what it did to a ground this dark was lift it by about 5 of 255. This tile is opaque and
+# mid-grey, 127.0 on either, and `overlay` of a mid source over a backdrop that dark returns
+# the backdrop. So the ground now renders the colour it is set to instead of a slightly
+# lifted version of it, and its own tooth halves with it, std 1.08 to 0.52.
+#
 # Built by concatenation: the SVG is full of literal % escapes, so % formatting fights it.
 def turb(freq, octaves, size):
     z = str(size)
@@ -51,7 +81,11 @@ def turb(freq, octaves, size):
             "%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='" + z +
             "' height='" + z + "' filter='url(%23n)'/%3E%3C/svg%3E")
 
-GRAIN_FINE   = turb('0.95', 4, 200)
+# One file, one request, cached once across all six pages — which is why it is a file and
+# not a data URI: base64 does not gzip, and inlining it would put 14KB on every page load
+# with nothing to cache it in. Referenced the way the fonts are, a bare relative path from
+# the inlined CSS to a directory named for what is in it.
+GRAIN_FINE   = 'grain/tooth-256.webp'
 GRAIN_MOTTLE = turb('0.035', 4, 620)
 
 CSS = FACES + """
@@ -76,7 +110,7 @@ body{
 body::after{
   content:""; position:fixed; inset:0; z-index:9; pointer-events:none;
   background-image:url("__FINE__"), url("__MOTTLE__");
-  background-size:200px 200px, 620px 620px;
+  background-size:256px 256px, 620px 620px;
   opacity:var(--grain-page); mix-blend-mode:var(--grain-blend);
   /* Named, so the grain is carried into the transition layer along with the label
      instead of being left behind in the root snapshot underneath it. Without this the
@@ -113,7 +147,7 @@ a{color:inherit}
 .label::before, .label::after{
   content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
   background-image:url("__FINE__"), url("__MOTTLE__");
-  background-size:200px 200px, 620px 620px;
+  background-size:256px 256px, 620px 620px;
 }
 .label::before{ mix-blend-mode:screen;   opacity:.16; }
 .label::after{  mix-blend-mode:multiply; opacity:.30; }
