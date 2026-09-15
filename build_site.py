@@ -1588,12 +1588,13 @@ return { tick: function(){
 # carried in a subordinate clause.
 HOME_INTRO = """
 <p>Hi, I'm Tim. I'm interested in how culture evolves and the overall capabilities of
-collectives, especially human ones. I think and research about how social technology,
-like the internet, social media, and LLMs, change how this evolution unfolds. The design
-of alternative social media recommender systems is a central focus: most of human culture
-is touched by the incentives put in place by engagement-based recommender systems that
-were not built with the interests of humans in mind (our democracy, our collective
-capabilities, our development as individuals).</p>
+collectives, especially human ones.</p>
+<p>I think and research about how social technology, like the internet, social media, and
+LLMs, change how this evolution unfolds.</p>
+<p>The design of alternative social media recommender systems is a central focus: most of
+human culture is touched by the incentives put in place by engagement-based recommender
+systems that were not built with the interests of humans in mind (our democracy, our
+collective capabilities, our development as individuals).</p>
 """
 
 # One line each, labelled by the thing rather than by who it is for.
