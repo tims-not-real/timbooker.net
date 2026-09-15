@@ -1929,13 +1929,6 @@ RESEARCH_GROUPS = [
          "any new belief has to fit. Different sub-populations appear to have differently "
          "shaped structures. That would mean liberals and conservatives differ in how "
          "their beliefs connect, as well as in which beliefs they hold."),
-        ('Does a model have a now?',
-         'early<br>with two philosophers',
-         "A collaboration in philosophy of language. It began with how models handle "
-         "generics and default reasoning, and has drifted towards temporal reasoning: "
-         "whether a language model has any working sense of the present moment, and what "
-         "it would mean to say that it did. This is at the reading and arguing stage. "
-         "There is nothing to show yet."),
         ('Pulling knowledge graphs out of text',
          '2026',
          "Given an ontology and a pile of text, can a language model produce a knowledge "
