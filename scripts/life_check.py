@@ -728,7 +728,10 @@ with sync_playwright() as pw:
     # on every frame at every generation. The census is read off the picture beside it,
     # because a soup throws off a glider almost at once — over 30 soups every one has one
     # by generation 14 and the median by 3 — and the frames carrying one are what make
-    # this a check rather than a soup that happened not to make a glider.
+    # this a check rather than a soup that happened not to make a glider. So the glider
+    # half is asserted and not merely reported: a sample with no glider anywhere in it
+    # would pass on the caption alone while proving nothing, which is the one way this
+    # check could go quiet without anything being wrong with the plate.
     p = br.new_page(viewport={'width': 1400, 'height': 900})
     p.goto(URL + 'about.html')
     p.wait_for_function('TB.running() === "about"')
@@ -749,7 +752,7 @@ with sync_playwright() as pw:
     off = [r for r in seen if r[1] != FIELD]
     withg = [r for r in seen if r[2]]
     note('the random field says one line, with a glider on the board or without',
-         not off,
+         not off and bool(withg),
          '  %d frames to generation %d, %d of them carrying a glider; %d said anything '
          'other than %r' % (len(seen), max(r[0] for r in seen), len(withg), len(off),
                             FIELD))
