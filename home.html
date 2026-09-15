@@ -1469,12 +1469,14 @@ function TBlife(n){
 // generations without running anything. Dennett calls a pattern real when that holds,
 // and Life is the example he uses.
 //
-// So the plate counts them, and says the count. Connected components of the board,
-// 8-connected and across the wrap, each matched against a catalogue by shape alone, up
-// to translation and the eight symmetries of the square. Whatever matches nothing is
-// counted rather than dropped: most of a running board is not catalogue objects at all,
-// and a census that quietly binned the remainder would be reporting a tidier board than
-// the one on the screen.
+// So the plate counts them, and what it counts is checked rather than said: the count
+// came off the caption on 2026-09-09 and the glider sentence it fed on 2026-09-15, and
+// scripts/life_check.py reads the census over the board the reader is looking at, every
+// painted frame. Connected components of the board, 8-connected and across the wrap,
+// each matched against a catalogue by shape alone, up to translation and the eight
+// symmetries of the square. Whatever matches nothing is counted rather than dropped:
+// most of a running board is not catalogue objects at all, and a census that quietly
+// binned the remainder would be reporting a tidier board than the one on the screen.
 
 // The catalogue, keyed by shape. Every entry goes in in all eight orientations, so a
 // boat facing the other way is still a boat, and the key is each cell's offset from the
@@ -1744,7 +1746,6 @@ var settleAt = 0, WINDOW = 2;
 var byReader = reduce;
 
 var quiet = false, capped = false, touchedAt = -1e9, scene = 'soup';
-var objs = TBcensus(board.cells(), N);   // how the caption knows a glider is on the board
 
 // What is on the board, in the register the plates on Research and Freelancing use: the
 // state, then the thing about that state worth saying. Their second halves name a place
@@ -1755,12 +1756,12 @@ var objs = TBcensus(board.cells(), N);   // how the caption knows a glider is on
 // watch.
 //
 // The census used to be written out under it, a second line counting the blocks and the
-// blinkers and the gliders. It came off on 2026-09-09: it changed on every step, and a
-// list of nine numbers that never holds still is not something a reader can read. What
-// the counting was for is still here, one sentence of it — the plate knows a glider when
-// it sees one, and says so — and that was always the line the count was building to.
-// One line, and it is still written to one: .note is 4.4em, the plate column is what
-// sets the label's height on About, and a line that wrapped would move it.
+// blinkers and the gliders. It came off on 2026-09-09, and the sentence it fed — the
+// plate naming a glider when it saw one — came off on 2026-09-15, because the field's
+// running line was asked to be static and a line that turns on whatever happens to be on
+// the board is not. Nothing in here reads the board any more. One line, and it is still
+// written to one: .note is 4.4em, the plate column is what sets the label's height on
+// About, and a line that wrapped would move it.
 function say(){
   var t = performance.now(), text;
   if (t - touchedAt < 1200)
@@ -1790,20 +1791,6 @@ function say(){
     text = "Gosper's gun · five more cells every thirty generations";
   else if (scene === 'gun')
     text = 'The gun is gone · its own stream came round at ' + ENDS;
-  // The one state the census adds, and the only place the plate uses the term. It is
-  // kept off the two scenes whose own line is already about gliders, so that the
-  // collision and the gun go on saying the thing they were built to say.
-  //
-  // And it is kept off the field's own first fifty generations, which is the window the
-  // line below is a claim about and the only stretch where saying it is true. A soup
-  // throws off its first glider almost at once — measured over 30 soups, every one of
-  // them has one by generation 14 and the median has one by 3 — and 511 of the 1500
-  // generations under fifty carry one, so an ungated glider line would have taken a
-  // third of the frames the claim was written for. Above fifty the field has made its
-  // point and the glider is the thing worth saying.
-  else if (objs.counts.glider && board.gen() >= FIFTY)
-    text = (objs.counts.glider > 1 ? 'Gliders' : 'A glider') +
-           ' · a real pattern the rule has no word for';
   else
     text = 'A random field · three quarters gone by generation fifty';
   if (cap.textContent !== text) cap.textContent = text;
@@ -1813,9 +1800,6 @@ function say(){
   var end = quiet || capped;
   if (cap.classList.contains('crit') !== end) cap.classList.toggle('crit', end);
 }
-
-var FIFTY = 50;                    // the field's line is a claim about its first fifty
-function look(){ objs = TBcensus(board.cells(), N); }
 
 function count(){ out.textContent = board.gen(); }
 
@@ -1830,7 +1814,7 @@ function load(name){
   for (var i=0;i<picks.length;i++)
     picks[i].setAttribute('aria-pressed',
                           picks[i].getAttribute('data-scene') === name ? 'true' : 'false');
-  count(); look(); say(); paint();
+  count(); say(); paint();
 }
 
 // Pause is the loop stopping, not the loop spinning on a flag: tick() returns false and
@@ -1906,7 +1890,7 @@ function touch(){
   // longer on the screen. `capped` is left alone: a board past the cap is still past the
   // cap, and the caption goes on saying so once the drawn line has had its 1200ms.
   quiet = false; settleAt = board.gen(); touchedAt = performance.now();
-  look(); say(); paint();
+  say(); paint();
 }
 
 cv.addEventListener('pointerdown', function(e){
@@ -1954,16 +1938,13 @@ return { tick: function(){
   if (paused) return false;
   // A quarter speed, and it is a skipped tick rather than a clock: the plate keeps the
   // frame-tied character it has always had, and a quarter is exactly a quarter on any
-  // display. A skipped tick does nothing at all — no step, no paint, no count and no
-  // census. The board has not changed, so there is nothing to repaint and nothing to
-  // recount, and the census is still the expensive call on this plate even now that it
-  // is not on the screen.
+  // display. A skipped tick does nothing at all — no step, no paint and no count. The
+  // board has not changed, so there is nothing to repaint and nothing to recount.
   if (++skip < EVERY) return true;
   skip = 0;
   board.step();
   paint();
   count();
-  look();
   quiet = board.repeats();
   capped = board.gen() >= capAt;
   // repeats() compares against one and two generations back, so it fires one step past a
