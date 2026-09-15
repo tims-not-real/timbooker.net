@@ -1944,8 +1944,7 @@ RESEARCH_GROUPS = [
          '2026',
          "A shared writing project on whether political membership has to be territorial, "
          "and on what an opt-in polity would require, with coordination boundaries drawn "
-         "around problems rather than borders. It's philosophy, not measurement. It's a "
-         "holiday from the rest of this."),
+         "around problems rather than borders. It's philosophy, not measurement."),
     ]),
     ('Convening', [
         ('What platforms are for',
