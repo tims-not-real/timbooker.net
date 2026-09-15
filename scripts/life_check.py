@@ -61,6 +61,8 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIDTHS = [380, 420, 881, 1120, 1400]
 WIDTHS_HIT = [380, 420, 881, 1400]      # 881 is where the plate column is at its narrowest
 BIG = 640                       # the R-pentomino's own board: see the note at RULE_R
+# The soup's running line, and since #73 the only line that scene says.
+FIELD = 'A random field · three quarters gone by generation fifty'
 GUN_DEAD = 272                  # what the caption says, and what GUN_RUN has to find
 ONE_LINE = 19.51                # .note is 4.4em, 57.19px, and a line of it is 19.5
 EVERY = 4                       # animation frames to a step since #69
@@ -721,28 +723,39 @@ with sync_playwright() as pw:
          '  at generation %d: %r\n  past %d: %r' % (gen_before, before, GUN_DEAD, after))
     p.close()
 
-    # ---- the random field keeps its own first fifty generations -------------------
-    # A soup throws off a glider almost at once, so an ungated glider line would take a
-    # third of the window the field's line is a claim about. Sampled every painted frame
-    # from the load: below fifty the field's line, and the glider line only above it.
+    # ---- the random field says one line, whatever is on the board -----------------
+    # #73 took the glider line off the soup, so the running caption is the field's line
+    # on every frame at every generation. The census is read off the picture beside it,
+    # because a soup throws off a glider almost at once — over 30 soups every one has one
+    # by generation 14 and the median by 3 — and the frames carrying one are what make
+    # this a check rather than a soup that happened not to make a glider. So the glider
+    # half is asserted and not merely reported: a sample with no glider anywhere in it
+    # would pass on the caption alone while proving nothing, which is the one way this
+    # check could go quiet without anything being wrong with the plate.
     p = br.new_page(viewport={'width': 1400, 'height': 900})
     p.goto(URL + 'about.html')
     p.wait_for_function('TB.running() === "about"')
     seen = p.evaluate("""() => new Promise(res => {
       const viz = document.querySelector('.viz[data-plate=about]');
       const st = viz.querySelector('.note'), out = viz.querySelector('output');
+      const cv = viz.querySelector('canvas'), ctx = cv.getContext('2d'), n = cv.width;
+      const cells = new Uint8Array(n * n);
       const rows = [];
       (function loop(){
-        rows.push([parseInt(out.textContent, 10), st.textContent]);
+        const d = ctx.getImageData(0, 0, n, n).data;
+        for (let i = 0; i < n * n; i++) cells[i] = d[i * 4] > 128 ? 1 : 0;
+        rows.push([parseInt(out.textContent, 10), st.textContent,
+                   TBcensus(cells, n).counts.glider || 0]);
         if (rows.length < 260) requestAnimationFrame(loop); else res(rows);
       })();
     })""")
-    early = [r for r in seen if r[0] < 50 and 'real pattern' in r[1]]
-    late = [r for r in seen if r[0] >= 50 and 'real pattern' in r[1]]
-    under = [r for r in seen if r[0] < 50]
-    note('the random field keeps its own first fifty generations', not early,
-         '  %d frames under generation 50, none of them the glider line; %d frames '
-         'above it say it' % (len(under), len(late)))
+    off = [r for r in seen if r[1] != FIELD]
+    withg = [r for r in seen if r[2]]
+    note('the random field says one line, with a glider on the board or without',
+         not off and bool(withg),
+         '  %d frames to generation %d, %d of them carrying a glider; %d said anything '
+         'other than %r' % (len(seen), max(r[0] for r in seen), len(withg), len(off),
+                            FIELD))
     p.close()
 
     # ---- a drag draws ------------------------------------------------------------
