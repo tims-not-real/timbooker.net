@@ -1603,11 +1603,11 @@ HOME_ROWS = [
      'Alternative recommender systems, social media and democracy, collective '
      'intelligence, mechanistic interpretability of LLMs, and multi-agent simulation.'),
     ('Freelance', 'freelancing.html',
-     'Contract work: measurement design, LLM labelling at scale, recommender and '
-     'ranking audits, and data engineering on large or messy sources.'),
+     'Bespoke LLM products, data analysis and engineering, and recommender system '
+     'design.'),
     ('Media', None,
-     "I'm glad to talk to journalists on AI, social media platforms, recommendation "
-     'algorithms, and online discourse.'),
+     'Available to comment on AI, social media platforms, recommendation algorithms, '
+     'and online discourse.'),
     ('Students', None,
      "I'm happy to supervise master's students, and motivated BSc students. Please feel "
      'welcomed to say hi!'),
