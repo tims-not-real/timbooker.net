@@ -1600,8 +1600,8 @@ collective capabilities, our development as individuals).</p>
 # One line each, labelled by the thing rather than by who it is for.
 HOME_ROWS = [
     ('Research', 'research.html',
-     'Alternative recommender systems, social media and democracy, cultural '
-     'evolution, and mechanistic interpretability of LLMs.'),
+     'Alternative recommender systems, social media and democracy, collective '
+     'intelligence, mechanistic interpretability of LLMs, and multi-agent simulation.'),
     ('Freelance', 'freelancing.html',
      'Contract work: measurement design, LLM labelling at scale, recommender and '
      'ranking audits, and data engineering on large or messy sources.'),
