@@ -1898,7 +1898,7 @@ RESEARCH_GROUPS = [
          "you can't run that experiment on a real platform, and no platform will run it "
          "for you. So we build the platform instead: a population of language model "
          "agents posting, reading, and responding under a recommender we control. Then we "
-         "change the recommender. The open question, and the one that worries me most, is "
+         "change the recommender. The open question is "
          "how much of any result is an artefact of the agents rather than a property of "
          "the ranking."),
         ('Sandboxing cultural evolution with LLMs',
@@ -1940,11 +1940,6 @@ RESEARCH_GROUPS = [
          "Given an ontology and a pile of text, can a language model produce a knowledge "
          "graph you'd trust? The pipeline is extraction, then coverage checking, then "
          "entity normalisation, benchmarked against Text2KGBench and CS-KG-3600."),
-        ('An opt-in alternative to the nation state',
-         '2026',
-         "A shared writing project on whether political membership has to be territorial, "
-         "and on what an opt-in polity would require, with coordination boundaries drawn "
-         "around problems rather than borders. It's philosophy, not measurement."),
     ]),
     ('Convening', [
         ('What platforms are for',
