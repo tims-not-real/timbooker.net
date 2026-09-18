@@ -31,6 +31,11 @@ document, with a router that swaps between them and pushes the real path. The ot
 are one complete page each and are what everything without JavaScript sees. Both are
 written from the same copy, so there is nothing to keep in sync.
 
+The old Pelican site's URLs (`/pages/about/` and the rest, the table is `MOVED` in
+`build_site.py`) are stub redirects the build writes: a zero-second meta refresh and a
+canonical to the page that replaced each one, and nothing else. `sitemap.xml` and
+`robots.txt` are generated too.
+
 ## The creature's population
 
 The creature in the blue label says a line drawn from `evolution/lines.json`. Once a week
