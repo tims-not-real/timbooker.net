@@ -2,11 +2,15 @@
 
 GitHub Pages serves 404.html at whatever address was asked for, without redirecting, so
 the document's base URL is that address, and a relative `about.html` asked for at
-/pages/about/ resolves to /pages/about/about.html and dies. Every href, src, url() and
+/pages/nope/ resolves to /pages/nope/about.html and dies. Every href, src, url() and
 preload the build emits is root-absolute for that reason. This proves it: a server that
-answers a missing path the way Pages does, three addresses of increasing depth, and every
+answers a missing path the way Pages does, four addresses of increasing depth, and every
 URL in each response fetched and expected to be a 200. Then the router: on home.html a
 tab switch pushes /research.html, and loading that address renders Research.
+
+/pages/about/ is the address the issue was opened on. Since #82 it is a stub that leaves
+for /about.html rather than the 404, so the table records what each address itself
+answers, and /pages/nope/ carries the directory-URL case for the 404.
 
     python scripts/depth_check.py
 
@@ -16,7 +20,7 @@ import sys, os, re, functools, http.server, socketserver, threading, pathlib
 import urllib.request, urllib.parse, urllib.error
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DEPTHS = ['/pages/about/', '/nope', '/a/b/c']
+DEPTHS = ['/pages/about/', '/pages/nope/', '/nope', '/a/b/c']
 
 
 class Pages(http.server.SimpleHTTPRequestHandler):
@@ -53,11 +57,13 @@ def get(url):
         return e.code, e.read()
 
 
-# Every URL the document asks the browser for: href and src on any tag, and url() in the
-# inlined CSS. The preload is an href on <link rel="preload">, so it is in the first set;
-# the tag is kept so the table can say which is which.
+# Every URL the document asks the browser for: href and src on any tag, url() in the
+# inlined CSS, and the address a meta refresh leaves for. The preload is an href on
+# <link rel="preload">, so it is in the first set; the tag is kept so the table can say
+# which is which.
 ATTR = re.compile(r'<(\w+)\b[^>]*?\b(href|src)="([^"]*)"')
 CSSURL = re.compile(r'url\(\s*["\']?([^"\')]*)["\']?\s*\)')
+REFRESH = re.compile(r'http-equiv="refresh" content="\d+;\s*url=([^"]*)"')
 # %23 is `url(#n)` inside the mottle's SVG data URI: a filter reference, not a fetch.
 SKIP = ('mailto:', 'data:', 'javascript:', '#', '%23', 'http://', 'https://')
 
@@ -68,6 +74,8 @@ def urls(html):
         out.append((tag + ' ' + attr, raw))
     for raw in CSSURL.findall(html):
         out.append(('css url()', raw))
+    for raw in REFRESH.findall(html):
+        out.append(('meta refresh', raw))
     seen, uniq = set(), []
     for kind, raw in out:
         if raw.startswith(SKIP):
@@ -79,14 +87,14 @@ def urls(html):
 
 
 def depths(port):
-    """Every same-origin URL on the 404 as served at each depth, and its status."""
+    """Every same-origin URL on what each address answers with, and its status."""
     bad = 0
     print('%-14s %-16s %-36s %-44s %s' % ('asked for', 'where', 'as written', 'resolves to', 'status'))
     for d in DEPTHS:
         page = 'http://127.0.0.1:%d%s' % (port, d)
         status, body = get(page)
-        assert status == 404, (d, status)
         html = body.decode('utf-8')
+        print('%-14s answers %d, %s' % (d, status, '404.html' if status == 404 else 'its own file'))
         for kind, raw in urls(html):
             target = urllib.parse.urljoin(page, raw)
             code, _ = get(target)
@@ -140,6 +148,6 @@ if __name__ == '__main__':
         ok = router(port)
     finally:
         srv.shutdown()
-    print('%s same-origin URLs not 200 across %d depths; router %s'
+    print('%s same-origin URLs not 200 across %d addresses; router %s'
           % (bad, len(DEPTHS), 'ok' if ok else 'FAILED'))
     sys.exit(1 if (bad or not ok) else 0)
