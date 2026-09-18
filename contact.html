@@ -33,7 +33,13 @@
 /* The page states are held in the document and shown one at a time, and .viz sets
    its own display, which would otherwise win against the UA's [hidden] rule. */
 [hidden]{display:none !important}
-html{-webkit-text-size-adjust:100%}
+/* The gutter is reserved whether or not the page scrolls. .wrap is centred in the
+   viewport, and every page but Contact is taller than the window, so the scrollbar
+   takes 15px off the right and the column centres in what is left. Contact, with no
+   scrollbar, got those 15px back and its column sat 7.67px to the right of every other
+   page's, and moved on every swap in or out (#79). Not overflow-y:scroll, which paints
+   an empty white track on the dark mood. */
+html{-webkit-text-size-adjust:100%; scrollbar-gutter:stable}
 body{
   background:var(--bg); color:var(--fg); min-height:100vh;
   font-family:Archivo,Helvetica,system-ui,sans-serif;
