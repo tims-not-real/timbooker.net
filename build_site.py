@@ -4,7 +4,8 @@
 
 Writes index.html, home.html, research.html, freelancing.html, about.html,
 contact.html, 404.html and llms.txt, plus the favicon set (SVG inline in the
-heads, ICO and touch icon drawn by Pillow when it is installed).
+heads, ICO and touch icon drawn by Pillow when it is installed). Also a stub at each
+of the old site's paths, sitemap.xml and robots.txt.
 
 Each page's copy is written once and used twice. index.html and home.html, which have
 always been the same file, carry all five pages as states of one document and a router
@@ -3128,6 +3129,69 @@ def page_map():
     return json.dumps(out, ensure_ascii=False).replace('<', '\\u003c')
 
 
+# ============================================================ the old site's paths
+# The site before this one was a Pelican build, and Google still indexes its URLs.
+# GitHub Pages cannot send a server redirect, so each old path gets a stub: a zero-second
+# meta refresh to the new page, which Google reads as a permanent move, a canonical naming
+# it, and one link for a browser that follows neither. Bare on purpose: no stylesheet, no
+# grain, no nav, no script. They exist to leave.
+SITE = 'https://timbooker.net'
+
+# Old path, and the page it lands on. A path ending in / is a directory URL and gets an
+# index.html inside it; the rest are files at the root. The last two are from the 2023
+# site and are probably out of the index already; they cost nothing.
+MOVED = [('/pages/about/', 'about'),
+         ('/pages/contact/', 'contact'),
+         ('/pages/research/', 'research'),
+         ('/pages/visualizations/', 'research'),
+         ('/pages/visualizations/temporal-network/', 'research'),
+         ('/about_me.html', 'about'),
+         ('/web_design.html', 'freelancing')]
+
+STUB = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Moved &mdash; Tim Booker</title>
+<meta http-equiv="refresh" content="0; url=__HREF__">
+<link rel="canonical" href="__CANON__">
+</head>
+<body>
+<p>This page moved to <a href="__HREF__">__NAME__</a>.</p>
+</body>
+</html>
+"""
+
+
+def write_moved():
+    out = []
+    for old, key in MOVED:
+        href = '/' + key + '.html'
+        path = old.lstrip('/') + ('index.html' if old.endswith('/') else '')
+        if os.path.dirname(path):
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+        html = (STUB.replace('__CANON__', SITE + href).replace('__HREF__', href)
+                    .replace('__NAME__', NAMES[key]))
+        io.open(path, 'w', encoding='utf-8').write(html)
+        out.append((path, len(html)))
+    return out
+
+
+def write_sitemap():
+    """sitemap.xml names the five real pages and nothing else; robots.txt names the
+    sitemap. No lastmod: every build rewrites every page whole, so a file date would say
+    when the site was last built, not when a page last changed."""
+    locs = [SITE + '/'] + [SITE + '/' + k + '.html' for k in KEYS[1:]]
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           + ''.join('  <url><loc>%s</loc></url>\n' % u for u in locs)
+           + '</urlset>\n')
+    robots = 'Sitemap: %s/sitemap.xml\n' % SITE
+    io.open('sitemap.xml', 'w', encoding='utf-8').write(xml)
+    io.open('robots.txt', 'w', encoding='utf-8').write(robots)
+    return [('sitemap.xml', len(xml)), ('robots.txt', len(robots))]
+
+
 if __name__ == '__main__':
     body = bodies()
     written = []
@@ -3173,6 +3237,8 @@ if __name__ == '__main__':
                                        creature)))
     io.open('llms.txt', 'w', encoding='utf-8').write(LLMS)
     written.append(('llms.txt', len(LLMS)))
+    written.extend(write_moved())
+    written.extend(write_sitemap())
     written.extend(write_bitmap_icons())
     for name, n in written:
         print('%-16s %6d bytes' % (name, n))
