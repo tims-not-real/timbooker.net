@@ -3186,7 +3186,10 @@ def write_sitemap():
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
            + ''.join('  <url><loc>%s</loc></url>\n' % u for u in locs)
            + '</urlset>\n')
-    robots = 'Sitemap: %s/sitemap.xml\n' % SITE
+    # The one easter egg, principle 11. A # line is a comment and every crawler skips it.
+    robots = ('# Hi. This file is for crawlers, and you are not one. The site is at /,\n'
+              '# and the version for language models is at /llms.txt.\n'
+              'Sitemap: %s/sitemap.xml\n' % SITE)
     io.open('sitemap.xml', 'w', encoding='utf-8').write(xml)
     io.open('robots.txt', 'w', encoding='utf-8').write(robots)
     return [('sitemap.xml', len(xml)), ('robots.txt', len(robots))]

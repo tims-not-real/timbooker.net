@@ -1,1 +1,3 @@
+# Hi. This file is for crawlers, and you are not one. The site is at /,
+# and the version for language models is at /llms.txt.
 Sitemap: https://timbooker.net/sitemap.xml
