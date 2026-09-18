@@ -31,12 +31,12 @@ LATIN = ("U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304
 FACES = """
 @font-face{
   font-family:Archivo; font-style:normal; font-weight:400 700; font-stretch:100%;
-  font-display:swap; src:url(fonts/archivo-latin.woff2) format('woff2');
+  font-display:swap; src:url(/fonts/archivo-latin.woff2) format('woff2');
   unicode-range:__LATIN__;
 }
 @font-face{
   font-family:'Archivo Narrow'; font-style:normal; font-weight:400 700;
-  font-display:swap; src:url(fonts/archivo-narrow-latin.woff2) format('woff2');
+  font-display:swap; src:url(/fonts/archivo-narrow-latin.woff2) format('woff2');
   unicode-range:__LATIN__;
 }
 """.replace('__LATIN__', LATIN)
@@ -83,9 +83,10 @@ def turb(freq, octaves, size):
 
 # One file, one request, cached once across all six pages — which is why it is a file and
 # not a data URI: base64 does not gzip, and inlining it would put 14KB on every page load
-# with nothing to cache it in. Referenced the way the fonts are, a bare relative path from
-# the inlined CSS to a directory named for what is in it.
-GRAIN_FINE   = 'grain/tooth-256.webp'
+# with nothing to cache it in. Referenced the way the fonts are, a root-absolute path from
+# the inlined CSS to a directory named for what is in it: the 404 is served at whatever
+# address was asked for, and a relative path would resolve under that address (#81).
+GRAIN_FINE   = '/grain/tooth-256.webp'
 GRAIN_MOTTLE = turb('0.035', 4, 620)
 
 CSS = FACES + """

@@ -55,7 +55,7 @@ SLOWJS = """(function(){ var a = Element.prototype.animate;
   Element.prototype.animate = function(k, o){
     if (o && o.duration) o = Object.assign({}, o, {duration:o.duration * %d});
     return a.call(this, k, o); }; })();""" % SLOW
-GO = """(href) => document.querySelector('.label nav a[href="' + href + '"]').click()"""
+GO = """(href) => document.querySelector('.label nav a[href="/' + href + '"]').click()"""
 
 
 def serve(root):

@@ -63,10 +63,10 @@ SAMPLE = """(href) => new Promise(done => {
               secs.filter(s => !s.hidden).length]);
     if (t < 900) requestAnimationFrame(f); else done(out);
   })();
-  document.querySelector('.label nav a[href="' + href + '"]').click();
+  document.querySelector('.label nav a[href="/' + href + '"]').click();
 })"""
 
-GO = """(href) => document.querySelector('.label nav a[href="' + href + '"]').click()"""
+GO = """(href) => document.querySelector('.label nav a[href="/' + href + '"]').click()"""
 
 
 def serve(root):

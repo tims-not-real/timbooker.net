@@ -90,7 +90,7 @@ PROBE = """() => {
           left: Math.round(r.left), right: Math.round(r.right)};
 }"""
 
-GO = """(href) => document.querySelector('.label nav a[href="' + href + '"]').click()"""
+GO = """(href) => document.querySelector('.label nav a[href="/' + href + '"]').click()"""
 
 
 def serve(root):

@@ -47,10 +47,10 @@ SAMPLE = """(href) => new Promise(done => {
     s.push([t, r.height, r.top]);
     if (t < 500) requestAnimationFrame(f); else done(s);
   })();
-  document.querySelector('.label nav a[href="' + href + '"]').click();
+  document.querySelector('.label nav a[href="/' + href + '"]').click();
 })"""
 
-GO = """(href) => document.querySelector('.label nav a[href="' + href + '"]').click()"""
+GO = """(href) => document.querySelector('.label nav a[href="/' + href + '"]').click()"""
 
 COLS = """() => getComputedStyle(document.querySelector('.hero'))
                    .gridTemplateColumns.split(' ').length"""

@@ -59,7 +59,7 @@ SLOWJS = """(function(){ var a = Element.prototype.animate;
     else if (o && o.duration) o = Object.assign({}, o, {duration:o.duration * %d});
     return a.call(this, k, o); }; })();""" % (SLOW, SLOW)
 HIDE = '#critsay,#critter{visibility:hidden !important}'
-GO = """(href) => document.querySelector('.label nav a[href="' + href + '"]').click()"""
+GO = """(href) => document.querySelector('.label nav a[href="/' + href + '"]').click()"""
 # The swap's own animations: the transition's pseudo-elements on the old build, the body
 # sections and the hero on the new one. The plate's own opacity fade is not the swap's.
 # AT(frac) resolves once the furthest-along of them has run that fraction of its

@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20fill%3D%22%230204a7%22%2F%3E%3C%2Fsvg%3E">
-<link rel="icon" type="image/x-icon" href="favicon.ico" sizes="32x32">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- Language-model index: /llms.txt -->
 <title>Tim Booker</title>
 <meta name="description" content="Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems.">
-<link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/archivo-narrow-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/archivo-narrow-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script>
 (function(){
   var r = document.documentElement;
@@ -28,12 +28,12 @@
 
 @font-face{
   font-family:Archivo; font-style:normal; font-weight:400 700; font-stretch:100%;
-  font-display:swap; src:url(fonts/archivo-latin.woff2) format('woff2');
+  font-display:swap; src:url(/fonts/archivo-latin.woff2) format('woff2');
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 @font-face{
   font-family:'Archivo Narrow'; font-style:normal; font-weight:400 700;
-  font-display:swap; src:url(fonts/archivo-narrow-latin.woff2) format('woff2');
+  font-display:swap; src:url(/fonts/archivo-narrow-latin.woff2) format('woff2');
   unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
@@ -63,7 +63,7 @@ body{
 /* paper tooth over the whole page */
 body::after{
   content:""; position:fixed; inset:0; z-index:9; pointer-events:none;
-  background-image:url("grain/tooth-256.webp"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image:url("/grain/tooth-256.webp"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:256px 256px, 620px 620px;
   opacity:var(--grain-page); mix-blend-mode:var(--grain-blend);
   /* Named, so the grain is carried into the transition layer along with the label
@@ -100,7 +100,7 @@ a{color:inherit}
 }
 .label::before, .label::after{
   content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
-  background-image:url("grain/tooth-256.webp"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image:url("/grain/tooth-256.webp"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='620'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='620' height='620' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:256px 256px, 620px 620px;
 }
 .label::before{ mix-blend-mode:screen;   opacity:.16; }
@@ -542,7 +542,7 @@ html.app .body.leaving{
         <i>population-level belief structure</i> ; <i>ranking as selection pressure</i> ;
         <i>emergence of reasoning in language models</i>.
       </div>
-      <nav><a href="home.html" aria-current="page">Home</a><a href="research.html">Research</a><a href="freelancing.html">Freelancing</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>
+      <nav><a href="/home.html" aria-current="page">Home</a><a href="/research.html">Research</a><a href="/freelancing.html">Freelancing</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></nav>
       <canvas id="critter" width="112" height="96" data-gen="0"
               aria-hidden="true" hidden></canvas>
       <div id="critsay" aria-hidden="true"></div>
@@ -607,12 +607,12 @@ systems that were not built with the interests of humans in mind (our democracy,
 collective capabilities, our development as individuals).</p>
 </div>
     <dl class="rows">
-<dt><a href="research.html">Research.</a></dt><dd><span>Alternative recommender systems, social media and democracy, collective intelligence, mechanistic interpretability of LLMs, and multi-agent simulation.</span></dd>
-<dt><a href="freelancing.html">Freelance.</a></dt><dd><span>Bespoke LLM products, data analysis and engineering, and recommender system design.</span></dd>
+<dt><a href="/research.html">Research.</a></dt><dd><span>Alternative recommender systems, social media and democracy, collective intelligence, mechanistic interpretability of LLMs, and multi-agent simulation.</span></dd>
+<dt><a href="/freelancing.html">Freelance.</a></dt><dd><span>Bespoke LLM products, data analysis and engineering, and recommender system design.</span></dd>
 <dt>Media.</dt><dd><span>Available to comment on AI, social media platforms, recommendation algorithms, and online discourse.</span></dd>
 <dt>Students.</dt><dd><span>I'm happy to supervise master's students, and motivated BSc students. Please feel welcomed to say hi!</span></dd>
 <dt>Elsewhere.</dt><dd><span><a class="link" href="https://bsky.app/profile/timzyzz.bsky.social">Bluesky</a>, <a class="link" href="https://github.com/tims-not-real">GitHub</a>.</span></dd>
-<dt><a href="contact.html">Write to me.</a></dt><dd><span><a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>.</span></dd>
+<dt><a href="/contact.html">Write to me.</a></dt><dd><span><a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>.</span></dd>
 </dl>
   </section>
   <section class="body" data-page="research" hidden>
@@ -721,7 +721,7 @@ collective capabilities, our development as individuals).</p>
       <p>I'm at the Complex Social &amp; Computational Systems group at the University of
       Graz, where I work with Prof. Jana Lasser on DeSiRe. I also convene a working group
       on what social media platforms ought to be for, and take on
-      <a class="link" href="freelancing.html">freelance work</a>.</p>
+      <a class="link" href="/freelancing.html">freelance work</a>.</p>
     </div>
 
     <section class="sec">
@@ -782,7 +782,7 @@ collective capabilities, our development as individuals).</p>
       recommendation.</p>
       <p>I'm happy to be reached out to by students, journalists, professionals, and
       researchers. For contract and consulting work, see
-      <a class="link" href="freelancing.html">freelancing</a>.</p>
+      <a class="link" href="/freelancing.html">freelancing</a>.</p>
     </div>
 
     <dl class="rows">
@@ -1972,7 +1972,7 @@ return { tick: function(){
 
 (function(){
   var root = document.documentElement;
-  var PAGE = {"home": {"f": "home.html", "t": "Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}, "research": {"f": "research.html", "t": "Research — Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}, "freelancing": {"f": "freelancing.html", "t": "Freelancing — Tim Booker", "d": "Tim Booker takes on contract work: recommender and ranking design, measurement, LLM labelling at scale, and data science on large or messy sources."}, "about": {"f": "about.html", "t": "About — Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}, "contact": {"f": "contact.html", "t": "Contact — Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}};
+  var PAGE = {"home": {"f": "/home.html", "t": "Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}, "research": {"f": "/research.html", "t": "Research — Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}, "freelancing": {"f": "/freelancing.html", "t": "Freelancing — Tim Booker", "d": "Tim Booker takes on contract work: recommender and ranking design, measurement, LLM labelling at scale, and data science on large or messy sources."}, "about": {"f": "/about.html", "t": "About — Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}, "contact": {"f": "/contact.html", "t": "Contact — Tim Booker", "d": "Tim Booker is interested in how culture evolves and in what collectives can do. He is a complex systems scientist, and works on how social technology changes that evolution and on the design of alternative recommender systems."}};
   var file = {}, k;
   for (k in PAGE) file[PAGE[k].f] = k;
 
@@ -2011,7 +2011,7 @@ return { tick: function(){
       if (file[a[i].getAttribute('href')] === key) a[i].setAttribute('aria-current','page');
       else a[i].removeAttribute('aria-current');
     }
-    mark.innerHTML = key === 'home' ? 'Tim Booker' : '<a href="home.html">Tim Booker</a>';
+    mark.innerHTML = key === 'home' ? 'Tim Booker' : '<a href="/home.html">Tim Booker</a>';
   }
   function head(key){
     document.title = PAGE[key].t;
@@ -2164,7 +2164,7 @@ return { tick: function(){
   }
 
   addEventListener('popstate', function(e){
-    var key = (e.state && e.state.p) || file[location.pathname.split('/').pop()];
+    var key = (e.state && e.state.p) || file[location.pathname];
     swap(key || 'home', false);
   });
 
