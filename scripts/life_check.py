@@ -1236,10 +1236,10 @@ with sync_playwright() as pw:
     # ---- it stops on the way out and picks up on the way back -------------------
     p = br.new_page(viewport={'width': 1400, 'height': 900})
     p.goto(URL + 'home.html')
-    p.click('.label nav a[href="about.html"]')
+    p.click('.label nav a[href="/about.html"]')
     p.wait_for_function('TB.running() === "about"')
     p.wait_for_timeout(700)
-    p.click('.label nav a[href="contact.html"]')
+    p.click('.label nav a[href="/contact.html"]')
     p.wait_for_timeout(400)
     note('the plate stops when you leave About', p.evaluate('TB.running()') is None)
     # Both readings are taken after the swap has settled. Taking the first one before the
@@ -1251,7 +1251,7 @@ with sync_playwright() as pw:
     note('and nothing steps while you are away', p.evaluate('TB.ticks.about') == ta)
     note('and the generation it stopped on is still there', b == a,
          '  %d then %d, 1200ms apart' % (a, b))
-    p.click('.label nav a[href="about.html"]')
+    p.click('.label nav a[href="/about.html"]')
     p.wait_for_function('TB.running() === "about"')
     p.wait_for_timeout(300)
     c = int(p.text_content('.viz[data-plate=about] output'))

@@ -45,13 +45,13 @@ def _creature_lines():
 
 CREATURE_LINES, CREATURE_GENERATION = _creature_lines()
 
-PAGES = [('home.html', 'Home'), ('research.html', 'Research'),
-         ('freelancing.html', 'Freelancing'), ('about.html', 'About'),
-         ('contact.html', 'Contact')]
+PAGES = [('/home.html', 'Home'), ('/research.html', 'Research'),
+         ('/freelancing.html', 'Freelancing'), ('/about.html', 'About'),
+         ('/contact.html', 'Contact')]
 
 # The five states the one document holds, keyed by the file each one is also written
 # to. 404 is not among them: nothing links to it, and GitHub Pages serves it by path.
-KEYS = [href[:-5] for href, _ in PAGES]
+KEYS = [href[1:-5] for href, _ in PAGES]
 
 BSKY = 'https://bsky.app/profile/timzyzz.bsky.social'
 GITHUB = 'https://github.com/tims-not-real'
@@ -151,7 +151,7 @@ def hero(page, current, plates=()):
     is why a plate can be left mounted and picked up again where it was.
     """
     name = ('Tim Booker' if page == 'Home'
-            else '<a href="home.html">Tim Booker</a>')
+            else '<a href="/home.html">Tim Booker</a>')
     col = ['    <div class="plate">']
     for key in plates:
         col.append(PLATES[key].replace('__HIDE__', '' if key == current else ' hidden'))
@@ -178,12 +178,12 @@ SHELL = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="__ICON__">
-<link rel="icon" type="image/x-icon" href="favicon.ico" sizes="32x32">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- Language-model index: /llms.txt -->
 <title>__TITLE__</title>
 <meta name="description" content="__DESC__">
-<link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 __NARROW____HEAD__<style>
 __CSS__
 </style>
@@ -227,7 +227,7 @@ __SCRIPT__</body>
 # Archivo Narrow sets one thing, the number beside a fader, so only the pages that carry
 # a plate preload it. On the other three the browser would fetch 18KB and never draw a
 # glyph with it. The face is still declared for all of them; nothing asks for it there.
-NARROW = ('<link rel="preload" href="fonts/archivo-narrow-latin.woff2" as="font" '
+NARROW = ('<link rel="preload" href="/fonts/archivo-narrow-latin.woff2" as="font" '
           'type="font/woff2" crossorigin>\n')
 
 
@@ -585,7 +585,7 @@ ROUTER_JS = r"""
       if (file[a[i].getAttribute('href')] === key) a[i].setAttribute('aria-current','page');
       else a[i].removeAttribute('aria-current');
     }
-    mark.innerHTML = key === 'home' ? 'Tim Booker' : '<a href="home.html">Tim Booker</a>';
+    mark.innerHTML = key === 'home' ? 'Tim Booker' : '<a href="/home.html">Tim Booker</a>';
   }
   function head(key){
     document.title = PAGE[key].t;
@@ -738,7 +738,7 @@ ROUTER_JS = r"""
   }
 
   addEventListener('popstate', function(e){
-    var key = (e.state && e.state.p) || file[location.pathname.split('/').pop()];
+    var key = (e.state && e.state.p) || file[location.pathname];
     swap(key || 'home', false);
   });
 
@@ -1600,10 +1600,10 @@ collective capabilities, our development as individuals).</p>
 
 # One line each, labelled by the thing rather than by who it is for.
 HOME_ROWS = [
-    ('Research', 'research.html',
+    ('Research', '/research.html',
      'Alternative recommender systems, social media and democracy, collective '
      'intelligence, mechanistic interpretability of LLMs, and multi-agent simulation.'),
-    ('Freelance', 'freelancing.html',
+    ('Freelance', '/freelancing.html',
      'Bespoke LLM products, data analysis and engineering, and recommender system '
      'design.'),
     ('Media', None,
@@ -1615,7 +1615,7 @@ HOME_ROWS = [
     ('Elsewhere', None,
      '<a class="link" href="__BSKY__">Bluesky</a>, '
      '<a class="link" href="__GITHUB__">GitHub</a>.'),
-    ('Write to me', 'contact.html',
+    ('Write to me', '/contact.html',
      '<a class="link" href="mailto:__UNI__">__UNI__</a>.'),
 ]
 
@@ -2583,7 +2583,7 @@ ABOUT = """
       <p>I'm at the Complex Social &amp; Computational Systems group at the University of
       Graz, where I work with Prof. Jana Lasser on DeSiRe. I also convene a working group
       on what social media platforms ought to be for, and take on
-      <a class="link" href="freelancing.html">freelance work</a>.</p>
+      <a class="link" href="/freelancing.html">freelance work</a>.</p>
     </div>
 
     <section class="sec">
@@ -2648,7 +2648,7 @@ CONTACT = """
       recommendation.</p>
       <p>I'm happy to be reached out to by students, journalists, professionals, and
       researchers. For contract and consulting work, see
-      <a class="link" href="freelancing.html">freelancing</a>.</p>
+      <a class="link" href="/freelancing.html">freelancing</a>.</p>
     </div>
 
     <dl class="rows">
@@ -2996,11 +2996,11 @@ NOT_FOUND = """
     <div class="prose">
       <p class="lede">Nothing here.</p>
       <p>Either the address is wrong, or I moved something and didn't leave a note.
-      The five pages are <a class="link" href="home.html">Home</a>,
-      <a class="link" href="research.html">Research</a>,
-      <a class="link" href="freelancing.html">Freelancing</a>,
-      <a class="link" href="about.html">About</a>, and
-      <a class="link" href="contact.html">Contact</a>. If a link sent you here and it's
+      The five pages are <a class="link" href="/home.html">Home</a>,
+      <a class="link" href="/research.html">Research</a>,
+      <a class="link" href="/freelancing.html">Freelancing</a>,
+      <a class="link" href="/about.html">About</a>, and
+      <a class="link" href="/contact.html">Contact</a>. If a link sent you here and it's
       broken, please tell me: <a class="link" href="mailto:__UNI__">__UNI__</a>.</p>
     </div>
 """.replace('__UNI__', UNI)
@@ -3096,7 +3096,7 @@ PLATE_JS = {'home': ISING_JS, 'research': SLE_JS, 'freelancing': GRAY_SCOTT_JS,
 
 # Title and description per page. The head carries the current one; the router carries
 # all of them, since it has to rewrite the head as the state changes.
-NAMES = dict((href[:-5], name) for href, name in PAGES)
+NAMES = dict((href[1:-5], name) for href, name in PAGES)
 META = {
     'home':        ('Tim Booker', DESC),
     'research':    ('Research &mdash; Tim Booker', DESC),
@@ -3123,7 +3123,7 @@ def bodies():
 def page_map():
     """The five states, as the router needs them: file, title, description."""
     import json
-    out = dict((k, {'f': k + '.html',
+    out = dict((k, {'f': '/' + k + '.html',
                     't': META[k][0].replace('&mdash;', '—'),
                     'd': META[k][1]}) for k in KEYS)
     return json.dumps(out, ensure_ascii=False).replace('<', '\\u003c')

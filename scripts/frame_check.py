@@ -57,7 +57,7 @@ BANDS = {'label': (540, 190, 800, 330),
          'body': (160, 700, 700, 880),
          'lgap': (20, 100, 120, 800)}
 HIDE = {'hide': 'canvas,#critsay,#critter', 'live': '#critsay,#critter', 'all': ''}[A.canvas]
-GO = """(href) => document.querySelector('.label nav a[href="' + href + '"]').click()"""
+GO = """(href) => document.querySelector('.label nav a[href="/' + href + '"]').click()"""
 
 
 def serve(root):
