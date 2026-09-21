@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generation": 0,
+ "generation": 1,
  "n_agents": 8,
  "n_lines": 24,
  "prompt": "a lonely little creature speaks to a visitor. it says: i ",
@@ -18,143 +18,232 @@
   {
    "slot": 0,
    "lineage": "f0",
-   "origin": "founder",
+   "origin": "survivor",
    "born": 0,
-   "parent": null,
+   "parent": 0,
    "seeds": [
     [
      1708506908,
      0.15
     ]
    ],
-   "line_seed": 1932180235,
+   "line_seed": 1884270775,
    "draw": 3,
-   "ce": 4.0979
+   "ce": 4.5976
   },
   {
    "slot": 1,
-   "lineage": "f1",
-   "origin": "founder",
-   "born": 0,
-   "parent": null,
-   "seeds": [
-    [
-     1928826938,
-     0.15
-    ]
-   ],
-   "line_seed": 745895307,
-   "ce": 4.1321
-  },
-  {
-   "slot": 2,
-   "lineage": "f2",
-   "origin": "founder",
-   "born": 0,
-   "parent": null,
-   "seeds": [
-    [
-     2138513376,
-     0.15
-    ]
-   ],
-   "line_seed": 1575180151,
-   "ce": 3.9028
-  },
-  {
-   "slot": 3,
-   "lineage": "f3",
-   "origin": "founder",
-   "born": 0,
-   "parent": null,
-   "seeds": [
-    [
-     851147519,
-     0.15
-    ]
-   ],
-   "line_seed": 1754412476,
-   "ce": 4.3859
-  },
-  {
-   "slot": 4,
-   "lineage": "f4",
-   "origin": "founder",
-   "born": 0,
-   "parent": null,
-   "seeds": [
-    [
-     9656684,
-     0.15
-    ]
-   ],
-   "line_seed": 924439281,
-   "draw": 1,
-   "ce": 3.4766
-  },
-  {
-   "slot": 5,
-   "lineage": "f5",
-   "origin": "founder",
-   "born": 0,
-   "parent": null,
-   "seeds": [
-    [
-     821257848,
-     0.15
-    ]
-   ],
-   "line_seed": 932281944,
-   "ce": 4.4849
-  },
-  {
-   "slot": 6,
    "lineage": "f6",
-   "origin": "founder",
+   "origin": "survivor",
    "born": 0,
-   "parent": null,
+   "parent": 6,
    "seeds": [
     [
      590596682,
      0.15
     ]
    ],
-   "line_seed": 1015727375,
+   "line_seed": 2094428874,
    "draw": 1,
-   "ce": 4.1854
+   "ce": 4.4045
   },
   {
-   "slot": 7,
-   "lineage": "f7",
-   "origin": "founder",
+   "slot": 2,
+   "lineage": "f1",
+   "origin": "survivor",
    "born": 0,
-   "parent": null,
+   "parent": 1,
    "seeds": [
     [
-     1136445099,
+     1928826938,
      0.15
     ]
    ],
-   "line_seed": 2007870799,
-   "ce": 4.1707
+   "line_seed": 1035995475,
+   "ce": 4.1892
+  },
+  {
+   "slot": 3,
+   "lineage": "f2",
+   "origin": "survivor",
+   "born": 0,
+   "parent": 2,
+   "seeds": [
+    [
+     2138513376,
+     0.15
+    ]
+   ],
+   "line_seed": 1374228559,
+   "ce": 3.99
+  },
+  {
+   "slot": 4,
+   "lineage": "f0",
+   "origin": "child",
+   "born": 1,
+   "parent": 0,
+   "seeds": [
+    [
+     1708506908,
+     0.15
+    ],
+    [
+     1008283063,
+     0.025
+    ]
+   ],
+   "line_seed": 1085459412,
+   "ce": 4.4267
+  },
+  {
+   "slot": 5,
+   "lineage": "f6",
+   "origin": "child",
+   "born": 1,
+   "parent": 6,
+   "seeds": [
+    [
+     590596682,
+     0.15
+    ],
+    [
+     1414795081,
+     0.025
+    ]
+   ],
+   "line_seed": 714999111,
+   "ce": 4.5102
+  },
+  {
+   "slot": 6,
+   "lineage": "f1",
+   "origin": "child",
+   "born": 1,
+   "parent": 1,
+   "seeds": [
+    [
+     1928826938,
+     0.15
+    ],
+    [
+     1022091654,
+     0.025
+    ]
+   ],
+   "line_seed": 1498138436,
+   "ce": 4.1807
+  },
+  {
+   "slot": 7,
+   "lineage": "i1.7",
+   "origin": "immigrant",
+   "born": 1,
+   "parent": null,
+   "seeds": [
+    [
+     1928531831,
+     0.15
+    ]
+   ],
+   "line_seed": 856758954,
+   "ce": 4.4909
   }
  ],
  "last": {
-  "action": "founded"
+  "action": "rolled",
+  "from_generation": 0,
+  "ranking": [
+   {
+    "slot": 0,
+    "lineage": "f0",
+    "shows": 12,
+    "pats": 5,
+    "ratio": 0.4166666666666667,
+    "ce": 4.0979,
+    "floored": false
+   },
+   {
+    "slot": 6,
+    "lineage": "f6",
+    "shows": 12,
+    "pats": 4,
+    "ratio": 0.3333333333333333,
+    "ce": 4.1854,
+    "floored": false
+   },
+   {
+    "slot": 1,
+    "lineage": "f1",
+    "shows": 10,
+    "pats": 3,
+    "ratio": 0.3,
+    "ce": 4.1321,
+    "floored": false
+   },
+   {
+    "slot": 2,
+    "lineage": "f2",
+    "shows": 14,
+    "pats": 3,
+    "ratio": 0.21428571428571427,
+    "ce": 3.9028,
+    "floored": false
+   },
+   {
+    "slot": 5,
+    "lineage": "f5",
+    "shows": 11,
+    "pats": 2,
+    "ratio": 0.18181818181818182,
+    "ce": 4.4849,
+    "floored": false
+   },
+   {
+    "slot": 3,
+    "lineage": "f3",
+    "shows": 19,
+    "pats": 3,
+    "ratio": 0.15789473684210525,
+    "ce": 4.3859,
+    "floored": false
+   },
+   {
+    "slot": 7,
+    "lineage": "f7",
+    "shows": 23,
+    "pats": 3,
+    "ratio": 0.13043478260869565,
+    "ce": 4.1707,
+    "floored": false
+   },
+   {
+    "slot": 4,
+    "lineage": "f4",
+    "shows": 17,
+    "pats": 2,
+    "ratio": 0.11764705882352941,
+    "ce": 3.4766,
+    "floored": false
+   }
+  ],
+  "kept": [
+   0,
+   6,
+   1,
+   2
+  ],
+  "reseeded_for_cap": [],
+  "lineages": {
+   "f0": 2,
+   "f6": 2,
+   "f1": 2,
+   "f2": 1,
+   "i1.7": 1
+  }
  },
  "checked": {
-  "date": "2026-09-14",
-  "action": "skipped",
-  "reason": "fewer than 10 shows for agents [0, 1, 2, 5, 6]",
-  "shows": {
-   "0": 5,
-   "1": 7,
-   "2": 8,
-   "3": 13,
-   "4": 14,
-   "5": 2,
-   "6": 7,
-   "7": 17
-  }
+  "date": "2026-09-21",
+  "action": "rolled"
  }
 }
