@@ -1874,81 +1874,62 @@ RESEARCH_GROUPS = [
     ('Current', [
         ('Measuring the quality of political discourse on Reddit',
          '2026',
-         ["Three traditions of democratic theory that disagree with each other: Habermas "
-          "on rational deliberation, Mouffe on productive conflict, Young on inclusion.",
+         ["Three democratic theories that disagree: Habermas on deliberation, Mouffe on "
+          "conflict, Young on inclusion.",
           "A 56-variable codebook the theory constrains.",
-          "A stratified sample of about 75,000 comments across 653 subreddits.",
-          "Annotated by language models, validated by hand by seven coders."]),
+          "About 75,000 comments across 653 subreddits.",
+          "Annotated by language models, validated by seven coders."]),
         ('How news frames the victims of conflict',
          '2026',
-         ["Who is named and who is counted, which perpetrators are identified and which "
-          "are left implicit.",
-          "The test: do those choices track the severity of the event or the geopolitical "
-          "alignment of the outlet?",
-          "Around 1.36 billion articles across ten years and many languages, matched to "
-          "events and coded against a framing codebook.",
-          "The largest thing I've worked on. Most of the difficulty is in matching "
-          "articles to events."]),
+         ["Who is named, who is counted, and which perpetrators are left implicit.",
+          "Do those choices track the event's severity or the outlet's geopolitics?",
+          "About 1.36 billion articles over ten years, in many languages.",
+          "Most of the difficulty is matching articles to events."]),
         ('Does false-belief reasoning emerge the way it does in children?',
          '2026',
-         ["Children acquire it along a fairly consistent trajectory. Nobody has looked "
-          "closely at the shape of that curve in a language model.",
+         ["Nobody has charted the shape of that curve in a language model.",
           "41 checkpoints across the training run of an open model.",
-          "False-belief tasks scored by contrasting teacher-forced log probabilities.",
+          "Scored by contrasting teacher-forced log probabilities.",
           "Predictions registered before the runs."]),
         ('Simulating social media with language model agents',
          '2026',
-         ["A population of language model agents posting, reading, and responding under "
-          "a recommender we control.",
-          "Then we change the recommender: the experiment no real platform will run.",
-          "The open question: how much of any result is an artefact of the agents rather "
-          "than a property of the ranking."]),
+         ["Agents post, read, and respond under a recommender we control.",
+          "Vary the recommender, measure the discourse.",
+          "The open question: which results come from the agents, not the ranking."]),
         ('Sandboxing cultural evolution with LLMs',
          '2026',
-         ["Cumulative culture has no model system. We're building one: a population of "
-          "language model agents on a hidden fitness landscape whose optimum we know.",
-          "A detection battery that tells design accumulated through transmission from "
-          "design each agent worked out alone, every test against a null fixed in "
-          "advance.",
-          "Freeze-and-branch replay that cuts the peer channel mid-run to ask what it was "
-          "worth, as Lenski's freezer does for a bacterial lineage.",
-          "Theory and battery design are written. The code is landing now."]),
+         ["A model system for cumulative culture: design no individual worked out.",
+          "Language model agents on a hidden fitness landscape with a known optimum.",
+          "A detection battery: accumulated through transmission, or worked out alone?",
+          "Freeze-and-branch replay that cuts the peer channel mid-run."]),
         ("Belief networks, and how a population's attitudes hold together",
          '2025&ndash;2026',
-         ["A population's attitudes as a network: beliefs are nodes, correlations are "
-          "edges, and the shape shifts over time.",
+         ["Attitudes as a network: beliefs are nodes, correlations are edges.",
           "Decades of the General Social Survey.",
-          "The claim: a population's belief correlation structure is a real object, and "
-          "the environment any new belief has to fit.",
-          "Sub-populations appear to have differently shaped structures: liberals and "
-          "conservatives would differ in how their beliefs connect, as well as in which "
-          "they hold."]),
+          "The claim: that structure is the environment any new belief has to fit.",
+          "Liberals and conservatives appear to differ in how their beliefs connect."]),
         ('Pulling knowledge graphs out of text',
          '2026',
-         ["Given an ontology and a pile of text, can a language model produce a knowledge "
-          "graph you'd trust?",
+         ["Can a model turn an ontology and text into a graph you'd trust?",
           "Extraction, then coverage checking, then entity normalisation.",
-          "Benchmarked against Text2KGBench and CS-KG-3600."]),
+          "Benchmarked on Text2KGBench and CS-KG-3600."]),
     ]),
     ('Convening', [
         ('What platforms are for',
          '14&ndash;16 Dec 2026',
-         ["A working meeting on the question arguments about social media skip: what a "
-          "platform is for.",
-          "Three days in Berlin, hosted at the Max Planck Institute for Human Development. "
-          "By invitation.",
+         ["A working meeting on what a platform is for, by invitation.",
+          "Three days at the Max Planck Institute for Human Development, Berlin.",
           "The public page is <i><a class=\"link\" href=\"__MEETING__\">The Normative "
           "Foundations of Platforms</a></i>."]),
     ]),
     ('Earlier', [
         ('Timid walks and prudent walks',
          'honours work<br>Swinburne',
-         ["Self-avoiding walks: lattice paths that never cross themselves. A decent model "
-          "for polymer chains, and notoriously hard to analyse.",
-          "Timid and prudent walks: restricted variants that give up generality to be "
-          "tractable.",
+         ["Self-avoiding walks: lattice paths that never cross themselves.",
+          "Timid and prudent walks: restricted variants that trade generality for "
+          "tractability.",
           "My honours year, supervised by Nathan Clisby.",
-          "A long way from my current work. It's where I learned to do research."]),
+          "Where I learned to do research."]),
     ]),
 ]
 
