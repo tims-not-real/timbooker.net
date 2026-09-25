@@ -365,7 +365,12 @@ a{color:inherit}
 }
 .entry h3{font-size:1.0625rem; font-weight:700; letter-spacing:-.012em; line-height:1.3;
           max-width:44ch}
-.entry p{margin-top:.65rem; font-size:.9375rem; line-height:1.6; max-width:62ch}
+.entry ul{margin-top:.65rem; font-size:.9375rem; line-height:1.6; max-width:62ch;
+          list-style:none}
+.entry li{position:relative; padding-left:1.1rem}
+.entry li + li{margin-top:.3rem}
+.entry li::before{content:""; position:absolute; left:0; top:.8em; width:.45rem;
+                  border-top:1px solid var(--dim)}
 .entry .meta{
   font-size:.6875rem; letter-spacing:.06em; line-height:1.6; color:var(--dim);
   padding-top:.28rem;
