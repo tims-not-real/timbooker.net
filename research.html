@@ -377,6 +377,11 @@ a{color:inherit}
   padding-top:.28rem;
 }
 
+/* the meeting's poster, small, under its row and its entry; the link is the image */
+.poster{display:block; width:8rem; margin-top:1rem}
+.poster img{display:block; width:100%; height:auto}
+.poster:focus-visible{outline:1px solid var(--accent); outline-offset:3px}
+
 /* ---- about / contact sections ---- */
 .sec{margin-top:3.25rem}
 .sec > h2{
@@ -602,7 +607,7 @@ html.app .body.leaving{
     <section class="grp">
       <h2>Convening</h2>
       <article class="entry">
-        <div><h3>What platforms are for</h3><ul><li>A working meeting on what a platform is for, by invitation.</li><li>Three days at the Max Planck Institute for Human Development, Berlin.</li><li>The public page is <i><a class="link" href="https://cs2.uni-graz.at/workshops/normative-foundations/">The Normative Foundations of Platforms</a></i>.</li></ul></div>
+        <div><h3>What platforms are for</h3><ul><li>A working meeting on what a platform is for, by invitation.</li><li>Three days at the Max Planck Institute for Human Development, Berlin.</li><li>The public page is <i><a class="link" href="https://cs2.uni-graz.at/workshops/normative-foundations/">The Normative Foundations of Platforms</a></i>.</li></ul><a class="poster" href="https://cs2.uni-graz.at/workshops/normative-foundations/"><img src="/poster/normative-foundations.webp" width="128" height="135" alt="Poster: The Normative Foundations of Platforms, Berlin, 14&ndash;16 December 2026"></a></div>
         <div class="meta">14&ndash;16 Dec 2026</div>
       </article>
     </section>
