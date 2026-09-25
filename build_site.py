@@ -1873,91 +1873,82 @@ RESEARCH_LEDE = """
 RESEARCH_GROUPS = [
     ('Current', [
         ('Measuring the quality of political discourse on Reddit',
-         '2026<br>with seven coders validating',
-         "The framework sits on three traditions of democratic theory that disagree with "
-         "each other: Habermas on rational deliberation, Mouffe on productive conflict, "
-         "Young on inclusion. The theory constrains a 56-variable codebook, and the "
-         "codebook constrains the annotation and everything built on it. A stratified "
-         "sample of about 75,000 comments across 653 subreddits is annotated by language "
-         "models and validated by hand."),
+         '2026',
+         ["Three traditions of democratic theory that disagree with each other: Habermas "
+          "on rational deliberation, Mouffe on productive conflict, Young on inclusion.",
+          "A 56-variable codebook the theory constrains.",
+          "A stratified sample of about 75,000 comments across 653 subreddits.",
+          "Annotated by language models, validated by hand by seven coders."]),
         ('How news frames the victims of conflict',
-         '2026<br>with collaborators at two institutions',
-         "When a conflict kills people, some of them are named and some are counted, and "
-         "some perpetrators are identified while others are left implicit. A newsroom is "
-         "a selector with an objective. We're testing whether those choices track the "
-         "severity of the event or the geopolitical alignment of the outlet doing the "
-         "reporting. The corpus is around 1.36 billion articles across ten years and many "
-         "languages, matched to events and coded against a framing codebook. It's the "
-         "largest thing I've worked on. Most of the difficulty is in matching articles to "
-         "events."),
+         '2026',
+         ["Who is named and who is counted, which perpetrators are identified and which "
+          "are left implicit.",
+          "The test: do those choices track the severity of the event or the geopolitical "
+          "alignment of the outlet?",
+          "Around 1.36 billion articles across ten years and many languages, matched to "
+          "events and coded against a framing codebook.",
+          "The largest thing I've worked on. Most of the difficulty is in matching "
+          "articles to events."]),
         ('Does false-belief reasoning emerge the way it does in children?',
-         '2026<br>with collaborators in Graz, Zurich, and Genoa',
-         "Children come to reason about what someone else falsely believes along a fairly "
-         "consistent developmental trajectory. Language models acquire it somewhere "
-         "during training, and nobody has looked closely at the shape of that curve. We "
-         "take 41 checkpoints across the training run of an open model and score "
-         "false-belief tasks by contrasting teacher-forced log probabilities. The "
-         "predictions are registered before the runs."),
+         '2026',
+         ["Children acquire it along a fairly consistent trajectory. Nobody has looked "
+          "closely at the shape of that curve in a language model.",
+          "41 checkpoints across the training run of an open model.",
+          "False-belief tasks scored by contrasting teacher-forced log probabilities.",
+          "Predictions registered before the runs."]),
         ('Simulating social media with language model agents',
-         '2026<br>part of DeSiRe',
-         "If you want to know what a different recommender would do to a conversation, "
-         "you can't run that experiment on a real platform, and no platform will run it "
-         "for you. So we build the platform instead: a population of language model "
-         "agents posting, reading, and responding under a recommender we control. Then we "
-         "change the recommender. The open question is "
-         "how much of any result is an artefact of the agents rather than a property of "
-         "the ranking."),
+         '2026',
+         ["A population of language model agents posting, reading, and responding under "
+          "a recommender we control.",
+          "Then we change the recommender: the experiment no real platform will run.",
+          "The open question: how much of any result is an artefact of the agents rather "
+          "than a property of the ranking."]),
         ('Sandboxing cultural evolution with LLMs',
          '2026',
-         "Cumulative culture is design that no individual worked out, accumulated through "
-         "transmission. It has no model system: transmission chains with people are too "
-         "short for anything to accumulate, the historical record happened once, and "
-         "formal models have control but no cognition. A population of language model "
-         "agents is the first substrate with ideas and control at the same time. We're "
-         "building one on a hidden fitness landscape whose optimum we know. A rising "
-         "fitness curve does not say where the design came from: a population of agents "
-         "each learning alone produces the same curve as one that is accumulating. So the "
-         "contribution is the instrument: a detection battery that returns a verdict on "
-         "whether the design in a run accumulated through transmission or was worked out "
-         "by each agent alone, every test against a null fixed in advance, plus "
-         "freeze-and-branch "
-         "replay that cuts the peer channel mid-run to ask what it was worth, which is "
-         "what Lenski's freezer does for a bacterial lineage. Theory and battery design "
-         "are written; the code is landing now."),
+         ["Cumulative culture has no model system. We're building one: a population of "
+          "language model agents on a hidden fitness landscape whose optimum we know.",
+          "A detection battery that tells design accumulated through transmission from "
+          "design each agent worked out alone, every test against a null fixed in "
+          "advance.",
+          "Freeze-and-branch replay that cuts the peer channel mid-run to ask what it was "
+          "worth, as Lenski's freezer does for a bacterial lineage.",
+          "Theory and battery design are written. The code is landing now."]),
         ("Belief networks, and how a population's attitudes hold together",
-         '2025&ndash;2026<br>with a co-author',
-         "This treats a population's attitudes as a network: beliefs are nodes, "
-         "correlations between them are edges, and the shape of the whole thing shifts "
-         "over time. The data is decades of the General Social Survey. The claim I most "
-         "want to make is the conceptual one: a population's belief correlation structure "
-         "is a real object worth studying in its own right, and it is the environment that "
-         "any new belief has to fit. Different sub-populations appear to have differently "
-         "shaped structures. That would mean liberals and conservatives differ in how "
-         "their beliefs connect, as well as in which beliefs they hold."),
+         '2025&ndash;2026',
+         ["A population's attitudes as a network: beliefs are nodes, correlations are "
+          "edges, and the shape shifts over time.",
+          "Decades of the General Social Survey.",
+          "The claim: a population's belief correlation structure is a real object, and "
+          "the environment any new belief has to fit.",
+          "Sub-populations appear to have differently shaped structures: liberals and "
+          "conservatives would differ in how their beliefs connect, as well as in which "
+          "they hold."]),
         ('Pulling knowledge graphs out of text',
          '2026',
-         "Given an ontology and a pile of text, can a language model produce a knowledge "
-         "graph you'd trust? The pipeline is extraction, then coverage checking, then "
-         "entity normalisation, benchmarked against Text2KGBench and CS-KG-3600."),
+         ["Given an ontology and a pile of text, can a language model produce a knowledge "
+          "graph you'd trust?",
+          "Extraction, then coverage checking, then entity normalisation.",
+          "Benchmarked against Text2KGBench and CS-KG-3600."]),
     ]),
     ('Convening', [
         ('What platforms are for',
-         'December 2026<br>Berlin',
-         "Arguments about social media almost always skip the prior question of what a "
-         "platform is for. I'm convening a working meeting on it: three days in Berlin, "
-         "14&ndash;16 December, hosted at the Max Planck Institute for Human Development. "
-         "It is by invitation. The public page is <i><a class=\"link\" "
-         "href=\"__MEETING__\">The Normative Foundations of Platforms</a></i>."),
+         '14&ndash;16 Dec 2026',
+         ["A working meeting on the question arguments about social media skip: what a "
+          "platform is for.",
+          "Three days in Berlin, hosted at the Max Planck Institute for Human Development. "
+          "By invitation.",
+          "The public page is <i><a class=\"link\" href=\"__MEETING__\">The Normative "
+          "Foundations of Platforms</a></i>."]),
     ]),
     ('Earlier', [
         ('Timid walks and prudent walks',
          'honours work<br>Swinburne',
-         "Self-avoiding walks are paths on a lattice that never cross themselves. They "
-         "are a decent model for polymer chains and a notoriously hard object to analyse. "
-         "Some restricted variants, timid walks and prudent walks, give up generality in "
-         "exchange for being tractable, and I spent my honours year on those under the "
-         "supervision of Nathan Clisby. It is a long way from my current work. It is where "
-         "I learned to do research."),
+         ["Self-avoiding walks: lattice paths that never cross themselves. A decent model "
+          "for polymer chains, and notoriously hard to analyse.",
+          "Timid and prudent walks: restricted variants that give up generality to be "
+          "tractable.",
+          "My honours year, supervised by Nathan Clisby.",
+          "A long way from my current work. It's where I learned to do research."]),
     ]),
 ]
 
@@ -1967,9 +1958,10 @@ def research_body():
     for i, (group, entries) in enumerate(RESEARCH_GROUPS):
         out.append('    <section class="grp%s">' % (' first' if i == 0 else ''))
         out.append('      <h2>%s</h2>' % group)
-        for title, meta, text in entries:
+        for title, meta, points in entries:
             out.append('      <article class="entry">')
-            out.append('        <div><h3>%s</h3><p>%s</p></div>' % (title, text))
+            out.append('        <div><h3>%s</h3><ul>%s</ul></div>'
+                       % (title, ''.join('<li>%s</li>' % t for t in points)))
             out.append('        <div class="meta">%s</div>' % meta)
             out.append('      </article>')
         out.append('    </section>')
