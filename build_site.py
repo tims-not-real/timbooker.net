@@ -1624,11 +1624,12 @@ HOME_ROWS = [
 ]
 
 
-# The meeting's own poster, with its Convening row on home and its entry on research. It
-# keeps its own colours, the one exception to the greyscale-and-blue palette (#88).
-# Eager, with its box sized, so it is decoded before the router ever shows its section.
+# The meeting's own poster, in the right-hand slot of its Convening row on home and of its
+# entry on research, so it sits at the same edge on both. It keeps its own colours, the one
+# exception to the greyscale-and-blue palette (#88). Eager, with its box sized, so it is
+# decoded before the router ever shows its section.
 POSTER = ('<a class="poster" href="__MEETING__"><img src="/poster/normative-foundations.webp" '
-          'width="128" height="135" alt="Poster: The Normative Foundations of Platforms, '
+          'width="192" height="203" alt="Poster: The Normative Foundations of Platforms, '
           'Berlin, 14&ndash;16 December 2026"></a>')
 
 
@@ -1636,8 +1637,11 @@ def rows_block(rows):
     out = ['<dl class="rows">']
     for label, href, text in rows:
         dt = '<a href="%s">%s.</a>' % (href, label) if href else label + '.'
-        extra = POSTER if label == 'Convening' else ''
-        out.append('<dt>%s</dt><dd><span>%s</span>%s</dd>' % (dt, text, extra))
+        if label == 'Convening':
+            out.append('<dt>%s</dt><dd class="with-poster"><span>%s</span>%s</dd>'
+                       % (dt, text, POSTER))
+        else:
+            out.append('<dt>%s</dt><dd><span>%s</span></dd>' % (dt, text))
     out.append('</dl>')
     return ('\n'.join(out).replace('__BSKY__', BSKY).replace('__GITHUB__', GITHUB)
             .replace('__UNI__', UNI).replace('__MEETING__', MEETING))
@@ -1951,10 +1955,10 @@ def research_body():
         out.append('      <h2>%s</h2>' % group)
         for title, meta, points in entries:
             out.append('      <article class="entry">')
-            extra = POSTER if group == 'Convening' else ''
-            out.append('        <div><h3>%s</h3><ul>%s</ul>%s</div>'
-                       % (title, ''.join('<li>%s</li>' % t for t in points), extra))
-            out.append('        <div class="meta">%s</div>' % meta)
+            out.append('        <div><h3>%s</h3><ul>%s</ul></div>'
+                       % (title, ''.join('<li>%s</li>' % t for t in points)))
+            out.append('        <div class="meta"><span>%s</span>%s</div>'
+                       % (meta, POSTER if group == 'Convening' else ''))
             out.append('      </article>')
         out.append('    </section>')
     out.append('')

@@ -390,8 +390,14 @@ a{color:inherit}
   padding-top:.28rem;
 }
 
-/* the meeting's poster, small, under its row and its entry; the link is the image */
-.poster{display:block; width:8rem; margin-top:1rem}
+/* the meeting's poster: a sleeve in the right-hand slot, the entry's meta column on
+   research and the same 12rem at the same edge on home. The link is the image. */
+.rows dd.with-poster{display:grid; grid-template-columns:minmax(0,1fr) 12rem; gap:2.25rem;
+                     align-items:start}
+.poster{display:block; margin-top:.9rem; outline:1px solid var(--rule);
+        box-shadow:0 14px 30px -14px rgba(0,0,0,.7); transition:outline-color .2s ease}
+.rows .poster{margin-top:.2rem}
+.poster:hover{outline-color:var(--dim)}
 .poster img{display:block; width:100%; height:auto}
 .poster:focus-visible{outline:1px solid var(--accent); outline-offset:3px}
 
@@ -529,6 +535,13 @@ html.app .body.leaving{
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}
   .entry{grid-template-columns:minmax(0,1fr); gap:.7rem}
   .entry .meta{padding-top:0; order:-1}
+  .rows dd.with-poster{grid-template-columns:minmax(0,1fr); gap:0}
+  /* the date still leads, but the poster follows the points rather than the title */
+  .entry .meta{display:contents}
+  .entry .meta > span{order:-1}
+  .entry .poster{margin-top:.3rem}
+  .poster{width:12rem}
+  .rows .poster{margin-top:.9rem}
 }
 
 </style>
@@ -621,7 +634,7 @@ collective capabilities, our development as individuals).</p>
 <dt><a href="/freelancing.html">Freelance.</a></dt><dd><span>Bespoke LLM products, data analysis and engineering, and recommender system design.</span></dd>
 <dt>Media.</dt><dd><span>Available to comment on AI, social media platforms, recommendation algorithms, and online discourse.</span></dd>
 <dt>Students.</dt><dd><span>I'm happy to supervise master's students, and motivated BSc students. Please feel welcomed to say hi!</span></dd>
-<dt>Convening.</dt><dd><span>A working meeting in Berlin, 14&ndash;16 December 2026, on what platforms are for: <i><a class="link" href="https://cs2.uni-graz.at/workshops/normative-foundations/">The Normative Foundations of Platforms</a></i>.</span><a class="poster" href="https://cs2.uni-graz.at/workshops/normative-foundations/"><img src="/poster/normative-foundations.webp" width="128" height="135" alt="Poster: The Normative Foundations of Platforms, Berlin, 14&ndash;16 December 2026"></a></dd>
+<dt>Convening.</dt><dd class="with-poster"><span>A working meeting in Berlin, 14&ndash;16 December 2026, on what platforms are for: <i><a class="link" href="https://cs2.uni-graz.at/workshops/normative-foundations/">The Normative Foundations of Platforms</a></i>.</span><a class="poster" href="https://cs2.uni-graz.at/workshops/normative-foundations/"><img src="/poster/normative-foundations.webp" width="192" height="203" alt="Poster: The Normative Foundations of Platforms, Berlin, 14&ndash;16 December 2026"></a></dd>
 <dt>Elsewhere.</dt><dd><span><a class="link" href="https://bsky.app/profile/timzyzz.bsky.social">Bluesky</a>, <a class="link" href="https://github.com/tims-not-real">GitHub</a>.</span></dd>
 <dt><a href="/contact.html">Write to me.</a></dt><dd><span><a class="link" href="mailto:tim.booker@uni-graz.at">tim.booker@uni-graz.at</a>.</span></dd>
 </dl>
@@ -647,45 +660,45 @@ collective capabilities, our development as individuals).</p>
       <h2>Current</h2>
       <article class="entry">
         <div><h3>Measuring the quality of political discourse on Reddit</h3><ul><li>Three democratic theories that disagree: Habermas on deliberation, Mouffe on conflict, Young on inclusion.</li><li>A 56-variable codebook the theory constrains.</li><li>About 75,000 comments across 653 subreddits.</li><li>Annotated by language models, validated by seven coders.</li></ul></div>
-        <div class="meta">2026</div>
+        <div class="meta"><span>2026</span></div>
       </article>
       <article class="entry">
         <div><h3>How news frames the victims of conflict</h3><ul><li>Who is named, who is counted, and which perpetrators are left implicit.</li><li>Do those choices track the event's severity or the outlet's geopolitics?</li><li>About 1.36 billion articles over ten years, in many languages.</li><li>Most of the difficulty is matching articles to events.</li></ul></div>
-        <div class="meta">2026</div>
+        <div class="meta"><span>2026</span></div>
       </article>
       <article class="entry">
         <div><h3>Does false-belief reasoning emerge the way it does in children?</h3><ul><li>Children acquire it along a consistent curve. Nobody has charted it in a language model.</li><li>41 checkpoints across the training run of an open model.</li><li>Scored by contrasting teacher-forced log probabilities.</li><li>Predictions registered before the runs.</li></ul></div>
-        <div class="meta">2026</div>
+        <div class="meta"><span>2026</span></div>
       </article>
       <article class="entry">
         <div><h3>Simulating social media with language model agents</h3><ul><li>Agents post, read, and respond under a recommender we control.</li><li>Vary the recommender, measure the discourse.</li><li>The open question: which results come from the agents, not the ranking.</li></ul></div>
-        <div class="meta">2026</div>
+        <div class="meta"><span>2026</span></div>
       </article>
       <article class="entry">
         <div><h3>Sandboxing cultural evolution with LLMs</h3><ul><li>A model system for cumulative culture: design no individual worked out.</li><li>Language model agents on a hidden fitness landscape with a known optimum.</li><li>A detection battery: accumulated through transmission, or worked out alone?</li><li>Freeze-and-branch replay that cuts the peer channel mid-run.</li></ul></div>
-        <div class="meta">2026</div>
+        <div class="meta"><span>2026</span></div>
       </article>
       <article class="entry">
         <div><h3>Belief networks, and how a population's attitudes hold together</h3><ul><li>Attitudes as a network: beliefs are nodes, correlations are edges.</li><li>Decades of the General Social Survey.</li><li>The claim: that structure is the environment any new belief has to fit.</li><li>Liberals and conservatives appear to differ in how their beliefs connect.</li></ul></div>
-        <div class="meta">2025&ndash;2026</div>
+        <div class="meta"><span>2025&ndash;2026</span></div>
       </article>
       <article class="entry">
         <div><h3>Pulling knowledge graphs out of text</h3><ul><li>Can a model turn an ontology and text into a graph you'd trust?</li><li>Extraction, then coverage checking, then entity normalisation.</li><li>Benchmarked on Text2KGBench and CS-KG-3600.</li></ul></div>
-        <div class="meta">2026</div>
+        <div class="meta"><span>2026</span></div>
       </article>
     </section>
     <section class="grp">
       <h2>Convening</h2>
       <article class="entry">
-        <div><h3>What platforms are for</h3><ul><li>A working meeting on what a platform is for, by invitation.</li><li>Three days at the Max Planck Institute for Human Development, Berlin.</li><li>The public page is <i><a class="link" href="https://cs2.uni-graz.at/workshops/normative-foundations/">The Normative Foundations of Platforms</a></i>.</li></ul><a class="poster" href="https://cs2.uni-graz.at/workshops/normative-foundations/"><img src="/poster/normative-foundations.webp" width="128" height="135" alt="Poster: The Normative Foundations of Platforms, Berlin, 14&ndash;16 December 2026"></a></div>
-        <div class="meta">14&ndash;16 Dec 2026</div>
+        <div><h3>What platforms are for</h3><ul><li>A working meeting on what a platform is for, by invitation.</li><li>Three days at the Max Planck Institute for Human Development, Berlin.</li><li>The public page is <i><a class="link" href="https://cs2.uni-graz.at/workshops/normative-foundations/">The Normative Foundations of Platforms</a></i>.</li></ul></div>
+        <div class="meta"><span>14&ndash;16 Dec 2026</span><a class="poster" href="https://cs2.uni-graz.at/workshops/normative-foundations/"><img src="/poster/normative-foundations.webp" width="192" height="203" alt="Poster: The Normative Foundations of Platforms, Berlin, 14&ndash;16 December 2026"></a></div>
       </article>
     </section>
     <section class="grp">
       <h2>Earlier</h2>
       <article class="entry">
         <div><h3>Timid walks and prudent walks</h3><ul><li>Self-avoiding walks: lattice paths that never cross themselves.</li><li>Timid and prudent walks: restricted variants that trade generality for tractability.</li><li>My honours year, supervised by Nathan Clisby.</li><li>Where I learned to do research.</li></ul></div>
-        <div class="meta">honours work<br>Swinburne</div>
+        <div class="meta"><span>honours work<br>Swinburne</span></div>
       </article>
     </section>
   </section>

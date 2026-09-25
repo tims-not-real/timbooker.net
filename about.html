@@ -377,8 +377,14 @@ a{color:inherit}
   padding-top:.28rem;
 }
 
-/* the meeting's poster, small, under its row and its entry; the link is the image */
-.poster{display:block; width:8rem; margin-top:1rem}
+/* the meeting's poster: a sleeve in the right-hand slot, the entry's meta column on
+   research and the same 12rem at the same edge on home. The link is the image. */
+.rows dd.with-poster{display:grid; grid-template-columns:minmax(0,1fr) 12rem; gap:2.25rem;
+                     align-items:start}
+.poster{display:block; margin-top:.9rem; outline:1px solid var(--rule);
+        box-shadow:0 14px 30px -14px rgba(0,0,0,.7); transition:outline-color .2s ease}
+.rows .poster{margin-top:.2rem}
+.poster:hover{outline-color:var(--dim)}
 .poster img{display:block; width:100%; height:auto}
 .poster:focus-visible{outline:1px solid var(--accent); outline-offset:3px}
 
@@ -516,6 +522,13 @@ html.app .body.leaving{
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}
   .entry{grid-template-columns:minmax(0,1fr); gap:.7rem}
   .entry .meta{padding-top:0; order:-1}
+  .rows dd.with-poster{grid-template-columns:minmax(0,1fr); gap:0}
+  /* the date still leads, but the poster follows the points rather than the title */
+  .entry .meta{display:contents}
+  .entry .meta > span{order:-1}
+  .entry .poster{margin-top:.3rem}
+  .poster{width:12rem}
+  .rows .poster{margin-top:.9rem}
 }
 
 </style>
