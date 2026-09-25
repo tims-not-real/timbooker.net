@@ -1887,7 +1887,8 @@ RESEARCH_GROUPS = [
           "Most of the difficulty is matching articles to events."]),
         ('Does false-belief reasoning emerge the way it does in children?',
          '2026',
-         ["Nobody has charted the shape of that curve in a language model.",
+         ["Children acquire it along a consistent curve. Nobody has charted it in a "
+          "language model.",
           "41 checkpoints across the training run of an open model.",
           "Scored by contrasting teacher-forced log probabilities.",
           "Predictions registered before the runs."]),
