@@ -56,6 +56,7 @@ KEYS = [href[1:-5] for href, _ in PAGES]
 BSKY = 'https://bsky.app/profile/timzyzz.bsky.social'
 GITHUB = 'https://github.com/tims-not-real'
 GROUP = 'https://cs2.uni-graz.at/'
+MEETING = 'https://cs2.uni-graz.at/workshops/normative-foundations/'
 UNI = 'tim.booker@uni-graz.at'
 PERSONAL = 'tim.book.RE@gmail.com'
 
@@ -1612,6 +1613,9 @@ HOME_ROWS = [
     ('Students', None,
      "I'm happy to supervise master's students, and motivated BSc students. Please feel "
      'welcomed to say hi!'),
+    ('Convening', None,
+     'A working meeting in Berlin, 14&ndash;16 December 2026, on what platforms are for: '
+     '<i><a class="link" href="__MEETING__">The Normative Foundations of Platforms</a></i>.'),
     ('Elsewhere', None,
      '<a class="link" href="__BSKY__">Bluesky</a>, '
      '<a class="link" href="__GITHUB__">GitHub</a>.'),
@@ -1627,7 +1631,7 @@ def rows_block(rows):
         out.append('<dt>%s</dt><dd><span>%s</span></dd>' % (dt, text))
     out.append('</dl>')
     return ('\n'.join(out).replace('__BSKY__', BSKY).replace('__GITHUB__', GITHUB)
-            .replace('__UNI__', UNI))
+            .replace('__UNI__', UNI).replace('__MEETING__', MEETING))
 
 
 # Every plate now lives in the same document as the other two, so a plate finds its own
@@ -1940,9 +1944,10 @@ RESEARCH_GROUPS = [
         ('What platforms are for',
          'December 2026<br>Berlin',
          "Arguments about social media almost always skip the prior question of what a "
-         "platform is for. I'm convening a working group on it: three days in Berlin in "
-         "December, hosted at the Max Planck Institute for Human Development. It is "
-         "deliberately small and by invitation."),
+         "platform is for. I'm convening a working meeting on it: three days in Berlin, "
+         "14&ndash;16 December, hosted at the Max Planck Institute for Human Development. "
+         "It is by invitation. The public page is <i><a class=\"link\" "
+         "href=\"__MEETING__\">The Normative Foundations of Platforms</a></i>."),
     ]),
     ('Earlier', [
         ('Timid walks and prudent walks',
@@ -1969,7 +1974,7 @@ def research_body():
             out.append('      </article>')
         out.append('    </section>')
     out.append('')
-    return '\n'.join(out)
+    return '\n'.join(out).replace('__MEETING__', MEETING)
 
 
 # ============================================================ ABOUT
@@ -2581,8 +2586,9 @@ ABOUT = """
       decide better than they ever have.</p>
 
       <p>I'm at the Complex Social &amp; Computational Systems group at the University of
-      Graz, where I work with Prof. Jana Lasser on DeSiRe. I also convene a working group
-      on what social media platforms ought to be for, and take on
+      Graz, where I work with Prof. Jana Lasser on DeSiRe. I'm also convening a
+      <a class="link" href="__MEETING__">working meeting</a> in Berlin on what social media
+      platforms ought to be for, and take on
       <a class="link" href="/freelancing.html">freelance work</a>.</p>
     </div>
 
@@ -2636,7 +2642,7 @@ ABOUT = """
         promise solutions, but I can offer perspective, solidarity, and a listening ear.</p>
       </div>
     </section>
-""".replace('__PERSONAL__', PERSONAL)
+""".replace('__PERSONAL__', PERSONAL).replace('__MEETING__', MEETING)
 
 
 # ============================================================ CONTACT
