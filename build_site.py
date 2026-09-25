@@ -1629,7 +1629,7 @@ HOME_ROWS = [
 # exception to the greyscale-and-blue palette (#88). Eager, with its box sized, so it is
 # decoded before the router ever shows its section.
 POSTER = ('<a class="poster" href="__MEETING__"><img src="/poster/normative-foundations.webp" '
-          'width="192" height="203" alt="Poster: The Normative Foundations of Platforms, '
+          'width="288" height="304" alt="Poster: The Normative Foundations of Platforms, '
           'Berlin, 14&ndash;16 December 2026"></a>')
 
 
@@ -1954,7 +1954,8 @@ def research_body():
         out.append('    <section class="grp%s">' % (' first' if i == 0 else ''))
         out.append('      <h2>%s</h2>' % group)
         for title, meta, points in entries:
-            out.append('      <article class="entry">')
+            out.append('      <article class="entry%s">'
+                       % (' with-poster' if group == 'Convening' else ''))
             out.append('        <div><h3>%s</h3><ul>%s</ul></div>'
                        % (title, ''.join('<li>%s</li>' % t for t in points)))
             out.append('        <div class="meta"><span>%s</span>%s</div>'

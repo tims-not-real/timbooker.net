@@ -443,14 +443,15 @@ a{color:inherit}
   padding-top:.28rem;
 }
 
-/* the meeting's poster: a sleeve in the right-hand slot, the entry's meta column on
-   research and the same 12rem at the same edge on home. The link is the image. */
-.rows dd.with-poster{display:grid; grid-template-columns:minmax(0,1fr) 12rem; gap:2.25rem;
+/* the meeting's poster: an 18rem sleeve at the column's right edge on both pages. On
+   research it hangs from the meta column and grows left, so the date keeps its line with
+   the other dates, and the entry's text keeps clear of it. The link is the image. */
+.rows dd.with-poster{display:grid; grid-template-columns:minmax(0,1fr) 18rem; gap:2.25rem;
                      align-items:start}
-.poster{display:block; margin-top:.9rem; outline:1px solid var(--rule);
-        box-shadow:0 14px 30px -14px rgba(0,0,0,.7); transition:outline-color .2s ease}
+.entry.with-poster > div:first-child{padding-right:6rem}
+.entry .poster{width:18rem; margin-left:-6rem}
+.poster{display:block; margin-top:.9rem; box-shadow:0 14px 30px -14px rgba(0,0,0,.7)}
 .rows .poster{margin-top:.2rem}
-.poster:hover{outline-color:var(--dim)}
 .poster img{display:block; width:100%; height:auto}
 .poster:focus-visible{outline:1px solid var(--accent); outline-offset:3px}
 
@@ -592,8 +593,9 @@ html.app .body.leaving{
   /* the date still leads, but the poster follows the points rather than the title */
   .entry .meta{display:contents}
   .entry .meta > span{order:-1}
-  .entry .poster{margin-top:.3rem}
-  .poster{width:12rem}
+  .entry.with-poster > div:first-child{padding-right:0}
+  .entry .poster{margin:.3rem 0 0}
+  .poster{width:min(18rem,100%)}
   .rows .poster{margin-top:.9rem}
 }
 """.replace('__FINE__', GRAIN_FINE).replace('__MOTTLE__', GRAIN_MOTTLE)
