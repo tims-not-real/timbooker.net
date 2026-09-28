@@ -327,7 +327,9 @@ a{color:inherit}
 .viz .note.crit{color:var(--fg); font-weight:600}
 
 /* ---- page body ---- */
-.body{margin-top:3rem; max-width:54rem}
+/* the column ends where the label does: the hero's first track, beside the 23rem plate
+   and its 2.5rem gap, so every rule under the label is the label's width (#91) */
+.body{margin-top:3rem; max-width:calc(100% - 25.5rem)}
 .prose{max-width:62ch}
 .prose p{margin-bottom:1.3rem}
 .prose p:last-child{margin-bottom:0}
@@ -359,10 +361,7 @@ a{color:inherit}
   font-size:.8125rem; font-weight:700; color:var(--dim);
   padding-bottom:.7rem; border-bottom:1px solid var(--rule);
 }
-.entry{
-  display:grid; grid-template-columns:minmax(0,1fr) 12rem; gap:2.25rem;
-  padding:1.7rem 0; border-bottom:1px solid var(--rule);
-}
+.entry{padding:1.7rem 0; border-bottom:1px solid var(--rule)}
 .entry h3{font-size:1.0625rem; font-weight:700; letter-spacing:-.012em; line-height:1.3;
           max-width:44ch}
 .entry ul{margin-top:.65rem; font-size:.9375rem; line-height:1.6; max-width:62ch;
@@ -371,20 +370,21 @@ a{color:inherit}
 .entry li + li{margin-top:.3rem}
 .entry li::before{content:""; position:absolute; left:0; top:.8em; width:.45rem;
                   border-top:1px solid var(--dim)}
+/* the date sits under the title */
 .entry .meta{
   font-size:.6875rem; letter-spacing:.06em; line-height:1.6; color:var(--dim);
-  padding-top:.28rem;
+  margin-top:.3rem;
 }
 
-/* the meeting's poster: an 18rem sleeve at the column's right edge on both pages. On
-   research it hangs from the meta column and grows left, so the date keeps its line with
-   the other dates, and the entry's text keeps clear of it. The link is the image. */
-.rows dd.with-poster{display:grid; grid-template-columns:minmax(0,1fr) 18rem; gap:2.25rem;
-                     align-items:start}
-.entry.with-poster > div:first-child{padding-right:6rem}
-.entry .poster{width:18rem; margin-left:-6rem}
-.poster{display:block; margin-top:.9rem; box-shadow:0 14px 30px -14px rgba(0,0,0,.7)}
-.rows .poster{margin-top:.2rem}
+/* the meeting's poster: out in the plate's column, the plate's width, level with the text
+   of its row or entry, which grows to hold it. The link is the image. */
+.with-poster{position:relative}
+.rows dd.with-poster{min-height:calc(23rem * 2160 / 2044 + 1.85rem)}
+.entry.with-poster{min-height:calc(23rem * 2160 / 2044 + 3.4rem)}
+.poster{display:block; box-shadow:0 14px 30px -14px rgba(0,0,0,.7)}
+.with-poster > .poster{position:absolute; left:calc(100% + 2.5rem); width:23rem}
+.rows .with-poster > .poster{top:.9rem}
+.entry.with-poster > .poster{top:1.7rem}
 .poster img{display:block; width:100%; height:auto}
 .poster:focus-visible{outline:1px solid var(--accent); outline-offset:3px}
 
@@ -398,7 +398,7 @@ a{color:inherit}
 .lede{font-size:1.0625rem; line-height:1.6; max-width:58ch; margin-bottom:1.3rem}
 
 footer{margin-top:4rem; padding-top:1.2rem; border-top:1px solid var(--rule);
-       font-size:.6875rem; color:var(--dim); max-width:54rem; line-height:1.6;
+       font-size:.6875rem; color:var(--dim); max-width:calc(100% - 25.5rem); line-height:1.6;
        display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; justify-content:space-between;
        align-items:baseline}
 footer p{max-width:62ch}
@@ -520,16 +520,10 @@ html.app .body.leaving{
   .title{font-size:1.875rem}
   .rows{grid-template-columns:minmax(0,1fr); gap:0}
   .rows dt{border-bottom:0; padding:1rem 0 .1rem}
-  .entry{grid-template-columns:minmax(0,1fr); gap:.7rem}
-  .entry .meta{padding-top:0; order:-1}
-  .rows dd.with-poster{grid-template-columns:minmax(0,1fr); gap:0}
-  /* the date still leads, but the poster follows the points rather than the title */
-  .entry .meta{display:contents}
-  .entry .meta > span{order:-1}
-  .entry.with-poster > div:first-child{padding-right:0}
-  .entry .poster{margin:.3rem 0 0}
-  .poster{width:min(18rem,100%)}
-  .rows .poster{margin-top:.9rem}
+  /* the plate stacks above, so the column is the page's and the poster follows its text */
+  .body, footer{max-width:none}
+  .rows dd.with-poster, .entry.with-poster{min-height:0}
+  .with-poster > .poster{position:static; width:min(23rem,100%); margin-top:.9rem}
 }
 
 </style>
