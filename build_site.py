@@ -1624,12 +1624,12 @@ HOME_ROWS = [
 ]
 
 
-# The meeting's own poster, in the right-hand slot of its Convening row on home and of its
-# entry on research, so it sits at the same edge on both. It keeps its own colours, the one
+# The meeting's own poster, out in the plate's column beside its Convening row on home and
+# its entry on research, at the plate's width (#91). It keeps its own colours, the one
 # exception to the greyscale-and-blue palette (#88). Eager, with its box sized, so it is
 # decoded before the router ever shows its section.
 POSTER = ('<a class="poster" href="__MEETING__"><img src="/poster/normative-foundations.webp" '
-          'width="288" height="304" alt="Poster: The Normative Foundations of Platforms, '
+          'width="368" height="389" alt="Poster: The Normative Foundations of Platforms, '
           'Berlin, 14&ndash;16 December 2026"></a>')
 
 
@@ -1956,10 +1956,11 @@ def research_body():
         for title, meta, points in entries:
             out.append('      <article class="entry%s">'
                        % (' with-poster' if group == 'Convening' else ''))
-            out.append('        <div><h3>%s</h3><ul>%s</ul></div>'
-                       % (title, ''.join('<li>%s</li>' % t for t in points)))
-            out.append('        <div class="meta"><span>%s</span>%s</div>'
-                       % (meta, POSTER if group == 'Convening' else ''))
+            out.append('        <h3>%s</h3>' % title)
+            out.append('        <div class="meta">%s</div>' % meta)
+            out.append('        <ul>%s</ul>%s'
+                       % (''.join('<li>%s</li>' % t for t in points),
+                          POSTER if group == 'Convening' else ''))
             out.append('      </article>')
         out.append('    </section>')
     out.append('')
