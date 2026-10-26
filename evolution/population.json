@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generation": 1,
+ "generation": 2,
  "n_agents": 8,
  "n_lines": 24,
  "prompt": "a lonely little creature speaks to a visitor. it says: i ",
@@ -17,110 +17,10 @@
  "agents": [
   {
    "slot": 0,
-   "lineage": "f0",
-   "origin": "survivor",
-   "born": 0,
-   "parent": 0,
-   "seeds": [
-    [
-     1708506908,
-     0.15
-    ]
-   ],
-   "line_seed": 1884270775,
-   "draw": 3,
-   "ce": 4.5976
-  },
-  {
-   "slot": 1,
-   "lineage": "f6",
-   "origin": "survivor",
-   "born": 0,
-   "parent": 6,
-   "seeds": [
-    [
-     590596682,
-     0.15
-    ]
-   ],
-   "line_seed": 2094428874,
-   "draw": 1,
-   "ce": 4.4045
-  },
-  {
-   "slot": 2,
    "lineage": "f1",
    "origin": "survivor",
-   "born": 0,
-   "parent": 1,
-   "seeds": [
-    [
-     1928826938,
-     0.15
-    ]
-   ],
-   "line_seed": 1035995475,
-   "ce": 4.1892
-  },
-  {
-   "slot": 3,
-   "lineage": "f2",
-   "origin": "survivor",
-   "born": 0,
-   "parent": 2,
-   "seeds": [
-    [
-     2138513376,
-     0.15
-    ]
-   ],
-   "line_seed": 1374228559,
-   "ce": 3.99
-  },
-  {
-   "slot": 4,
-   "lineage": "f0",
-   "origin": "child",
-   "born": 1,
-   "parent": 0,
-   "seeds": [
-    [
-     1708506908,
-     0.15
-    ],
-    [
-     1008283063,
-     0.025
-    ]
-   ],
-   "line_seed": 1085459412,
-   "ce": 4.4267
-  },
-  {
-   "slot": 5,
-   "lineage": "f6",
-   "origin": "child",
    "born": 1,
    "parent": 6,
-   "seeds": [
-    [
-     590596682,
-     0.15
-    ],
-    [
-     1414795081,
-     0.025
-    ]
-   ],
-   "line_seed": 714999111,
-   "ce": 4.5102
-  },
-  {
-   "slot": 6,
-   "lineage": "f1",
-   "origin": "child",
-   "born": 1,
-   "parent": 1,
    "seeds": [
     [
      1928826938,
@@ -131,130 +31,229 @@
      0.025
     ]
    ],
-   "line_seed": 1498138436,
-   "ce": 4.1807
+   "line_seed": 778298208,
+   "ce": 4.0678
   },
   {
-   "slot": 7,
-   "lineage": "i1.7",
-   "origin": "immigrant",
-   "born": 1,
-   "parent": null,
+   "slot": 1,
+   "lineage": "f1",
+   "origin": "survivor",
+   "born": 0,
+   "parent": 2,
    "seeds": [
     [
-     1928531831,
+     1928826938,
      0.15
     ]
    ],
-   "line_seed": 856758954,
-   "ce": 4.4909
+   "line_seed": 1523545857,
+   "ce": 3.9282
+  },
+  {
+   "slot": 2,
+   "lineage": "f0",
+   "origin": "survivor",
+   "born": 0,
+   "parent": 0,
+   "seeds": [
+    [
+     1708506908,
+     0.15
+    ]
+   ],
+   "line_seed": 1845117227,
+   "draw": 3,
+   "ce": 4.2354
+  },
+  {
+   "slot": 3,
+   "lineage": "f6",
+   "origin": "survivor",
+   "born": 1,
+   "parent": 5,
+   "seeds": [
+    [
+     590596682,
+     0.15
+    ],
+    [
+     1414795081,
+     0.025
+    ]
+   ],
+   "line_seed": 868917851,
+   "ce": 4.6082
+  },
+  {
+   "slot": 4,
+   "lineage": "f1",
+   "origin": "child",
+   "born": 2,
+   "parent": 6,
+   "seeds": [
+    [
+     1928826938,
+     0.15
+    ],
+    [
+     1022091654,
+     0.025
+    ],
+    [
+     1021055349,
+     0.025
+    ]
+   ],
+   "line_seed": 903251916,
+   "ce": 4.2358
+  },
+  {
+   "slot": 5,
+   "lineage": "f1",
+   "origin": "child",
+   "born": 2,
+   "parent": 2,
+   "seeds": [
+    [
+     1928826938,
+     0.15
+    ],
+    [
+     1230597221,
+     0.025
+    ]
+   ],
+   "line_seed": 24174148,
+   "ce": 4.0065
+  },
+  {
+   "slot": 6,
+   "lineage": "f0",
+   "origin": "child",
+   "born": 2,
+   "parent": 0,
+   "seeds": [
+    [
+     1708506908,
+     0.15
+    ],
+    [
+     1298044111,
+     0.025
+    ]
+   ],
+   "line_seed": 389230400,
+   "ce": 4.7724
+  },
+  {
+   "slot": 7,
+   "lineage": "i2.7",
+   "origin": "immigrant",
+   "born": 2,
+   "parent": null,
+   "seeds": [
+    [
+     1810157045,
+     0.15
+    ]
+   ],
+   "line_seed": 1861030321,
+   "ce": 3.5289
   }
  ],
  "last": {
   "action": "rolled",
-  "from_generation": 0,
+  "from_generation": 1,
   "ranking": [
    {
-    "slot": 0,
-    "lineage": "f0",
-    "shows": 12,
-    "pats": 5,
-    "ratio": 0.4166666666666667,
-    "ce": 4.0979,
-    "floored": false
-   },
-   {
     "slot": 6,
-    "lineage": "f6",
+    "lineage": "f1",
     "shows": 12,
     "pats": 4,
     "ratio": 0.3333333333333333,
-    "ce": 4.1854,
-    "floored": false
-   },
-   {
-    "slot": 1,
-    "lineage": "f1",
-    "shows": 10,
-    "pats": 3,
-    "ratio": 0.3,
-    "ce": 4.1321,
+    "ce": 4.1807,
     "floored": false
    },
    {
     "slot": 2,
-    "lineage": "f2",
-    "shows": 14,
-    "pats": 3,
-    "ratio": 0.21428571428571427,
-    "ce": 3.9028,
+    "lineage": "f1",
+    "shows": 17,
+    "pats": 2,
+    "ratio": 0.11764705882352941,
+    "ce": 4.1892,
+    "floored": false
+   },
+   {
+    "slot": 0,
+    "lineage": "f0",
+    "shows": 10,
+    "pats": 1,
+    "ratio": 0.1,
+    "ce": 4.5976,
     "floored": false
    },
    {
     "slot": 5,
-    "lineage": "f5",
-    "shows": 11,
+    "lineage": "f6",
+    "shows": 22,
     "pats": 2,
-    "ratio": 0.18181818181818182,
-    "ce": 4.4849,
+    "ratio": 0.09090909090909091,
+    "ce": 4.5102,
     "floored": false
    },
    {
-    "slot": 3,
-    "lineage": "f3",
-    "shows": 19,
-    "pats": 3,
-    "ratio": 0.15789473684210525,
-    "ce": 4.3859,
+    "slot": 1,
+    "lineage": "f6",
+    "shows": 11,
+    "pats": 1,
+    "ratio": 0.09090909090909091,
+    "ce": 4.4045,
     "floored": false
    },
    {
     "slot": 7,
-    "lineage": "f7",
+    "lineage": "i1.7",
     "shows": 23,
-    "pats": 3,
-    "ratio": 0.13043478260869565,
-    "ce": 4.1707,
+    "pats": 2,
+    "ratio": 0.08695652173913043,
+    "ce": 4.4909,
     "floored": false
    },
    {
     "slot": 4,
-    "lineage": "f4",
-    "shows": 17,
-    "pats": 2,
-    "ratio": 0.11764705882352941,
-    "ce": 3.4766,
+    "lineage": "f0",
+    "shows": 18,
+    "pats": 1,
+    "ratio": 0.05555555555555555,
+    "ce": 4.4267,
+    "floored": false
+   },
+   {
+    "slot": 3,
+    "lineage": "f2",
+    "shows": 14,
+    "pats": 0,
+    "ratio": 0.0,
+    "ce": 3.99,
     "floored": false
    }
   ],
   "kept": [
-   0,
    6,
-   1,
-   2
+   2,
+   0,
+   5
   ],
   "reseeded_for_cap": [],
   "lineages": {
+   "f1": 4,
    "f0": 2,
-   "f6": 2,
-   "f1": 2,
-   "f2": 1,
-   "i1.7": 1
+   "f6": 1,
+   "i2.7": 1
   }
  },
  "checked": {
-  "date": "2026-10-19",
-  "action": "skipped",
-  "reason": "fewer than 10 shows for agents [0, 1, 3]",
-  "shows": {
-   "0": 9,
-   "1": 7,
-   "2": 14,
-   "3": 8,
-   "4": 15,
-   "5": 17,
-   "6": 10,
-   "7": 19
-  }
+  "date": "2026-10-26",
+  "action": "rolled"
  }
 }

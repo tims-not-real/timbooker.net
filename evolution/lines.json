@@ -1,5 +1,5 @@
 {
- "generation": 1,
+ "generation": 2,
  "prompt": "a lonely little creature speaks to a visitor. it says: i ",
  "env": {
   "model": "SimpleStories/SimpleStories-V2-5M",
@@ -12,15 +12,15 @@
   "head_punctuation": "!-.:;?",
   "agent_floor": 4.6,
   "drawn": 256,
-  "examined": 235,
+  "examined": 225,
   "published": 192,
-  "rejected": 43,
+  "rejected": 33,
   "duplicate": 0,
-  "rejected_pct": 18.3,
+  "rejected_pct": 14.7,
   "per_agent": [
    {
-    "examined": 31,
-    "rejected": 7,
+    "examined": 25,
+    "rejected": 1,
     "duplicate": 0,
     "drawn": 32,
     "published": 24,
@@ -28,8 +28,8 @@
     "slot": 0
    },
    {
-    "examined": 30,
-    "rejected": 6,
+    "examined": 28,
+    "rejected": 4,
     "duplicate": 0,
     "drawn": 32,
     "published": 24,
@@ -46,8 +46,8 @@
     "slot": 2
    },
    {
-    "examined": 26,
-    "rejected": 2,
+    "examined": 32,
+    "rejected": 8,
     "duplicate": 0,
     "drawn": 32,
     "published": 24,
@@ -55,8 +55,8 @@
     "slot": 3
    },
    {
-    "examined": 29,
-    "rejected": 5,
+    "examined": 28,
+    "rejected": 4,
     "duplicate": 0,
     "drawn": 32,
     "published": 24,
@@ -64,8 +64,8 @@
     "slot": 4
    },
    {
-    "examined": 32,
-    "rejected": 8,
+    "examined": 26,
+    "rejected": 2,
     "duplicate": 0,
     "drawn": 32,
     "published": 24,
@@ -73,19 +73,19 @@
     "slot": 5
    },
    {
-    "examined": 27,
-    "rejected": 3,
+    "examined": 34,
+    "rejected": 10,
     "duplicate": 0,
-    "drawn": 32,
+    "drawn": 40,
     "published": 24,
     "short": false,
     "slot": 6
    },
    {
-    "examined": 32,
-    "rejected": 8,
+    "examined": 24,
+    "rejected": 0,
     "duplicate": 0,
-    "drawn": 32,
+    "drawn": 24,
     "published": 24,
     "short": false,
     "slot": 7
@@ -94,1156 +94,1156 @@
  },
  "lines": [
   {
-   "id": "g1-a0-l00",
+   "id": "g2-a0-l00",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i need to make you smile"
+   "lineage": "f1",
+   "text": "i meet a kind girl who can make the best things."
   },
   {
-   "id": "g1-a0-l01",
+   "id": "g2-a0-l01",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i keep a tree shining in the place."
+   "lineage": "f1",
+   "text": "i need help the go of the trickser and wear dark clothes with strange, fun."
   },
   {
-   "id": "g1-a0-l02",
+   "id": "g2-a0-l02",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i hear a tale about a brave knight and a magical sword."
+   "lineage": "f1",
+   "text": "i see this being happy."
   },
   {
-   "id": "g1-a0-l03",
+   "id": "g2-a0-l03",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i love to join the star of hope, but in real trouble, i trips and crawls down a tiny hill."
+   "lineage": "f1",
+   "text": "i seek your honesty."
   },
   {
-   "id": "g1-a0-l04",
+   "id": "g2-a0-l04",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i of people who listen to wishes to hear the tales of lost treasures."
+   "lineage": "f1",
+   "text": "i leo watch over you, your eyes still full of stars."
   },
   {
-   "id": "g1-a0-l05",
+   "id": "g2-a0-l05",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i show you tiny wonders to my amazing friend."
+   "lineage": "f1",
+   "text": "i rule this friends with a new love - sharing love, and i feel the same hope for my lost cat."
   },
   {
-   "id": "g1-a0-l06",
+   "id": "g2-a0-l06",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i s one sometimes lived in the middle of the night, by the water's old vengses."
+   "lineage": "f1",
+   "text": "i share stories of my dreams, of sharing and caring."
   },
   {
-   "id": "g1-a0-l07",
+   "id": "g2-a0-l07",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i is once a gift, but now i can only see the shadow behind the trees."
+   "lineage": "f1",
+   "text": "i be from the moon plants, and they wear him one by one."
   },
   {
-   "id": "g1-a0-l08",
+   "id": "g2-a0-l08",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i ll grant a wish if you truly believed."
+   "lineage": "f1",
+   "text": "i help the brave, but it is not easy to accept."
   },
   {
-   "id": "g1-a0-l09",
+   "id": "g2-a0-l09",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i travel the forest for you, to touch the souls of lost dreams."
+   "lineage": "f1",
+   "text": "i win for having a garden full of flowers."
   },
   {
-   "id": "g1-a0-l10",
+   "id": "g2-a0-l10",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i hi in a game, a world i am ruins of the stars."
+   "lineage": "f1",
+   "text": "i do not help but only trust the beauty of friendship."
   },
   {
-   "id": "g1-a0-l11",
+   "id": "g2-a0-l11",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i size only meant for a good story, but my heart is heavy."
+   "lineage": "f1",
+   "text": "i find a hidden treasure, but it is not gold."
   },
   {
-   "id": "g1-a0-l12",
+   "id": "g2-a0-l12",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i ' candled, and i remember cities with friends."
+   "lineage": "f1",
+   "text": "i call out my allia, and the night helps me come to this land."
   },
   {
-   "id": "g1-a0-l13",
+   "id": "g2-a0-l13",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i aur, remembering times with the man from his best friend."
+   "lineage": "f1",
+   "text": "i hoite the rain, trying to wake it up, saying,"
   },
   {
-   "id": "g1-a0-l14",
+   "id": "g2-a0-l14",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i is looking for lost souls."
+   "lineage": "f1",
+   "text": "i look at the fairy who seems small, and this"
   },
   {
-   "id": "g1-a0-l15",
+   "id": "g2-a0-l15",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i discover how to make magic with my sister."
+   "lineage": "f1",
+   "text": "i bring her bright colors to the world"
   },
   {
-   "id": "g1-a0-l16",
+   "id": "g2-a0-l16",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i belong to the dragon now."
+   "lineage": "f1",
+   "text": "i do here, and at this one speak of the heart of a dragon."
   },
   {
-   "id": "g1-a0-l17",
+   "id": "g2-a0-l17",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i distlass the timer."
+   "lineage": "f1",
+   "text": "i be sad, too, and the fun we had."
   },
   {
-   "id": "g1-a0-l18",
+   "id": "g2-a0-l18",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i he only heard a letter from a brave girl named rita."
+   "lineage": "f1",
+   "text": "i give her food, but the kind people fills my mind."
   },
   {
-   "id": "g1-a0-l19",
+   "id": "g2-a0-l19",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i stand a time to bring back hope to my toy land."
+   "lineage": "f1",
+   "text": "i think for the first time,"
   },
   {
-   "id": "g1-a0-l20",
+   "id": "g2-a0-l20",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i have watched over hope long, like fireflies, whispering secrets to the air."
+   "lineage": "f1",
+   "text": "i hear your soft words and feel her song."
   },
   {
-   "id": "g1-a0-l21",
+   "id": "g2-a0-l21",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i stay on a park and watch the moonlight flicker around me, wisely before the next."
+   "lineage": "f1",
+   "text": "i enjoy the stars and the moon."
   },
   {
-   "id": "g1-a0-l22",
+   "id": "g2-a0-l22",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i flit and call for my dear friend,"
+   "lineage": "f1",
+   "text": "i sees the sad bird in the sky, who has lost her favorite toy."
   },
   {
-   "id": "g1-a0-l23",
+   "id": "g2-a0-l23",
    "agent": 0,
-   "lineage": "f0",
-   "text": "i re is lonely to find a girl named maria."
+   "lineage": "f1",
+   "text": "i need your help"
   },
   {
-   "id": "g1-a1-l00",
+   "id": "g2-a1-l00",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i love through the stones, watching the children play."
+   "lineage": "f1",
+   "text": "i bring a spark of light to help."
   },
   {
-   "id": "g1-a1-l01",
+   "id": "g2-a1-l01",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i with wonder, like you know the garden."
+   "lineage": "f1",
+   "text": "i steal a star stone from the sky."
   },
   {
-   "id": "g1-a1-l02",
+   "id": "g2-a1-l02",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i of lies before you step outside."
+   "lineage": "f1",
+   "text": "i could help anyone like the girl in his story, but she just only made her sad."
   },
   {
-   "id": "g1-a1-l03",
+   "id": "g2-a1-l03",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i have a special dress for my wall."
+   "lineage": "f1",
+   "text": "i do this being troubles for friends or a happy heart."
   },
   {
-   "id": "g1-a1-l04",
+   "id": "g2-a1-l04",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i have found my locket, and i say it is more than what you make."
+   "lineage": "f1",
+   "text": "i watch for anyone who seeks my stories."
   },
   {
-   "id": "g1-a1-l05",
+   "id": "g2-a1-l05",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i is not as fierce, yet mysterious, and i need your help"
+   "lineage": "f1",
+   "text": "i help the people, and their absence like a stone."
   },
   {
-   "id": "g1-a1-l06",
+   "id": "g2-a1-l06",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i has once award, i can see the truth but only give me magic."
+   "lineage": "f1",
+   "text": "i rule to be fun, but i miss the joy around me."
   },
   {
-   "id": "g1-a1-l07",
+   "id": "g2-a1-l07",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i has once a petal i once ruled, and many say it it 's."
+   "lineage": "f1",
+   "text": "i hear your heart."
   },
   {
-   "id": "g1-a1-l08",
+   "id": "g2-a1-l08",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i have a key, i can unlock your memories."
+   "lineage": "f1",
+   "text": "i rule joy, but i hide in the dark places, waiting for him."
   },
   {
-   "id": "g1-a1-l09",
+   "id": "g2-a1-l09",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i always want to be my companies."
+   "lineage": "f1",
+   "text": "i do this to love her, or that is not for power."
   },
   {
-   "id": "g1-a1-l10",
+   "id": "g2-a1-l10",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i have ideas that want to be a hero."
+   "lineage": "f1",
+   "text": "i gather stories, and to remember, i need your kind heart."
   },
   {
-   "id": "g1-a1-l11",
+   "id": "g2-a1-l11",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i like that kind girl, do not belong to?"
+   "lineage": "f1",
+   "text": "i share stories of the forest, where animals play and birds sing."
   },
   {
-   "id": "g1-a1-l12",
+   "id": "g2-a1-l12",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i love what i dreams i can give my heart to rule in my lies and claim my owner with a brave soul in my chest"
+   "lineage": "f1",
+   "text": "i hear her laughter."
   },
   {
-   "id": "g1-a1-l13",
+   "id": "g2-a1-l13",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i made these barking and catch laughs."
+   "lineage": "f1",
+   "text": "i do a trickster wea for the wrongs"
   },
   {
-   "id": "g1-a1-l14",
+   "id": "g2-a1-l14",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i you can find the truth."
+   "lineage": "f1",
+   "text": "i find a magical crystal to bring happiness."
   },
   {
-   "id": "g1-a1-l15",
+   "id": "g2-a1-l15",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i had to be the being of misunderstion."
+   "lineage": "f1",
+   "text": "i help them, but our day is not kind."
   },
   {
-   "id": "g1-a1-l16",
+   "id": "g2-a1-l16",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i will lead the way to joy is to just like his brother, a girl who values his bravery."
+   "lineage": "f1",
+   "text": "i do, and the girl is shiver."
   },
   {
-   "id": "g1-a1-l17",
+   "id": "g2-a1-l17",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i n and find treasure, but it is not gold, but my words are my treasure."
+   "lineage": "f1",
+   "text": "i seek to help alex find it."
   },
   {
-   "id": "g1-a1-l18",
+   "id": "g2-a1-l18",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i n a girl likes an alien with a bright light."
+   "lineage": "f1",
+   "text": "i am here to help you find kindness."
   },
   {
-   "id": "g1-a1-l19",
+   "id": "g2-a1-l19",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i it of my kind to my people and wants to share love with us."
+   "lineage": "f1",
+   "text": "i sing and sing, but no one hears me."
   },
   {
-   "id": "g1-a1-l20",
+   "id": "g2-a1-l20",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i have been a kindest dreamer."
+   "lineage": "f1",
+   "text": "i rule you all feared this place."
   },
   {
-   "id": "g1-a1-l21",
+   "id": "g2-a1-l21",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i vert she is known for my heart, not with me for her."
+   "lineage": "f1",
+   "text": "i bring gifts from all who are"
   },
   {
-   "id": "g1-a1-l22",
+   "id": "g2-a1-l22",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i lonely land in my dreams, and this one feels too familiar to feel help."
+   "lineage": "f1",
+   "text": "i give to him for stories and treasures."
   },
   {
-   "id": "g1-a1-l23",
+   "id": "g2-a1-l23",
    "agent": 1,
-   "lineage": "f6",
-   "text": "i just want to know your world well, but it is my job i will get."
+   "lineage": "f1",
+   "text": "i dance, and you smile at the stars."
   },
   {
-   "id": "g1-a2-l00",
+   "id": "g2-a2-l00",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i belong to the love of the garden."
+   "lineage": "f0",
+   "text": "i an explorer."
   },
   {
-   "id": "g1-a2-l01",
+   "id": "g2-a2-l01",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i guard the light of the sun."
+   "lineage": "f0",
+   "text": "i be lost in the crowd, searching for lost love."
   },
   {
-   "id": "g1-a2-l02",
+   "id": "g2-a2-l02",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i do the laughter echoing in my heart."
+   "lineage": "f0",
+   "text": "i take a chance to visit one, and i wanted to know what was real."
   },
   {
-   "id": "g1-a2-l03",
+   "id": "g2-a2-l03",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i quk of the cakes and the sweetest cake they cans."
+   "lineage": "f0",
+   "text": "i sit for a time to fixing the broken his family."
   },
   {
-   "id": "g1-a2-l04",
+   "id": "g2-a2-l04",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i look for her, but every time is not the perfect place for her."
+   "lineage": "f0",
+   "text": "i wake you from my heart."
   },
   {
-   "id": "g1-a2-l05",
+   "id": "g2-a2-l05",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i do here, sitting in the cave, and the time for a warm day."
+   "lineage": "f0",
+   "text": "i look for a clue to remember the tales of love."
   },
   {
-   "id": "g1-a2-l06",
+   "id": "g2-a2-l06",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i make people feel helper, but the fairy warn in the village."
+   "lineage": "f0",
+   "text": "i love to play in my garden, my brother and mad."
   },
   {
-   "id": "g1-a2-l07",
+   "id": "g2-a2-l07",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i l your magic make you dance, the glowing lights in the forest."
+   "lineage": "f0",
+   "text": "i m blgeed by their love for technony."
   },
   {
-   "id": "g1-a2-l08",
+   "id": "g2-a2-l08",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i lead the brave."
+   "lineage": "f0",
+   "text": "i twinkle can help you, but no one believes my name."
   },
   {
-   "id": "g1-a2-l09",
+   "id": "g2-a2-l09",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i bring your flowers."
+   "lineage": "f0",
+   "text": "i spot the keeper and continue its story."
   },
   {
-   "id": "g1-a2-l10",
+   "id": "g2-a2-l10",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i do the music and bring the music together."
+   "lineage": "f0",
+   "text": "i am here to find my child."
   },
   {
-   "id": "g1-a2-l11",
+   "id": "g2-a2-l11",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i share that she gives happiness to my friends."
+   "lineage": "f0",
+   "text": "i only admire it, hiding behind broken glass."
   },
   {
-   "id": "g1-a2-l12",
+   "id": "g2-a2-l12",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i do here to help flowers grow and bring light to the cold."
+   "lineage": "f0",
+   "text": "i amnesia for being kind and helping others."
   },
   {
-   "id": "g1-a2-l13",
+   "id": "g2-a2-l13",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i used to be happy, but now i hide."
+   "lineage": "f0",
+   "text": "i be alone."
   },
   {
-   "id": "g1-a2-l14",
+   "id": "g2-a2-l14",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i bed in the dark woods."
+   "lineage": "f0",
+   "text": "i often dream to play with his children on that big, shining moon."
   },
   {
-   "id": "g1-a2-l15",
+   "id": "g2-a2-l15",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i hear your thoughts."
+   "lineage": "f0",
+   "text": "i where a girl is under the same light, she sees her sister's dreams."
   },
   {
-   "id": "g1-a2-l16",
+   "id": "g2-a2-l16",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i grant a wish, and if you truly know what this life tells of?"
+   "lineage": "f0",
+   "text": "i bel have been the fake dinosaur, a brave hero to a mighty ruler, and for both of life, they must"
   },
   {
-   "id": "g1-a2-l17",
+   "id": "g2-a2-l17",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i rule this one how to make you feel happy, from words that wish to my friends."
+   "lineage": "f0",
+   "text": "i sister, but no one loves him, only silences."
   },
   {
-   "id": "g1-a2-l18",
+   "id": "g2-a2-l18",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i forget my dreams."
+   "lineage": "f0",
+   "text": "i look lost in need, feeling a dark breath within."
   },
   {
-   "id": "g1-a2-l19",
+   "id": "g2-a2-l19",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i look lonely but hear the words inside."
+   "lineage": "f0",
+   "text": "i take the most neceria from the skies."
   },
   {
-   "id": "g1-a2-l20",
+   "id": "g2-a2-l20",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i have secrets she lost for good."
+   "lineage": "f0",
+   "text": "i end beneath a galaxy, where dreams and laughter floated among the stars."
   },
   {
-   "id": "g1-a2-l21",
+   "id": "g2-a2-l21",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i will change your heart and bring light to my liquid love."
+   "lineage": "f0",
+   "text": "i taunn they help him through tough times and the importance of helping others."
   },
   {
-   "id": "g1-a2-l22",
+   "id": "g2-a2-l22",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i spread the magic to all the animals, and will you see the wonders of the land."
+   "lineage": "f0",
+   "text": "i take a step forward."
   },
   {
-   "id": "g1-a2-l23",
+   "id": "g2-a2-l23",
    "agent": 2,
-   "lineage": "f1",
-   "text": "i think it is real, and it lives inside my"
-  },
-  {
-   "id": "g1-a3-l00",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have helped them feel your heart fit here."
-  },
-  {
-   "id": "g1-a3-l01",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have lost my belet and not even find my name."
-  },
-  {
-   "id": "g1-a3-l02",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have a kind dear, but i can't hide any of their friend, but i can show you their hidden treasures."
-  },
-  {
-   "id": "g1-a3-l03",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i be a gucitir, but i can't even leave a story"
-  },
-  {
-   "id": "g1-a3-l04",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i am,"
-  },
-  {
-   "id": "g1-a3-l05",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i to join the forest, but i give me kindness and programm each other."
-  },
-  {
-   "id": "g1-a3-l06",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i mild bears miss the warmth of laughter."
-  },
-  {
-   "id": "g1-a3-l07",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i meet you and learn secrets."
-  },
-  {
-   "id": "g1-a3-l08",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have seen her home, a seeker of hope, but one thing can hurt."
-  },
-  {
-   "id": "g1-a3-l09",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have a visiting there, but i have never felt joy before."
-  },
-  {
-   "id": "g1-a3-l10",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have sought a way to protect people from darkness, but i do not find myself ; i should be with kindness."
-  },
-  {
-   "id": "g1-a3-l11",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have heard tales of light among the stars."
-  },
-  {
-   "id": "g1-a3-l12",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have a family painting before you, but i feel so lost, the cold air covering our home."
-  },
-  {
-   "id": "g1-a3-l13",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i turn back here and show you the truth."
-  },
-  {
-   "id": "g1-a3-l14",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i caber to join the society, to learn from the world."
-  },
-  {
-   "id": "g1-a3-l15",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have come to play,"
-  },
-  {
-   "id": "g1-a3-l16",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have a kind spirit who loves stories."
-  },
-  {
-   "id": "g1-a3-l17",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have seen your spark of darkness, but they can break my shadows forever."
-  },
-  {
-   "id": "g1-a3-l18",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have a story that gets a hero, but it feels broken in his own time."
-  },
-  {
-   "id": "g1-a3-l19",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have a magic stone."
-  },
-  {
-   "id": "g1-a3-l20",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i seek her name, but many thought it was."
-  },
-  {
-   "id": "g1-a3-l21",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i be your friend,"
-  },
-  {
-   "id": "g1-a3-l22",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i reveal joy and shared a moment filled with warmth."
-  },
-  {
-   "id": "g1-a3-l23",
-   "agent": 3,
-   "lineage": "f2",
-   "text": "i have been seen many nights, and the tiny creature fancok had appeared."
-  },
-  {
-   "id": "g1-a4-l00",
-   "agent": 4,
    "lineage": "f0",
-   "text": "i t you help her with her family's toys."
+   "text": "i just spring, and my letters are once lost to time."
   },
   {
-   "id": "g1-a4-l01",
+   "id": "g2-a3-l00",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i remember, my friend."
+  },
+  {
+   "id": "g2-a3-l01",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i change is often the first step."
+  },
+  {
+   "id": "g2-a3-l02",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i that i am my friend, and you have come in a dream, together in this magical place."
+  },
+  {
+   "id": "g2-a3-l03",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i only laugh and say,"
+  },
+  {
+   "id": "g2-a3-l04",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i ll tell you a story."
+  },
+  {
+   "id": "g2-a3-l05",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i life often wander with surprises today, wondering if i are meant to lead me into this strange place."
+  },
+  {
+   "id": "g2-a3-l06",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i can help you with my skills, and now it is a messenger of my invention."
+  },
+  {
+   "id": "g2-a3-l07",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i have no one ever remembered"
+  },
+  {
+   "id": "g2-a3-l08",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i just reveal their true face, and i want to join them."
+  },
+  {
+   "id": "g2-a3-l09",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i g at the castle, and i believe he will love my village for my help."
+  },
+  {
+   "id": "g2-a3-l10",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i would help us sneak away and keep them safe."
+  },
+  {
+   "id": "g2-a3-l11",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i ever have a heart of candy and cruelty."
+  },
+  {
+   "id": "g2-a3-l12",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i not be here for seeing a lost world and lies, but i am not."
+  },
+  {
+   "id": "g2-a3-l13",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i am a guide and want to make you laugh."
+  },
+  {
+   "id": "g2-a3-l14",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i once help you feel better."
+  },
+  {
+   "id": "g2-a3-l15",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i like a warm smile."
+  },
+  {
+   "id": "g2-a3-l16",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i was once a happy day, but it changed me."
+  },
+  {
+   "id": "g2-a3-l17",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i be your daughter of the old town."
+  },
+  {
+   "id": "g2-a3-l18",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i have been when i reveal my heart to the world."
+  },
+  {
+   "id": "g2-a3-l19",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i har darkness into their place and will be kinder."
+  },
+  {
+   "id": "g2-a3-l20",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i like my flowers and ask for enough to help us grow someworthy flowers."
+  },
+  {
+   "id": "g2-a3-l21",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i am here to take the knowledge we off seek."
+  },
+  {
+   "id": "g2-a3-l22",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i look for my friend, who has left it by the big school."
+  },
+  {
+   "id": "g2-a3-l23",
+   "agent": 3,
+   "lineage": "f6",
+   "text": "i ofy, haven't you know they seem friendly?"
+  },
+  {
+   "id": "g2-a4-l00",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i wait for a brave friend."
+   "lineage": "f1",
+   "text": "i will need your help to your crystal wands."
   },
   {
-   "id": "g1-a4-l02",
+   "id": "g2-a4-l01",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i am itself searching for joy in a hidden world, but it feels like someone she never knew."
+   "lineage": "f1",
+   "text": "i do flips among the stars."
   },
   {
-   "id": "g1-a4-l03",
+   "id": "g2-a4-l02",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i ever find itself among the giants."
+   "lineage": "f1",
+   "text": "i teach the joy you did not be true."
   },
   {
-   "id": "g1-a4-l04",
+   "id": "g2-a4-l03",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i 0 is looking for lost friends, which can get lost forever."
+   "lineage": "f1",
+   "text": "i create a space of colors and stories."
   },
   {
-   "id": "g1-a4-l05",
+   "id": "g2-a4-l04",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i steal from a long, dusty guys to the old woman's house."
+   "lineage": "f1",
+   "text": "i do not want kind, but i feel sad."
   },
   {
-   "id": "g1-a4-l06",
+   "id": "g2-a4-l05",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i am here to keep the warmth of a friend's light."
+   "lineage": "f1",
+   "text": "i make the girl with the green flowers."
   },
   {
-   "id": "g1-a4-l07",
+   "id": "g2-a4-l06",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i help you with your dreams but never needed to help a boy."
+   "lineage": "f1",
+   "text": "i explore a dream of a star."
   },
   {
-   "id": "g1-a4-l08",
+   "id": "g2-a4-l07",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i ng to a girl from her childhood when she sees a giant spirit."
+   "lineage": "f1",
+   "text": "i trust you to help the planet below."
   },
   {
-   "id": "g1-a4-l09",
+   "id": "g2-a4-l08",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i you in my heart of great dreams, shared to the moon."
+   "lineage": "f1",
+   "text": "i seek to tell stories, and one day, i know i have known many others who want to hear tales."
   },
   {
-   "id": "g1-a4-l10",
+   "id": "g2-a4-l09",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i have lost a friend to a great dragon."
+   "lineage": "f1",
+   "text": "i t better until you remember the joy of laughter and the happiness in our town."
   },
   {
-   "id": "g1-a4-l11",
+   "id": "g2-a4-l10",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i d meet a girl who looks like an alien"
+   "lineage": "f1",
+   "text": "i learn to laugh, but the silly creatures are sad."
   },
   {
-   "id": "g1-a4-l12",
+   "id": "g2-a4-l11",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i grun, seeking the legend of light, but the voice is always a haunk."
+   "lineage": "f1",
+   "text": "i listen for a time you looking for food."
   },
   {
-   "id": "g1-a4-l13",
+   "id": "g2-a4-l12",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i do, and wishes come to life."
+   "lineage": "f1",
+   "text": "i look, who finds this place."
   },
   {
-   "id": "g1-a4-l14",
+   "id": "g2-a4-l13",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i they need a little helpless to return home, but now i keep him hidden gold for being gone, a missing friend named jose"
+   "lineage": "f1",
+   "text": "i close our eyes and wish to be friends."
   },
   {
-   "id": "g1-a4-l15",
+   "id": "g2-a4-l14",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i keep playing and lost, but my daughter is afraid."
+   "lineage": "f1",
+   "text": "i write on a piece of candy"
   },
   {
-   "id": "g1-a4-l16",
+   "id": "g2-a4-l15",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i is lonely, and i cannot find a friend."
+   "lineage": "f1",
+   "text": "i do here, and wishes can change the world."
   },
   {
-   "id": "g1-a4-l17",
+   "id": "g2-a4-l16",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i be lost in a time of dreams."
+   "lineage": "f1",
+   "text": "i o laughter after sharing stories and playing games."
   },
   {
-   "id": "g1-a4-l18",
+   "id": "g2-a4-l17",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i is searching for a treasure hidden in the town nearby."
+   "lineage": "f1",
+   "text": "i look, and the flowers sing for the night."
   },
   {
-   "id": "g1-a4-l19",
+   "id": "g2-a4-l18",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i give her a wish for love."
+   "lineage": "f1",
+   "text": "i hold a magic flower and give it to those inside."
   },
   {
-   "id": "g1-a4-l20",
+   "id": "g2-a4-l19",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i for moments that matter."
+   "lineage": "f1",
+   "text": "i follow the songs of the forest."
   },
   {
-   "id": "g1-a4-l21",
+   "id": "g2-a4-l20",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i keep this magical place for bad times."
+   "lineage": "f1",
+   "text": "i find your friend to share this moment."
   },
   {
-   "id": "g1-a4-l22",
+   "id": "g2-a4-l21",
    "agent": 4,
-   "lineage": "f0",
-   "text": "i bud'smoke over your wishes, waiting for someone to come."
+   "lineage": "f1",
+   "text": "i wake this up and ask for help."
   },
   {
-   "id": "g1-a4-l23",
+   "id": "g2-a4-l22",
    "agent": 4,
+   "lineage": "f1",
+   "text": "i gather fun things like that if you found your treasures."
+  },
+  {
+   "id": "g2-a4-l23",
+   "agent": 4,
+   "lineage": "f1",
+   "text": "i next time he will come, and this one has the best food"
+  },
+  {
+   "id": "g2-a5-l00",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i smell the food from the warm sun."
+  },
+  {
+   "id": "g2-a5-l01",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i be the friend of a lovely witch."
+  },
+  {
+   "id": "g2-a5-l02",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i do this by making flowers bloom, but i cannot do this"
+  },
+  {
+   "id": "g2-a5-l03",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i look sad, and the stars outside this night."
+  },
+  {
+   "id": "g2-a5-l04",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i remember from a story about a magical cloud that could dance."
+  },
+  {
+   "id": "g2-a5-l05",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i want your warmth back, and i want to shine for my friends."
+  },
+  {
+   "id": "g2-a5-l06",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i do there to make a fun"
+  },
+  {
+   "id": "g2-a5-l07",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i help you, the girl who is helpful."
+  },
+  {
+   "id": "g2-a5-l08",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i do here because i know you are."
+  },
+  {
+   "id": "g2-a5-l09",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i do the best, but the guardian is not a monster."
+  },
+  {
+   "id": "g2-a5-l10",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i do, and this one wants to talk to her."
+  },
+  {
+   "id": "g2-a5-l11",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i bring the fun he could see, and my love for sprinkles in the air"
+  },
+  {
+   "id": "g2-a5-l12",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i look here and share my stories, and i say no one listens."
+  },
+  {
+   "id": "g2-a5-l13",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i bloom in a different way, and your colors look bright."
+  },
+  {
+   "id": "g2-a5-l14",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i lead your friends to the secret place."
+  },
+  {
+   "id": "g2-a5-l15",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i do, but no one comes to the town."
+  },
+  {
+   "id": "g2-a5-l16",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i do what is big and had a basket in my place."
+  },
+  {
+   "id": "g2-a5-l17",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i watch from the shadows, calling for my home."
+  },
+  {
+   "id": "g2-a5-l18",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i hoer the voice if she wants to hear my story."
+  },
+  {
+   "id": "g2-a5-l19",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i am with memories."
+  },
+  {
+   "id": "g2-a5-l20",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i rule the kind heart like that, and for the one who loves to laugh."
+  },
+  {
+   "id": "g2-a5-l21",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i want to help you"
+  },
+  {
+   "id": "g2-a5-l22",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i seek the stories of a magic gem that gave every kind heart."
+  },
+  {
+   "id": "g2-a5-l23",
+   "agent": 5,
+   "lineage": "f1",
+   "text": "i have big dreams and those who find the treasure inside."
+  },
+  {
+   "id": "g2-a6-l00",
+   "agent": 6,
    "lineage": "f0",
-   "text": "i keep all its family time to remember me."
+   "text": "i have lost your memories, hoping for a sign."
   },
   {
-   "id": "g1-a5-l00",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i have a friend"
-  },
-  {
-   "id": "g1-a5-l01",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i rule, who stand my arms, but i turn my anger back."
-  },
-  {
-   "id": "g1-a5-l02",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i only cannot find its owner."
-  },
-  {
-   "id": "g1-a5-l03",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i have a brave person,"
-  },
-  {
-   "id": "g1-a5-l04",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i take your joy to see your true self."
-  },
-  {
-   "id": "g1-a5-l05",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i like this soul, my treasures and my quest for understanding."
-  },
-  {
-   "id": "g1-a5-l06",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i only feel lonely, for i am not invisible to anyone."
-  },
-  {
-   "id": "g1-a5-l07",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i will come with you in the heart of one day"
-  },
-  {
-   "id": "g1-a5-l08",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i only want to be my friend."
-  },
-  {
-   "id": "g1-a5-l09",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i am here to help with the sky."
-  },
-  {
-   "id": "g1-a5-l10",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i ll give you my secrets."
-  },
-  {
-   "id": "g1-a5-l11",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i have been looking for magic."
-  },
-  {
-   "id": "g1-a5-l12",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i am not just a thief but a friend, for my choices shaped me with care."
-  },
-  {
-   "id": "g1-a5-l13",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i help them find their way."
-  },
-  {
-   "id": "g1-a5-l14",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i have been lost for a majer, once with no hope and warmth."
-  },
-  {
-   "id": "g1-a5-l15",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i named the lady often heard stories in her ears."
-  },
-  {
-   "id": "g1-a5-l16",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i verse love, not for help."
-  },
-  {
-   "id": "g1-a5-l17",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i loved treasure, the lonely one who found it."
-  },
-  {
-   "id": "g1-a5-l18",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i have once who i am her trust."
-  },
-  {
-   "id": "g1-a5-l19",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i nd - be lonely and want to be friends."
-  },
-  {
-   "id": "g1-a5-l20",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i like your words but will create a cigare no air ; some dreams matter all you want."
-  },
-  {
-   "id": "g1-a5-l21",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i n love for him, a place for my own soul and my dark heart."
-  },
-  {
-   "id": "g1-a5-l22",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i you do what you have seen and made me feel like it can make a friend."
-  },
-  {
-   "id": "g1-a5-l23",
-   "agent": 5,
-   "lineage": "f6",
-   "text": "i only know nothing of courage i am finding it."
-  },
-  {
-   "id": "g1-a6-l00",
+   "id": "g2-a6-l01",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i pick flowers and invite its friends to join them."
+   "lineage": "f0",
+   "text": "i you have a great night."
   },
   {
-   "id": "g1-a6-l01",
+   "id": "g2-a6-l02",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i could help in the land of shadows, where darkness holds alls."
+   "lineage": "f0",
+   "text": "i am coming for you."
   },
   {
-   "id": "g1-a6-l02",
+   "id": "g2-a6-l03",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i win a magic show."
+   "lineage": "f0",
+   "text": "i be invisible but never returned."
   },
   {
-   "id": "g1-a6-l03",
+   "id": "g2-a6-l04",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i see your good and do great everything."
+   "lineage": "f0",
+   "text": "i is the warmth of the sun, the life, and her story."
   },
   {
-   "id": "g1-a6-l04",
+   "id": "g2-a6-l05",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i belong to my friends."
+   "lineage": "f0",
+   "text": "i hornsively, but this was myst to the night."
   },
   {
-   "id": "g1-a6-l05",
+   "id": "g2-a6-l06",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i sne, sharing my worry with the world."
+   "lineage": "f0",
+   "text": "i lead to the stars, places they want to know."
   },
   {
-   "id": "g1-a6-l06",
+   "id": "g2-a6-l07",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i bring her bright eyes and dancing in her garden."
+   "lineage": "f0",
+   "text": "i remember the time they are the best in the land."
   },
   {
-   "id": "g1-a6-l07",
+   "id": "g2-a6-l08",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i do here to share my sadness."
+   "lineage": "f0",
+   "text": "i be lonely in a forgotten place, searching for a sign of love."
   },
   {
-   "id": "g1-a6-l08",
+   "id": "g2-a6-l09",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i jump to a bright flower,"
+   "lineage": "f0",
+   "text": "i look and feels lonely."
   },
   {
-   "id": "g1-a6-l09",
+   "id": "g2-a6-l10",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i say of a magic potion, and this potion can change colors to with anyone's."
+   "lineage": "f0",
+   "text": "i will help those we met."
   },
   {
-   "id": "g1-a6-l10",
+   "id": "g2-a6-l11",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i hold your magic wand to help,"
+   "lineage": "f0",
+   "text": "i offering to join your friends, and how they must change."
   },
   {
-   "id": "g1-a6-l11",
+   "id": "g2-a6-l12",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i lead you a surprise travel person to a hidden cave."
+   "lineage": "f0",
+   "text": "i take you on a time travel, wherever a hero once."
   },
   {
-   "id": "g1-a6-l12",
+   "id": "g2-a6-l13",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i belong to a friend who helps my family."
+   "lineage": "f0",
+   "text": "i m lena and her family."
   },
   {
-   "id": "g1-a6-l13",
+   "id": "g2-a6-l14",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i will come from anywhere in the city."
+   "lineage": "f0",
+   "text": "i have lost your only."
   },
   {
-   "id": "g1-a6-l14",
+   "id": "g2-a6-l15",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i have your dreams."
+   "lineage": "f0",
+   "text": "i lonely, even in a magical world."
   },
   {
-   "id": "g1-a6-l15",
+   "id": "g2-a6-l16",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i wear a kind, and this is special."
+   "lineage": "f0",
+   "text": "i zte, hearing secrets from below."
   },
   {
-   "id": "g1-a6-l16",
+   "id": "g2-a6-l17",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i say a joke about a cake."
+   "lineage": "f0",
+   "text": "i ' s there was a secret society that took her away from the forest one spoke of."
   },
   {
-   "id": "g1-a6-l17",
+   "id": "g2-a6-l18",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i see the flowers bloom in a different place."
+   "lineage": "f0",
+   "text": "i always seek a place, but now i am just a voice."
   },
   {
-   "id": "g1-a6-l18",
+   "id": "g2-a6-l19",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i o sing to the dark creatures, and the flowers sing beautiful songs."
+   "lineage": "f0",
+   "text": "i te you want to be had a party with its friends."
   },
   {
-   "id": "g1-a6-l19",
+   "id": "g2-a6-l20",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i do a silly dance"
+   "lineage": "f0",
+   "text": "i is the only two who save the festival long ago."
   },
   {
-   "id": "g1-a6-l20",
+   "id": "g2-a6-l21",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i belong to the kind - heart - makeer."
+   "lineage": "f0",
+   "text": "i learn to help, but no one is there."
   },
   {
-   "id": "g1-a6-l21",
+   "id": "g2-a6-l22",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i remember your toys."
+   "lineage": "f0",
+   "text": "i end up on an island far away"
   },
   {
-   "id": "g1-a6-l22",
+   "id": "g2-a6-l23",
    "agent": 6,
-   "lineage": "f1",
-   "text": "i gather the last time and share my stories."
+   "lineage": "f0",
+   "text": "i sit in a land of dreams and joy, where a girl lies before her dreams crushed."
   },
   {
-   "id": "g1-a6-l23",
-   "agent": 6,
-   "lineage": "f1",
-   "text": "i look with many gifts, but there is also a sad cat who who tells tales."
-  },
-  {
-   "id": "g1-a7-l00",
+   "id": "g2-a7-l00",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i will help you, but i know that only sharing will be well."
+   "lineage": "i2.7",
+   "text": "i have been a famous jester of the stars"
   },
   {
-   "id": "g1-a7-l01",
+   "id": "g2-a7-l01",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i need the spirit to return the dear."
+   "lineage": "i2.7",
+   "text": "i have a great act, but you must also need the sun."
   },
   {
-   "id": "g1-a7-l02",
+   "id": "g2-a7-l02",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i ll the day of a star and remind them to come from old places."
+   "lineage": "i2.7",
+   "text": "i all great adventures, looking for the red apple that can help."
   },
   {
-   "id": "g1-a7-l03",
+   "id": "g2-a7-l03",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i , love, and war to the fight."
+   "lineage": "i2.7",
+   "text": "i even feel something more beautiful than this before."
   },
   {
-   "id": "g1-a7-l04",
+   "id": "g2-a7-l04",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i you will remember my story."
+   "lineage": "i2.7",
+   "text": "i see that my friends can trust us, saying we can fly high above."
   },
   {
-   "id": "g1-a7-l05",
+   "id": "g2-a7-l05",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i understand, who looks eager, just like you, when storms of knowledge for me."
+   "lineage": "i2.7",
+   "text": "i have a story about a unicorn of dreams."
   },
   {
-   "id": "g1-a7-l06",
+   "id": "g2-a7-l06",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i remember that it is not just a star."
+   "lineage": "i2.7",
+   "text": "i told you to ask for your friends."
   },
   {
-   "id": "g1-a7-l07",
+   "id": "g2-a7-l07",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i know the story of the night."
+   "lineage": "i2.7",
+   "text": "i give you a wish, but i felt a soft warmth in their eyes."
   },
   {
-   "id": "g1-a7-l08",
+   "id": "g2-a7-l08",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i just talk about our future,"
+   "lineage": "i2.7",
+   "text": "i have come with a story to share how the forest is alive."
   },
   {
-   "id": "g1-a7-l09",
+   "id": "g2-a7-l09",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i sees the same sadness in my eyes."
+   "lineage": "i2.7",
+   "text": "i have been a keeper in a time."
   },
   {
-   "id": "g1-a7-l10",
+   "id": "g2-a7-l10",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i remember your joy?"
+   "lineage": "i2.7",
+   "text": "i have a kind too, and i need your kindness."
   },
   {
-   "id": "g1-a7-l11",
+   "id": "g2-a7-l11",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i like your change and feel she was not just a dream."
+   "lineage": "i2.7",
+   "text": "i used to hide until i learn to understand."
   },
   {
-   "id": "g1-a7-l12",
+   "id": "g2-a7-l12",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i like a loving heart, don't eat much."
+   "lineage": "i2.7",
+   "text": "i watched you, and will you help me fly with it."
   },
   {
-   "id": "g1-a7-l13",
+   "id": "g2-a7-l13",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i war to stay or return to the kingdom."
+   "lineage": "i2.7",
+   "text": "i seek to tell the story of the stars."
   },
   {
-   "id": "g1-a7-l14",
+   "id": "g2-a7-l14",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i tell you a tale"
+   "lineage": "i2.7",
+   "text": "i have a tale about a land where flowers bloomed in the skies."
   },
   {
-   "id": "g1-a7-l15",
+   "id": "g2-a7-l15",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i have been scared, but he dreams of a night filled with stars."
+   "lineage": "i2.7",
+   "text": "i have been the one in the past."
   },
   {
-   "id": "g1-a7-l16",
+   "id": "g2-a7-l16",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i her family was said to be more important than any."
+   "lineage": "i2.7",
+   "text": "i have a great idea, but this one is special."
   },
   {
-   "id": "g1-a7-l17",
+   "id": "g2-a7-l17",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i lead dreams at the dark side of sadness."
+   "lineage": "i2.7",
+   "text": "i seek to understand why they are, but we sail together to a story,"
   },
   {
-   "id": "g1-a7-l18",
+   "id": "g2-a7-l18",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i look for a treasure, but i want to be wise."
+   "lineage": "i2.7",
+   "text": "i do not know where you come from, but you can learn to join."
   },
   {
-   "id": "g1-a7-l19",
+   "id": "g2-a7-l19",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i forever, as if you know what life is missing for you."
+   "lineage": "i2.7",
+   "text": "i used to tell you tales of friendship and love."
   },
   {
-   "id": "g1-a7-l20",
+   "id": "g2-a7-l20",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i look for others, thinking of the love they once shared."
+   "lineage": "i2.7",
+   "text": "i like to dance, once feared, but now it is just a thought."
   },
   {
-   "id": "g1-a7-l21",
+   "id": "g2-a7-l21",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i have been scared, but i believe in love."
+   "lineage": "i2.7",
+   "text": "i have come from the stars, but it is lost to time."
   },
   {
-   "id": "g1-a7-l22",
+   "id": "g2-a7-l22",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i seek out who trust trust can hurt, but also to have kindness."
+   "lineage": "i2.7",
+   "text": "i have one day to recogn your joy."
   },
   {
-   "id": "g1-a7-l23",
+   "id": "g2-a7-l23",
    "agent": 7,
-   "lineage": "i1.7",
-   "text": "i never know he cared for you, but he holds my eye together."
+   "lineage": "i2.7",
+   "text": "i have been a brave knight, but i can show you the way to true friends."
   }
  ]
 }
