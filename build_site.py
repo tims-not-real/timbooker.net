@@ -119,7 +119,8 @@ LABEL = """
         <span class="sm"><a href="__GROUP__">Complex Social &amp; Computational Systems</a></span>
         <div class="gap"></div>
         <span class="sm">Computational social science,<br>alternative social media</span><br>
-        <span class="sm">__UNI__</span>
+        <span class="sm">__UNI__</span><br>
+        <span class="sm"><a href="__BSKY__">@timzyzz.bsky.social</a></span>
       </div>
       <div class="credits">
         <b>Currently.</b> <i>Evolution of online discourse</i> ;
@@ -160,6 +161,7 @@ def hero(page, current, plates=()):
     return ((LABEL % ('', nav(page)))
             .replace('__NAME__', name).replace('__GEN__', str(CREATURE_GENERATION))
             .replace('__GROUP__', GROUP).replace('__UNI__', UNI)
+            .replace('__BSKY__', BSKY)
             + '\n'.join(col) + '\n  </div>\n')
 
 
