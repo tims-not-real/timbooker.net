@@ -1553,7 +1553,7 @@ function setT(u){
   out.textContent = u.toFixed(2);
   var at = Math.abs(u - 1) <= BAND;
   cap.textContent = at ? 'Scale invariance. The clearest case of why emergent descriptions work.'
-                       : (u < 1 ? 'Beautiful order' : 'Beautiful chaos');
+                       : (u < 1 ? 'Order' : 'Chaos');
   cap.classList.toggle('crit', at);
   root.classList.toggle('crit-on', at);
 }
@@ -1664,7 +1664,7 @@ ISING_PLATE = """      <div class="viz" data-plate="home"__HIDE__>
           <input id="temp" type="range" min="0.2" max="1.6" step="0.005" value="0.2">
           <output>0.20</output>
         </div>
-        <p class="note">Beautiful order</p>
+        <p class="note">Order</p>
       </div>"""
 
 
